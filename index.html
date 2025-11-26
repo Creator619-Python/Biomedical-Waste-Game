@@ -4,403 +4,16 @@
     <meta charset="UTF-8">
     <title>Biomedical Waste Sorting Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Enhanced Biomedical Waste Sorting Game CSS -->
-    <style>
-        :root {
-            --yellow-bin: #FFD600;
-            --red-bin: #E3342F;
-            --white-bin: #F8F9FA;
-            --blue-bin: #1F5FD6;
-            --green-bin: #1C9C31;
-            --primary-blue: #1F5FD6;
-            --light-blue: #eaf2ff;
-            --dark-blue: #1a4fb3;
-            --text-dark: #2D3748;
-            --text-light: #718096;
-            --white: #FFFFFF;
-            --border-light: #E2E8F0;
-            --success: #1C9C31;
-            --error: #E3342F;
-            --warning: #F6AD55;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #eaf2ff 0%, #d6e4ff 100%);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            color: var(--text-dark);
-        }
-
-        .container {
-            width: 95%;
-            max-width: 1000px;
-            margin: 0 auto;
-            text-align: center;
-            padding: 20px 0 40px;
-        }
-
-        .title {
-            font-size: 2.5rem;
-            background: linear-gradient(135deg, var(--primary-blue), #0f3a8a);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin: 20px 0 15px;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            margin-bottom: 25px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .progress-container {
-            margin-bottom: 25px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 16px;
-            background: #d2defc;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 8px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        #progressFill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-blue), var(--dark-blue));
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 10px;
-        }
-
-        .progress-text {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            font-weight: 500;
-        }
-
-        .cards-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        @media (max-width: 768px) {
-            .cards-container {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            padding: 25px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--border-light);
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        }
-
-        .card h2 {
-            margin: 0 0 15px 0;
-            color: var(--primary-blue);
-            font-size: 1.4rem;
-            font-weight: 600;
-        }
-
-        .item-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 280px;
-        }
-
-        .item-image {
-            width: 160px;
-            height: 160px;
-            object-fit: contain;
-            margin: 15px 0;
-            border-radius: 12px;
-            background: #f8fafc;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            transition: transform 0.3s ease;
-        }
-
-        .item-image:hover {
-            transform: scale(1.05);
-        }
-
-        #itemName {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin: 10px 0 0;
-        }
-
-        .score-card {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .score-card p {
-            font-size: 3.5rem;
-            margin: 10px 0 0;
-            font-weight: 700;
-            color: var(--primary-blue);
-            text-shadow: 0 2px 4px rgba(31, 95, 214, 0.2);
-        }
-
-        .feedback {
-            min-height: 60px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin: 15px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .feedback.correct {
-            color: var(--success);
-        }
-
-        .feedback.incorrect {
-            color: var(--error);
-        }
-
-        .result-icon {
-            width: 32px;
-            height: 32px;
-            vertical-align: middle;
-            animation: pop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes pop {
-            0% { transform: scale(0.5); opacity: 0; }
-            70% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .bin-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .bin-btn {
-            background: var(--white);
-            border-radius: 16px;
-            border: 2px solid var(--border-light);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 15px;
-            min-height: 140px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .bin-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--border-light);
-            transition: height 0.2s ease;
-        }
-
-        .bin-btn:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .bin-btn:active {
-            transform: translateY(-1px);
-        }
-
-        .bin-btn[data-bin="Yellow"] {
-            border-color: var(--yellow-bin);
-        }
-        .bin-btn[data-bin="Yellow"]::before {
-            background: var(--yellow-bin);
-        }
-
-        .bin-btn[data-bin="Red"] {
-            border-color: var(--red-bin);
-        }
-        .bin-btn[data-bin="Red"]::before {
-            background: var(--red-bin);
-        }
-
-        .bin-btn[data-bin="White"] {
-            border-color: #CBD5E0;
-        }
-        .bin-btn[data-bin="White"]::before {
-            background: #CBD5E0;
-        }
-
-        .bin-btn[data-bin="Blue"] {
-            border-color: var(--blue-bin);
-        }
-        .bin-btn[data-bin="Blue"]::before {
-            background: var(--blue-bin);
-        }
-
-        .bin-btn[data-bin="Green"] {
-            border-color: var(--green-bin);
-        }
-        .bin-btn[data-bin="Green"]::before {
-            background: var(--green-bin);
-        }
-
-        .bin-icon {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-            margin-bottom: 8px;
-            transition: transform 0.2s ease;
-        }
-
-        .bin-btn:hover .bin-icon {
-            transform: scale(1.1);
-        }
-
-        .bin-btn div {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .bin-btn small {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            font-weight: 500;
-        }
-
-        .instructions {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 25px;
-            margin-top: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid var(--border-light);
-        }
-
-        .instructions h3 {
-            color: var(--primary-blue);
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-
-        .bin-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            text-align: left;
-        }
-
-        .bin-info-item {
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            border-left: 4px solid;
-        }
-
-        .bin-info-item.yellow {
-            background: rgba(255, 214, 0, 0.08);
-            border-left-color: var(--yellow-bin);
-        }
-        .bin-info-item.red {
-            background: rgba(227, 52, 47, 0.08);
-            border-left-color: var(--red-bin);
-        }
-        .bin-info-item.white {
-            background: rgba(203, 213, 224, 0.2);
-            border-left-color: #CBD5E0;
-        }
-        .bin-info-item.blue {
-            background: rgba(31, 95, 214, 0.08);
-            border-left-color: var(--blue-bin);
-        }
-        .bin-info-item.green {
-            background: rgba(28, 156, 49, 0.08);
-            border-left-color: var(--green-bin);
-        }
-
-        @media (max-width: 600px) {
-            .title { font-size: 2rem; }
-            .card { padding: 20px 15px; }
-            .item-image { width: 130px; height: 130px; }
-            .bin-container { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .bin-btn { min-height: 120px; padding: 15px 10px; }
-            .bin-info { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 400px) {
-            .bin-container { grid-template-columns: 1fr; }
-            .cards-container { gap: 12px; }
-        }
-
-        @keyframes celebrate {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .correct-animation {
-            animation: celebrate 0.6s ease;
-        }
-
-        .bin-btn:focus {
-            outline: 3px solid rgba(31, 95, 214, 0.4);
-            outline-offset: 2px;
-        }
-
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
     <h1 class="title">Biomedical Waste Sorting Game</h1>
-    <p class="subtitle">Click the correct bin for each biomedical item. Learn the correct segregation and improve your score!</p>
+    <p class="subtitle">
+        Click the correct bin for each biomedical waste item. Learn correct segregation and improve your score!
+    </p>
 
+    <!-- Progress -->
     <div class="progress-container">
         <div class="progress-bar">
             <div id="progressFill"></div>
@@ -408,6 +21,7 @@
         <div class="progress-text">Progress</div>
     </div>
 
+    <!-- Cards -->
     <div class="cards-container">
         <div class="card item-card">
             <h2>Current Item</h2>
@@ -422,293 +36,65 @@
         </div>
     </div>
 
+    <!-- Feedback -->
     <div id="feedback" class="feedback"></div>
 
+    <!-- Bins -->
     <div class="bin-container">
         <button class="bin-btn" data-bin="Yellow">
             <img src="images/yellowbin.jpg" class="bin-icon" alt="Yellow bin">
             <div>Yellow</div>
-            <small>Infectious Waste</small>
+            <small>Infectious / anatomical waste</small>
         </button>
 
         <button class="bin-btn" data-bin="Red">
             <img src="images/redbin.jpg" class="bin-icon" alt="Red bin">
             <div>Red</div>
-            <small>Contaminated Waste</small>
+            <small>Contaminated plastics</small>
         </button>
 
         <button class="bin-btn" data-bin="White">
             <img src="images/translucentbin.png" class="bin-icon" alt="White bin">
             <div>White</div>
-            <small>Sharps</small>
+            <small>Sharps (needles, blades)</small>
         </button>
 
         <button class="bin-btn" data-bin="Blue">
             <img src="images/bluebin.png" class="bin-icon" alt="Blue bin">
             <div>Blue</div>
-            <small>Glass & Medicines</small>
+            <small>Glassware & implants</small>
         </button>
 
         <button class="bin-btn" data-bin="Green">
             <img src="images/greenbin.png" class="bin-icon" alt="Green bin">
             <div>Green</div>
-            <small>General Waste</small>
+            <small>General non-infectious waste</small>
         </button>
     </div>
 
+    <!-- Instructions -->
     <div class="instructions">
         <h3>Biomedical Waste Categories</h3>
         <div class="bin-info">
             <div class="bin-info-item yellow">
-                <strong>Yellow Bin:</strong> Infectious, anatomical waste, soiled dressings, masks, blood bags, placenta, etc.
+                <strong>Yellow Bin:</strong> Human anatomical waste, soiled dressings, blood bags, placenta, masks, etc.
             </div>
             <div class="bin-info-item red">
-                <strong>Red Bin:</strong> Contaminated plastics like tubing, catheters, IV sets, vacutainers, urine bags (if plastic), etc.
+                <strong>Red Bin:</strong> Contaminated plastics like IV sets, catheters, urine bags, tubing, vacutainers.
             </div>
             <div class="bin-info-item white">
-                <strong>White (Translucent) Bin:</strong> Sharps like needles, scalpels, scissors, blades.
+                <strong>White (Translucent) Bin:</strong> Sharps such as needles, scalpels, blades, scissors.
             </div>
             <div class="bin-info-item blue">
-                <strong>Blue Bin:</strong> Glassware, vials, ampoules, metallic implants, expired medicines (non-cytotoxic as per policy).
+                <strong>Blue Bin:</strong> Glassware, vials, ampoules, metallic implants, some expired medicines (as per policy).
             </div>
             <div class="bin-info-item green">
-                <strong>Green Bin:</strong> Non-infectious general waste like paper, food leftovers (as per segregation policy).
+                <strong>Green Bin:</strong> General non-infectious waste like paper/food (as per hospital segregation policy).
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // Enhanced Biomedical Waste Sorting Game JavaScript
-
-    let itemsData = {};
-    let itemNames = [];
-    let currentItemName = null;
-    let score = 0;
-    let questionsAnswered = 0;
-    let correctAnswers = 0;
-    let streak = 0;
-    let maxStreak = 0;
-    const totalQuestions = 20;
-
-    const domElements = {
-        itemImage: document.getElementById('itemImage'),
-        itemName: document.getElementById('itemName'),
-        score: document.getElementById('score'),
-        progressFill: document.getElementById('progressFill'),
-        feedback: document.getElementById('feedback'),
-        binButtons: document.querySelectorAll('.bin-btn')
-    };
-
-    const config = {
-        points: {
-            correct: 10,
-            incorrect: -5,
-            streakBonus: 5
-        },
-        timing: {
-            feedbackDelay: 1200,
-            newRoundDelay: 800
-        }
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-        initializeGame();
-    });
-
-    async function initializeGame() {
-        try {
-            showLoadingState(true);
-
-            const response = await fetch("items.json");
-            if (!response.ok) {
-                throw new Error(\`HTTP error! status: \${response.status}\`);
-            }
-
-            itemsData = await response.json();
-            itemNames = Object.keys(itemsData);
-
-            if (itemNames.length === 0) {
-                throw new Error("No items found in items.json");
-            }
-
-            attachBinHandlers();
-            resetGame();
-            updateGameStats();
-
-        } catch (error) {
-            console.error("Error loading items.json", error);
-            showError("Unable to load game data. Please check if items.json exists and contains valid data.");
-        } finally {
-            showLoadingState(false);
-        }
-    }
-
-    function attachBinHandlers() {
-        domElements.binButtons.forEach(btn => {
-            btn.addEventListener("click", () => {
-                if (questionsAnswered >= totalQuestions) return;
-
-                const bin = btn.getAttribute("data-bin");
-                handleAnswer(bin);
-                animateButtonPress(btn);
-            });
-
-            btn.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    btn.click();
-                }
-            });
-        });
-    }
-
-    function newRound() {
-        if (itemNames.length === 0) {
-            showError("No items available for the game.");
-            return;
-        }
-
-        let randomIndex;
-        do {
-            randomIndex = Math.floor(Math.random() * itemNames.length);
-        } while (itemNames[randomIndex] === currentItemName && itemNames.length > 1);
-
-        currentItemName = itemNames[randomIndex];
-        const item = itemsData[currentItemName];
-
-        domElements.itemImage.src = item.image;
-        domElements.itemImage.alt = currentItemName;
-        domElements.itemName.textContent = currentItemName;
-
-        preloadNextImage();
-        clearFeedback();
-        enableBinButtons(true);
-        animateNewItem();
-    }
-
-    function preloadNextImage() {
-        if (itemNames.length <= 1) return;
-
-        const nextIndex = (itemNames.indexOf(currentItemName) + 1) % itemNames.length;
-        const nextItemName = itemNames[nextIndex];
-        const nextItem = itemsData[nextItemName];
-
-        const preloadImage = new Image();
-        preloadImage.src = nextItem.image;
-    }
-
-    function handleAnswer(selectedBin) {
-        if (!currentItemName || questionsAnswered >= totalQuestions) return;
-
-        const correctBin = itemsData[currentItemName].bin;
-        const isCorrect = (selectedBin === correctBin);
-
-        enableBinButtons(false);
-        updateGameState(isCorrect, correctBin);
-        updateScoreDisplay();
-        updateProgressBar();
-        showFeedback(isCorrect, correctBin);
-        updateGameStats();
-
-        setTimeout(() => {
-            if (questionsAnswered >= totalQuestions) {
-                endGame();
-            } else {
-                newRound();
-            }
-        }, config.timing.newRoundDelay);
-    }
-
-    function updateGameState(isCorrect, correctBin) {
-        if (isCorrect) {
-            score += config.points.correct;
-            correctAnswers++;
-            streak++;
-
-            if (streak >= 3) {
-                const bonus = Math.floor(streak / 3) * config.points.streakBonus;
-                score += bonus;
-            }
-
-            maxStreak = Math.max(maxStreak, streak);
-        } else {
-            score += config.points.incorrect;
-            if (score < 0) score = 0;
-            streak = 0;
-        }
-
-        questionsAnswered++;
-    }
-
-    function updateScoreDisplay() {
-        const scoreElement = domElements.score;
-        const oldScore = parseInt(scoreElement.textContent);
-        const newScore = score;
-
-        animateScoreChange(oldScore, newScore, scoreElement);
-    }
-
-    function animateScoreChange(oldScore, newScore, element) {
-        const duration = 500;
-        const startTime = performance.now();
-        const difference = newScore - oldScore;
-
-        function updateScore(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            const currentValue = oldScore + Math.floor(difference * easeOut);
-
-            element.textContent = currentValue;
-
-            if (difference > 0) {
-                element.style.color = '#1C9C31';
-            } else if (difference < 0) {
-                element.style.color = '#E3342F';
-            }
-
-            if (progress < 1) {
-                requestAnimationFrame(updateScore);
-            } else {
-                setTimeout(() => {
-                    element.style.color = '#1F5FD6';
-                }, 500);
-            }
-        }
-
-        requestAnimationFrame(updateScore);
-    }
-
-    function updateProgressBar() {
-        const percent = Math.min(100, (questionsAnswered / totalQuestions) * 100);
-        domElements.progressFill.style.width = percent + "%";
-
-        if (percent >= 100) {
-            domElements.progressFill.style.animation = 'pulse 1s infinite';
-        }
-    }
-
-    function showFeedback(isCorrect, correctBin) {
-        const fb = domElements.feedback;
-
-        if (isCorrect) {
-            let feedbackText = `
-                <img src="images/check.png" class="result-icon" alt="Correct">
-                <span class="correct-text">Correct! +${config.points.correct} points</span>
-            `;
-
-            if (streak >= 3) {
-                const bonus = Math.floor(streak / 3) * config.points.streakBonus;
-                feedbackText += `<div style="font-size: 0.9em; margin-top: 5px;">${streak} in a row! +${bonus} bonus</div>`;
-            }
-
-            fb.innerHTML = feedbackText;
-            fb.className = 'feedback correct';
-        } else {
-            fb.innerHTML = `
-                <img src="images/cross.png" class="result-icon" alt="Wrong">
-                <span class="wrong-text">Incorrect! ${config.points.incorrect} points</span>
-                <div style="font-size: 0.9em; margin-top: 5px;">Correct bin: 
-                    <span style="color: ${getBinColor(correctBin)}; font-weight: bold;">${correctBin}</span>
-                </div>
+<script src="script.js" defer></script>
+</body>
+</html>
