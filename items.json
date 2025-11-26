@@ -1,0 +1,36 @@
+{
+  "gloves":         { "image": "images/gloves.png",            "bin": "Red" },
+  "syringes":       { "image": "images/syringes.png",          "bin": "Translucent" },
+  "paper":          { "image": "images/paper.png",             "bin": "Green" },
+  "cup":            { "image": "images/cup.png",               "bin": "Green" },
+  "gauze":          { "image": "images/gauze.png",             "bin": "Yellow" },
+  "diaper":         { "image": "images/diaper.png",            "bin": "Yellow" },
+
+  "Ampoules":       { "image": "images/Ampoules.webp",         "bin": "Blue" },
+  "LabSlides":      { "image": "images/LabSlides.jpg",         "bin": "Blue" },
+  "MetalImplants":  { "image": "images/MetalImplants.png",     "bin": "Blue" },
+  "Scissors":       { "image": "images/Scissors.webp",         "bin": "Blue" },
+  "Vial":           { "image": "images/Vial.jpg",              "bin": "Blue" },
+
+  "BloodBag":       { "image": "images/BloodBag.avif",         "bin": "Red" },
+  "Catheter":       { "image": "images/Catheter.jpg",          "bin": "Red" },
+  "DialysisKit":    { "image": "images/DialysisKit.webp",      "bin": "Red" },
+  "IVBottles":      { "image": "images/IVBottles.jpg",         "bin": "Red" },
+  "IVSet":          { "image": "images/IVSet.png",             "bin": "Red" },
+  "Syringe":        { "image": "images/Syringe.webp",          "bin": "Red" },
+  "UrineBag":       { "image": "images/UrineBag.webp",         "bin": "Red" },
+  "Vacutainers":    { "image": "images/Vacutainers.webp",      "bin": "Red" },
+
+  "Blade":          { "image": "images/Blade.webp",            "bin": "Translucent" },
+  "Needles":        { "image": "images/Needles.jpg",           "bin": "Translucent" },
+  "Scalpel":        { "image": "images/Scalpel.webp",          "bin": "Translucent" },
+  "SyringeNeedle":  { "image": "images/SyringeNeedle.png",     "bin": "Translucent" },
+
+  "SoiledGauze":      { "image": "images/SoiledGauze.webp",      "bin": "Yellow" },
+  "ExpiredMedicines": { "image": "images/ExpiredMedicines.webp", "bin": "Yellow" },
+  "AnatomicalWaste":  { "image": "images/AnatomicalWaste.webp",  "bin": "Yellow" },
+  "ContaminatedMask": { "image": "images/ContaminatedMask.webp", "bin": "Yellow" },
+  "Placenta":         { "image": "images/Placenta.webp",         "bin": "Yellow" },
+  "PlasterCast":      { "image": "images/PlasterCast.jpg",       "bin": "Yellow" },
+  "WoundDressing":    { "image": "images/WoundDressing.webp",    "bin": "Yellow" }
+}
