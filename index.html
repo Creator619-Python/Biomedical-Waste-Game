@@ -2,63 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biomedical Waste Sorting Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1 class="title">Biomedical Waste Sorting Game</h1>
+<div class="container">
 
-<div class="mode-selector">
-    <button onclick="setMode('beginner')" id="beginnerBtn">Beginner</button>
-    <button onclick="setMode('intermediate')" id="intermediateBtn" class="active">Intermediate</button>
-    <button onclick="setMode('expert')" id="expertBtn">Expert</button>
+    <h1 class="title">Biomedical Waste Sorting Game</h1>
+
+    <!-- Progress bar for number of questions -->
+    <div class="progress-bar">
+        <div id="progressFill"></div>
+    </div>
+
+    <!-- Current item card -->
+    <div class="card item-card">
+        <h2>Current Item</h2>
+        <img id="itemImage" class="item-image" alt="Item">
+        <p id="itemName"></p>
+    </div>
+
+    <!-- Score card -->
+    <div class="card score-card">
+        <h2>Score</h2>
+        <p id="score">0</p>
+    </div>
+
+    <!-- Feedback (✔ / ✖) -->
+    <div id="feedback" class="feedback"></div>
+
+    <!-- Bin buttons -->
+    <div class="bin-container">
+        <button class="bin-btn" data-bin="Yellow">
+            <img src="images/yellowbin.jpg" class="bin-icon" alt="Yellow bin">
+            <div>Yellow</div>
+        </button>
+
+        <button class="bin-btn" data-bin="Red">
+            <img src="images/redbin.jpg" class="bin-icon" alt="Red bin">
+            <div>Red</div>
+        </button>
+
+        <button class="bin-btn" data-bin="White">
+            <img src="images/translucentbin.png" class="bin-icon" alt="White bin">
+            <div>White</div>
+        </button>
+
+        <button class="bin-btn" data-bin="Blue">
+            <img src="images/bluebin.png" class="bin-icon" alt="Blue bin">
+            <div>Blue</div>
+        </button>
+
+        <button class="bin-btn" data-bin="Green">
+            <img src="images/greenbin.png" class="bin-icon" alt="Green bin">
+            <div>Green</div>
+        </button>
+    </div>
+
 </div>
-
-<div class="progress-bar">
-    <div id="progressFill"></div>
-</div>
-
-<div class="card item-card">
-    <h2>Current Item</h2>
-    <img id="itemImage" class="item-image">
-    <p id="itemName"></p>
-</div>
-
-<div class="card score-card">
-    <h2>Score</h2>
-    <p id="score">0</p>
-</div>
-
-<div id="feedback"></div>
-
-<div class="bin-container">
-    <button class="bin-btn" onclick="chooseBin('Yellow')">
-        <img src="images/YellowBin.svg" class="bin-icon"><br>Yellow
-    </button>
-
-    <button class="bin-btn" onclick="chooseBin('Red')">
-        <img src="images/RedBin.svg" class="bin-icon"><br>Red
-    </button>
-
-    <button class="bin-btn" onclick="chooseBin('White')">
-        <img src="images/WhiteBin.svg" class="bin-icon"><br>White
-    </button>
-
-    <button class="bin-btn" onclick="chooseBin('Blue')">
-        <img src="images/BlueBin.svg" class="bin-icon"><br>Blue
-    </button>
-
-    <button class="bin-btn" onclick="chooseBin('Green')">
-        <img src="images/GreenBin.svg" class="bin-icon"><br>Green
-    </button>
-</div>
-
-<br>
-<button class="study-btn" onclick="window.location.href='study.html'">
-    Study Mode (View All Items by Bin)
-</button>
 
 <script src="script.js"></script>
 </body>
