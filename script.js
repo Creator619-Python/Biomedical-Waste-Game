@@ -1,80 +1,120 @@
-let items = {};
-let currentItem = null;
+// Game state
+let itemsData = {};
+let itemNames = [];
+let currentItemName = null;
 let score = 0;
-let mode = "intermediate";
-let totalQuestions = 20;
-let progress = 0;
+let questionsAnswered = 0;
+const totalQuestions = 20; // progress bar target
 
-fetch("items.json")
-    .then(res => res.json())
-    .then(data => {
-        items = data;
-        newItem();
+// Load items.json then start game
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("items.json")
+        .then(res => res.json())
+        .then(data => {
+            itemsData = data;
+            itemNames = Object.keys(itemsData);
+            attachBinHandlers();
+            newRound();
+        })
+        .catch(err => {
+            console.error("Error loading items.json", err);
+            alert("Unable to load items.json. Please check the console.");
+        });
+});
+
+// Attach click listeners to each bin button
+function attachBinHandlers() {
+    const buttons = document.querySelectorAll(".bin-btn");
+    buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const bin = btn.getAttribute("data-bin");
+            handleAnswer(bin);
+        });
     });
-
-function setMode(m) {
-    mode = m;
-
-    document.getElementById("beginnerBtn").classList.remove("active");
-    document.getElementById("intermediateBtn").classList.remove("active");
-    document.getElementById("expertBtn").classList.remove("active");
-
-    document.getElementById(m + "Btn").classList.add("active");
-
-    totalQuestions = (m === "beginner") ? 10 : (m === "intermediate" ? 20 : 40);
-    resetGame();
 }
 
-function resetGame() {
-    score = 0;
-    progress = 0;
-    document.getElementById("score").textContent = score;
-    document.getElementById("progressFill").style.width = "0%";
-    newItem();
-}
+// Start a new round with a random item
+function newRound() {
+    if (itemNames.length === 0) return;
 
-function newItem() {
-    const keys = Object.keys(items);
-    const randomKey = keys[Math.floor(Math.random() * keys.length)];
-    currentItem = items[randomKey];
+    const randomIndex = Math.floor(Math.random() * itemNames.length);
+    currentItemName = itemNames[randomIndex];
 
-    document.getElementById("itemName").textContent = randomKey;
-    document.getElementById("itemImage").src = currentItem.image;
+    const item = itemsData[currentItemName];
 
+    const imgEl = document.getElementById("itemImage");
+    const nameEl = document.getElementById("itemName");
+
+    imgEl.src = item.image;
+    imgEl.alt = currentItemName;
+    nameEl.textContent = currentItemName;
+
+    // Clear feedback
     document.getElementById("feedback").innerHTML = "";
 }
 
-function chooseBin(bin) {
-    let correct = (bin === currentItem.bin);
+// Handle user selecting a bin
+function handleAnswer(selectedBin) {
+    if (!currentItemName) return;
 
-    if (correct) {
-        score += 10;
-        showFeedback(true, "");
-    } else {
-        showFeedback(false, currentItem.bin);
-    }
-
-    document.getElementById("score").textContent = score;
-
-    progress++;
-    document.getElementById("progressFill").style.width =
-        (progress / totalQuestions * 100) + "%";
-
-    setTimeout(() => newItem(), 900);
-}
-
-function showFeedback(isCorrect, correctBin) {
-    const fb = document.getElementById("feedback");
+    const correctBin = itemsData[currentItemName].bin;
+    const isCorrect = (selectedBin === correctBin);
 
     if (isCorrect) {
+        score += 10;
+    } else {
+        score -= 5;
+        if (score < 0) score = 0; // prevent negative score
+    }
+
+    questionsAnswered++;
+    updateScoreDisplay();
+    updateProgressBar();
+    showFeedback(isCorrect, correctBin);
+
+    // After short delay, move to next item (unless finished)
+    setTimeout(() => {
+        if (questionsAnswered >= totalQuestions) {
+            endGame();
+        } else {
+            newRound();
+        }
+    }, 900);
+}
+
+// Update score on screen
+function updateScoreDisplay() {
+    document.getElementById("score").textContent = score;
+}
+
+// Update progress bar (0–100%)
+function updateProgressBar() {
+    const percent = Math.min(100, (questionsAnswered / totalQuestions) * 100);
+    document.getElementById("progressFill").style.width = percent + "%";
+}
+
+// Show ✔ or ✖ feedback
+function showFeedback(isCorrect, correctBin) {
+    const fb = document.getElementById("feedback");
+    if (isCorrect) {
         fb.innerHTML = `
-            <img src="images/check.png" class="result-icon">
+            <img src="images/check.png" class="result-icon" alt="Correct">
             <span class="correct-text">Correct! +10 points</span>
         `;
     } else {
         fb.innerHTML = `
-            <img src="images/cross.png" class="result-icon">
-            <span class="wrong-text">Wrong! Correct bin: ${correctBin}</span>
+            <img src="images/cross.png" class="result-icon" alt="Wrong">
+            <span class="wrong-text">Wrong! -5 points (Correct bin: ${correctBin})</span>
         `;
     }
+}
+
+// When totalQuestions reached
+function endGame() {
+    const fb = document.getElementById("feedback");
+    fb.innerHTML = `
+        <span class="correct-text">
+            Game over! Final score: ${score}
+        </span>
+    `;
 }
