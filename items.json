@@ -11,7 +11,7 @@
 
   "Blood Bag": { 
     "image": "images/Blood Bag.avif", 
-    "bin": "Red" 
+    "bin": "Yellow" 
   },
 
   "Catheter": { 
@@ -31,7 +31,7 @@
 
   "Expired Medicines": { 
     "image": "images/Expired Medicines.webp", 
-    "bin": "Yellow" 
+    "bin": "Blue" 
   },
 
   "Human Anatomical Waste": { 
@@ -44,7 +44,7 @@
     "bin": "Red" 
   },
 
-  "IV bottles": { 
+  "IV Bottles": { 
     "image": "images/IV bottles.jpg", 
     "bin": "Red" 
   },
@@ -59,7 +59,7 @@
     "bin": "Yellow" 
   },
 
-  "Metallic body implants": { 
+  "Metallic Body Implants": { 
     "image": "images/Metallic body implants.png", 
     "bin": "Blue" 
   },
@@ -74,7 +74,7 @@
     "bin": "Yellow" 
   },
 
-  "Plaster cast": { 
+  "Plaster Cast": { 
     "image": "images/Plaster cast.jpg", 
     "bin": "Yellow" 
   },
@@ -86,7 +86,7 @@
 
   "Scissors": { 
     "image": "images/Scissors.webp", 
-    "bin": "Blue" 
+    "bin": "White" 
   },
 
   "Syringe (without needle)": { 
@@ -94,14 +94,14 @@
     "bin": "Red" 
   },
 
-  "Syringes with needles": { 
-    "image": "images/Syringes with needles.png", 
+  "Syringe with Needle": { 
+    "image": "images/Syringe with needles.png", 
     "bin": "White" 
   },
 
   "Urine Bag": { 
     "image": "images/Urine Bag.webp", 
-    "bin": "Red" 
+    "bin": "Yellow" 
   },
 
   "Vacutainers": { 
@@ -114,7 +114,7 @@
     "bin": "Blue" 
   },
 
-  "Wound dressing": { 
+  "Wound Dressing": { 
     "image": "images/Wound dressing.webp", 
     "bin": "Yellow" 
   }
