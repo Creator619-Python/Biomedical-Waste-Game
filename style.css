@@ -1,286 +1,118 @@
 body {
     font-family: Arial, sans-serif;
-    background: #eef5ff;
+    background: #e8f1ff;
+    text-align: center;
     margin: 0;
     padding: 0;
 }
 
-.container {
-    width: 90%;
-    max-width: 950px;
-    margin: 20px auto;
-    text-align: center;
-}
-
 .title {
     font-size: 32px;
-    color: #205ecf;
-    margin-bottom: 10px;
+    color: #0055dd;
+    margin-top: 20px;
 }
 
-/* Top bar: levels + new game */
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.level-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.level-btn {
-    padding: 6px 12px;
-    border-radius: 8px;
-    border: 1px solid #205ecf;
-    background: #ffffff;
-    color: #205ecf;
+.mode-selector button {
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid #0077ff;
+    background: white;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
+}
+
+.mode-selector .active {
+    background: #0077ff;
+    color: white;
+}
+
+.progress-bar {
+    width: 80%;
+    height: 12px;
+    background: #cfe0ff;
+    margin: 15px auto;
+    border-radius: 8px;
+}
+
+#progressFill {
+    width: 0%;
+    height: 100%;
+    background: #1160ff;
+    border-radius: 8px;
+}
+
+.card {
+    width: 70%;
+    margin: 15px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.item-image {
+    width: 130px;
+    height: 130px;
+    object-fit: contain;
+}
+
+.bin-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.bin-btn {
+    width: 130px;
+    height: 120px;
+    background: white;
+    margin: 10px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-size: 16px;
     transition: 0.2s;
 }
 
-.level-btn.active,
-.level-btn:hover {
-    background: #205ecf;
-    color: #ffffff;
+.bin-btn:hover {
+    transform: scale(1.05);
 }
 
-.new-game-btn {
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: none;
-    background: #28a745;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    box-shadow: 0 2px 6px rgba(0, 128, 0, 0.2);
+.bin-icon {
+    width: 60px;
+    height: 60px;
 }
 
-.new-game-btn:hover {
-    background: #218838;
-}
-
-/* Timer Bar */
-.timer-bar {
-    width: 100%;
-    height: 14px;
-    background: #c7d7ff;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
-
-#timerFill {
-    width: 100%;
-    height: 100%;
-    background: #205ecf;
-    transition: width 0.9s linear;
-}
-
-/* Game Layout */
-.game-panel {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.item-card {
-    flex: 0 0 60%;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0,0,255,0.15);
-    min-width: 260px;
-}
-
-.section-title {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #205ecf;
-}
-
-.item-card img {
-    width: 180px;
-    height: auto;
-}
-
-#itemName {
+#feedback {
     font-size: 20px;
     margin-top: 10px;
-    color: #333;
-}
-
-.sidebar {
-    flex: 0 0 35%;
-    text-align: center;
-    min-width: 220px;
-}
-
-.score-box {
-    background: white;
-    padding: 18px;
-    border-radius: 12px;
-    box-shadow: 0 3px 10px rgba(0,0,255,0.15);
-    margin-bottom: 12px;
-}
-
-.score-box h2 {
-    margin: 0;
-    color: #205ecf;
-}
-
-#scoreDisplay {
-    font-size: 32px;
-    margin-top: 10px;
-}
-
-.streak-box {
-    min-height: 24px;
-    margin-bottom: 8px;
-}
-
-#streakInfo {
-    font-size: 14px;
-    color: #f39c12;
-}
-
-.feedback {
-    font-size: 18px;
     font-weight: bold;
-    min-height: 26px;
 }
 
-.explanation {
-    font-size: 13px;
-    margin-top: 8px;
-    color: #555;
-    min-height: 40px;
+.result-icon {
+    width: 45px;
+    height: 45px;
+    vertical-align: middle;
+    margin-right: 10px;
+    animation: pop 0.3s ease;
 }
 
-/* Bins Layout */
-.bins {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    gap: 10px;
-    flex-wrap: wrap;
+.correct-text { color: green; }
+.wrong-text { color: red; }
+
+@keyframes pop {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
-.bin {
-    flex: 1;
-    background: white;
-    padding: 8px;
+.study-btn {
+    padding: 10px 15px;
     border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,255,0.1);
-    min-width: 90px;
-}
-
-.bin:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 10px rgba(0,0,255,0.2);
-}
-
-.bin img {
-    width: 60px;
-    height: auto;
-}
-
-.bin-label {
-    font-size: 14px;
-    margin-top: 5px;
-    display: block;
-}
-
-/* Study Mode */
-
-.study-mode {
-    margin-top: 25px;
-    text-align: left;
-}
-
-.study-toggle-btn {
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid #205ecf;
-    background: #ffffff;
-    color: #205ecf;
-    cursor: pointer;
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-.study-toggle-btn:hover {
-    background: #205ecf;
-    color: #ffffff;
-}
-
-.study-panel {
-    display: none;
-    background: #f7f9ff;
-    border-radius: 10px;
-    padding: 12px;
-    max-height: 420px;
-    overflow-y: auto;
-    box-shadow: 0 2px 8px rgba(0,0,255,0.1);
-}
-
-.study-bin {
-    margin-bottom: 15px;
-}
-
-.study-bin h3 {
-    margin: 5px 0;
-    color: #205ecf;
-}
-
-.study-bin-desc {
-    margin: 0 0 5px 0;
-    font-size: 13px;
-    color: #555;
-}
-
-.study-items-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.study-item {
-    width: 90px;
+    border: 1px solid #0066ff;
     background: white;
-    border-radius: 8px;
-    padding: 6px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,255,0.1);
-}
-
-.study-item img {
-    width: 50px;
-    height: auto;
-}
-
-.study-item span {
-    font-size: 11px;
-    display: block;
-    margin-top: 4px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .bins {
-        justify-content: center;
-    }
-
-    .bin {
-        flex: 0 0 45%;
-    }
+    cursor: pointer;
+    font-size: 15px;
+    margin-bottom: 30px;
 }
