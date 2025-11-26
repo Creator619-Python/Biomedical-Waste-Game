@@ -261,7 +261,6 @@ body {
 .bin-btn[data-bin="Yellow"] {
     border-color: var(--yellow-bin);
 }
-
 .bin-btn[data-bin="Yellow"]::before {
     background: var(--yellow-bin);
 }
@@ -269,7 +268,6 @@ body {
 .bin-btn[data-bin="Red"] {
     border-color: var(--red-bin);
 }
-
 .bin-btn[data-bin="Red"]::before {
     background: var(--red-bin);
 }
@@ -277,7 +275,6 @@ body {
 .bin-btn[data-bin="White"] {
     border-color: #CBD5E0;
 }
-
 .bin-btn[data-bin="White"]::before {
     background: #CBD5E0;
 }
@@ -285,7 +282,6 @@ body {
 .bin-btn[data-bin="Blue"] {
     border-color: var(--blue-bin);
 }
-
 .bin-btn[data-bin="Blue"]::before {
     background: var(--blue-bin);
 }
@@ -293,7 +289,6 @@ body {
 .bin-btn[data-bin="Green"] {
     border-color: var(--green-bin);
 }
-
 .bin-btn[data-bin="Green"]::before {
     background: var(--green-bin);
 }
@@ -376,31 +371,26 @@ body {
     border-left-color: var(--green-bin);
 }
 
-/* Responsive improvements */
+/* Responsive */
 @media (max-width: 600px) {
     .title {
         font-size: 2rem;
     }
-    
     .card {
         padding: 20px 15px;
     }
-    
     .item-image {
         width: 130px;
         height: 130px;
     }
-    
     .bin-container {
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
-    
     .bin-btn {
         min-height: 120px;
         padding: 15px 10px;
     }
-    
     .bin-info {
         grid-template-columns: 1fr;
     }
@@ -410,7 +400,6 @@ body {
     .bin-container {
         grid-template-columns: 1fr;
     }
-    
     .cards-container {
         gap: 12px;
     }
