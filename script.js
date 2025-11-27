@@ -1,360 +1,212 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+// --- Configuration ---
+const GAME_DURATION = 60; // seconds
+
+// --- Game State ---
+let items = [];
+let currentItem = null;
+let score = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let timeLeft = GAME_DURATION;
+let timerInterval = null;
+let gameActive = false;
+
+// --- DOM Elements ---
+const scoreDisplay = document.getElementById("score");
+const itemImage = document.getElementById("itemImage");
+const itemName = document.getElementById("itemName");
+const feedback = document.getElementById("feedback");
+const progressFill = document.getElementById("progressFill");
+const timerValue = document.getElementById("timerValue");
+const gameStats = document.getElementById("gameStats");
+const gameOverModal = document.getElementById("gameOverModal");
+const finalScoreText = document.getElementById("finalScoreText");
+const finalStatsText = document.getElementById("finalStatsText");
+const playAgainBtn = document.getElementById("playAgainBtn");
+
+// --- Utility: format time as MM:SS ---
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
 }
 
-body {
-    background: linear-gradient(135deg, #f7fafc, #e2e8f0);
-    color: #1a202c;
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 20px;
+// --- Update Timer UI ---
+function updateTimerUI() {
+    timerValue.textContent = formatTime(timeLeft);
+    const percent = (timeLeft / GAME_DURATION) * 100;
+    progressFill.style.width = `${percent}%`;
 }
 
-.container {
-    width: 100%;
-    max-width: 1100px;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
-    padding: 24px;
+// --- Start Timer ---
+function startTimer() {
+    timeLeft = GAME_DURATION;
+    updateTimerUI();
+
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            updateTimerUI();
+            clearInterval(timerInterval);
+            endGame();
+        }
+    }, 1000);
 }
 
-.title {
-    text-align: center;
-    font-size: 1.9rem;
-    margin-bottom: 8px;
-    color: #1a365d;
+// --- End Game ---
+function endGame() {
+    gameActive = false;
+
+    // Disable buttons
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = true;
+    });
+
+    const totalAttempts = correctCount + wrongCount;
+    const accuracy = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
+
+    feedback.textContent = "⏳ Time's up! Great effort.";
+    feedback.classList.remove("correct", "wrong");
+
+    finalScoreText.textContent = `Final Score: ${score}`;
+    finalStatsText.textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+
+    gameOverModal.classList.remove("hidden");
 }
 
-.subtitle {
-    text-align: center;
-    color: #4a5568;
-    font-size: 0.95rem;
-    margin-bottom: 20px;
-}
-
-/* Status Bar: Timer + Progress */
-
-.status-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.timer-box {
-    background: #edf2f7;
-    border-radius: 12px;
-    padding: 10px 16px;
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.timer-label {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #4a5568;
-}
-
-.timer-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #2b6cb0;
-    margin-top: 2px;
-}
-
-/* Progress */
-
-.progress-container {
-    flex: 1;
-    min-width: 200px;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    background: #e2e8f0;
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 4px;
-}
-
-#progressFill {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #48bb78, #ed8936, #e53e3e);
-    transition: width 0.25s ease-out;
-}
-
-.progress-text {
-    font-size: 0.75rem;
-    color: #718096;
-}
-
-/* Cards */
-
-.cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.card {
-    flex: 1;
-    min-width: 260px;
-    background: #f7fafc;
-    border-radius: 14px;
-    padding: 16px;
-    box-shadow: 0 4px 12px rgba(160, 174, 192, 0.35);
-}
-
-.item-card {
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.item-image {
-    width: 180px;
-    height: 180px;
-    object-fit: contain;
-    margin: 8px auto;
-    display: block;
-    transition: opacity 0.3s ease;
-}
-
-.item-image.fade-out {
-    opacity: 0;
-}
-
-.item-image.fade-in {
-    opacity: 1;
-}
-
-.item-name {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #2d3748;
-}
-
-.score-card {
-    text-align: center;
-}
-
-.score-value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #2f855a;
-    margin: 10px 0;
-}
-
-.game-stats {
-    margin-top: 6px;
-    font-size: 0.85rem;
-    color: #4a5568;
-}
-
-/* Feedback */
-
-.feedback {
-    min-height: 28px;
-    margin-bottom: 16px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center;
-}
-
-.feedback.correct {
-    color: #2f855a;
-    animation: pulse-green 0.3s;
-}
-
-.feedback.wrong {
-    color: #e53e3e;
-    animation: pulse-red 0.3s;
-}
-
-@keyframes pulse-green {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
-}
-
-@keyframes pulse-red {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.08); }
-    100% { transform: scale(1); }
-}
-
-/* Bins */
-
-.bin-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 14px;
-    margin-bottom: 18px;
-}
-
-.bin-btn {
-    background: #ffffff;
-    border-radius: 14px;
-    border: 1px solid #e2e8f0;
-    padding: 10px;
-    cursor: pointer;
-    text-align: center;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-    box-shadow: 0 3px 10px rgba(148, 163, 184, 0.3);
-}
-
-.bin-btn:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 8px 18px rgba(99, 179, 237, 0.45);
-    border-color: #63b3ed;
-}
-
-.bin-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-.bin-icon {
-    width: 60px;
-    height: 70px;
-    object-fit: contain;
-    margin-bottom: 4px;
-}
-
-.bin-label {
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
-/* Instructions */
-
-.instructions {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #e2e8f0;
-}
-
-.instructions h3 {
-    font-size: 1rem;
-    margin-bottom: 8px;
-    color: #2d3748;
-}
-
-.bin-info {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-    font-size: 0.85rem;
-}
-
-.bin-info-item {
-    padding: 6px 8px;
-    border-radius: 8px;
-}
-
-.bin-info-item.yellow {
-    background: #fefcbf;
-}
-
-.bin-info-item.red {
-    background: #fed7d7;
-}
-
-.bin-info-item.white {
-    background: #edf2f7;
-}
-
-.bin-info-item.blue {
-    background: #bee3f8;
-}
-
-.bin-info-item.green {
-    background: #c6f6d5;
-}
-
-/* Modal */
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20;
-}
-
-.modal.hidden {
-    display: none;
-}
-
-.modal-content {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px 20px;
-    width: 90%;
-    max-width: 420px;
-    text-align: center;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-}
-
-.modal-content h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #1a365d;
-}
-
-.modal-content p {
-    font-size: 0.95rem;
-    color: #4a5568;
-    margin: 4px 0;
-}
-
-.primary-btn {
-    margin-top: 12px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    border: none;
-    background: linear-gradient(135deg, #3182ce, #2b6cb0);
-    color: #ffffff;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    box-shadow: 0 6px 14px rgba(49, 130, 206, 0.5);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.primary-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px rgba(49, 130, 206, 0.7);
-}
-
-/* Responsive */
-
-@media (max-width: 640px) {
-    .title {
-        font-size: 1.5rem;
+// --- Update Score & Stats (score can go negative) ---
+function updateScore(isCorrect) {
+    if (isCorrect) {
+        score++;
+        correctCount++;
+    } else {
+        score--; // allow negative score
+        wrongCount++;
     }
-    .timer-box {
-        width: 100%;
-        align-items: center;
-    }
-    .timer-value {
-        font-size: 1.3rem;
-    }
+
+    scoreDisplay.textContent = score;
+
+    const total = correctCount + wrongCount;
+    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+    gameStats.textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 }
+
+// --- Smoothly Load Next Item ---
+function loadNextItem() {
+    if (!items.length) return;
+
+    const randomIndex = Math.floor(Math.random() * items.length);
+    const nextItem = items[randomIndex];
+    currentItem = nextItem;
+
+    // Smooth fade-out and fade-in effect
+    itemImage.classList.add("fade-out");
+    setTimeout(() => {
+        itemImage.src = currentItem.image;
+        itemName.textContent = currentItem.name;
+        itemImage.onload = () => {
+            itemImage.classList.remove("fade-out");
+            itemImage.classList.add("fade-in");
+            setTimeout(() => itemImage.classList.remove("fade-in"), 200);
+        };
+    }, 150);
+}
+
+// --- Handle Bin Click ---
+function handleBinClick(binName) {
+    if (!gameActive || timeLeft <= 0 || !currentItem) return;
+
+    const isCorrect = (binName === currentItem.bin);
+
+    // Feedback styling
+    feedback.classList.remove("correct", "wrong");
+    if (isCorrect) {
+        feedback.textContent = "✔ Correct segregation!";
+        feedback.classList.add("correct");
+    } else {
+        feedback.textContent = `✖ Wrong bin. Correct bin: ${currentItem.bin}`;
+        feedback.classList.add("wrong");
+    }
+
+    updateScore(isCorrect);
+    loadNextItem();
+}
+
+// --- Attach Event Listeners to Bins ---
+function setupBinButtons() {
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const selectedBin = btn.dataset.bin;
+            handleBinClick(selectedBin);
+        });
+    });
+}
+
+// --- Start Game ---
+function startGame() {
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    scoreDisplay.textContent = score;
+    gameStats.textContent = "Correct: 0 | Wrong: 0 | Accuracy: 0%";
+    feedback.textContent = "";
+    gameActive = true;
+
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+    });
+
+    gameOverModal.classList.add("hidden");
+
+    loadNextItem();
+    startTimer();
+}
+
+// --- Load Items (from items.json with fallback) ---
+function loadItems() {
+    fetch("items.json")
+        .then(res => res.json())
+        .then(data => {
+            items = data;
+            startGame();
+        })
+        .catch(err => {
+            console.error("Error loading items.json, using fallback items.", err);
+            // Fallback items in case JSON fails
+            items = [
+                { name: "Used syringe with needle", image: "images/syringe_needle.png", bin: "White" },
+                { name: "IV set", image: "images/iv_set.png", bin: "Red" },
+                { name: "Blood bag (used)", image: "images/blood_bag.png", bin: "Yellow" },
+                { name: "Soiled gauze with blood", image: "images/gauze_blood.png", bin: "Yellow" },
+                { name: "Broken glass vial", image: "images/broken_vial.png", bin: "Blue" },
+                { name: "Scalpel blade", image: "images/scalpel_blade.png", bin: "White" },
+                { name: "Face mask (used)", image: "images/used_mask.png", bin: "Yellow" },
+                { name: "Catheter tubing", image: "images/catheter_tube.png", bin: "Red" },
+                { name: "Food leftovers", image: "images/food_leftovers.png", bin: "Green" },
+                { name: "Paper wrapper (clean)", image: "images/paper_wrapper.png", bin: "Green" },
+                { name: "Ampoule (unbroken)", image: "images/ampoule.png", bin: "Blue" },
+                { name: "Needle cutter sharps container", image: "images/sharps_box.png", bin: "White" }
+            ];
+            startGame();
+        });
+}
+
+// --- Play Again Button ---
+playAgainBtn.addEventListener("click", () => {
+    clearInterval(timerInterval);
+    timeLeft = GAME_DURATION;
+    updateTimerUI();
+    startGame();
+});
+
+// --- Initialize on DOM Ready ---
+document.addEventListener("DOMContentLoaded", () => {
+    setupBinButtons();
+    updateTimerUI();
+    loadItems();
+});
