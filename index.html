@@ -13,26 +13,35 @@
         Click the correct bin for each biomedical waste item. Learn correct segregation and improve your score!
     </p>
 
-    <!-- Progress -->
-    <div class="progress-container">
-        <div class="progress-bar">
-            <div id="progressFill"></div>
+    <!-- Status Bar: Timer + Progress -->
+    <div class="status-bar">
+        <div class="timer-box">
+            <span class="timer-label">Time Left</span>
+            <span id="timerValue" class="timer-value">01:00</span>
         </div>
-        <div class="progress-text">Progress</div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill"></div>
+            </div>
+            <div class="progress-text">Game Time</div>
+        </div>
     </div>
 
     <!-- Cards -->
     <div class="cards-container">
-        <div class="card item-card">
+        <div class="card item-card" id="itemCard">
             <h2>Current Item</h2>
             <img id="itemImage" class="item-image" alt="Item">
-            <p id="itemName"></p>
+            <p id="itemName" class="item-name"></p>
         </div>
 
         <div class="card score-card">
             <h2>Score</h2>
-            <p id="score">0</p>
-            <div id="gameStats" style="margin-top: 10px; font-size: 0.9rem; color: #718096;"></div>
+            <p id="score" class="score-value">0</p>
+            <div id="gameStats" class="game-stats">
+                Correct: 0 | Wrong: 0 | Accuracy: 0%
+            </div>
         </div>
     </div>
 
@@ -43,31 +52,31 @@
     <div class="bin-container">
         <button class="bin-btn" data-bin="Yellow">
             <img src="images/yellowbin.jpg" class="bin-icon" alt="Yellow bin">
-            <div>Yellow</div>
+            <div class="bin-label">Yellow</div>
             <small>Infectious / anatomical waste</small>
         </button>
 
         <button class="bin-btn" data-bin="Red">
             <img src="images/redbin.jpg" class="bin-icon" alt="Red bin">
-            <div>Red</div>
+            <div class="bin-label">Red</div>
             <small>Contaminated plastics</small>
         </button>
 
         <button class="bin-btn" data-bin="White">
             <img src="images/translucentbin.png" class="bin-icon" alt="White bin">
-            <div>White</div>
+            <div class="bin-label">White</div>
             <small>Sharps (needles, blades)</small>
         </button>
 
         <button class="bin-btn" data-bin="Blue">
             <img src="images/bluebin.png" class="bin-icon" alt="Blue bin">
-            <div>Blue</div>
+            <div class="bin-label">Blue</div>
             <small>Glassware & implants</small>
         </button>
 
         <button class="bin-btn" data-bin="Green">
             <img src="images/greenbin.png" class="bin-icon" alt="Green bin">
-            <div>Green</div>
+            <div class="bin-label">Green</div>
             <small>General non-infectious waste</small>
         </button>
     </div>
@@ -92,6 +101,16 @@
                 <strong>Green Bin:</strong> General non-infectious waste like paper/food (as per hospital segregation policy).
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Game Over Modal -->
+<div id="gameOverModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Time's Up!</h2>
+        <p id="finalScoreText"></p>
+        <p id="finalStatsText"></p>
+        <button id="playAgainBtn" class="primary-btn">Play Again</button>
     </div>
 </div>
 
