@@ -1,439 +1,360 @@
-// Enhanced Biomedical Waste Sorting Game JavaScript
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
 
-// Game state
-let itemsData = {};
-let itemNames = [];
-let currentItemName = null;
-let score = 0;
-let questionsAnswered = 0;
-let correctAnswers = 0;
-let streak = 0;
-let maxStreak = 0;
-const totalQuestions = 20;
+body {
+    background: linear-gradient(135deg, #f7fafc, #e2e8f0);
+    color: #1a202c;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+}
 
-// DOM elements cache
-const domElements = {
-    itemImage: document.getElementById('itemImage'),
-    itemName: document.getElementById('itemName'),
-    score: document.getElementById('score'),
-    progressFill: document.getElementById('progressFill'),
-    feedback: document.getElementById('feedback'),
-    binButtons: document.querySelectorAll('.bin-btn')
-};
+.container {
+    width: 100%;
+    max-width: 1100px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+    padding: 24px;
+}
 
-// Game configuration
-const config = {
-    points: {
-        correct: 10,
-        incorrect: -5,
-        streakBonus: 5
-    },
-    timing: {
-        feedbackDelay: 1200,
-        newRoundDelay: 800
+.title {
+    text-align: center;
+    font-size: 1.9rem;
+    margin-bottom: 8px;
+    color: #1a365d;
+}
+
+.subtitle {
+    text-align: center;
+    color: #4a5568;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* Status Bar: Timer + Progress */
+
+.status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.timer-box {
+    background: #edf2f7;
+    border-radius: 12px;
+    padding: 10px 16px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.timer-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #4a5568;
+}
+
+.timer-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2b6cb0;
+    margin-top: 2px;
+}
+
+/* Progress */
+
+.progress-container {
+    flex: 1;
+    min-width: 200px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+#progressFill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #48bb78, #ed8936, #e53e3e);
+    transition: width 0.25s ease-out;
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: #718096;
+}
+
+/* Cards */
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.card {
+    flex: 1;
+    min-width: 260px;
+    background: #f7fafc;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(160, 174, 192, 0.35);
+}
+
+.item-card {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.item-image {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    margin: 8px auto;
+    display: block;
+    transition: opacity 0.3s ease;
+}
+
+.item-image.fade-out {
+    opacity: 0;
+}
+
+.item-image.fade-in {
+    opacity: 1;
+}
+
+.item-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.score-card {
+    text-align: center;
+}
+
+.score-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #2f855a;
+    margin: 10px 0;
+}
+
+.game-stats {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: #4a5568;
+}
+
+/* Feedback */
+
+.feedback {
+    min-height: 28px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.feedback.correct {
+    color: #2f855a;
+    animation: pulse-green 0.3s;
+}
+
+.feedback.wrong {
+    color: #e53e3e;
+    animation: pulse-red 0.3s;
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+
+/* Bins */
+
+.bin-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.bin-btn {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    box-shadow: 0 3px 10px rgba(148, 163, 184, 0.3);
+}
+
+.bin-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 18px rgba(99, 179, 237, 0.45);
+    border-color: #63b3ed;
+}
+
+.bin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.bin-icon {
+    width: 60px;
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: 4px;
+}
+
+.bin-label {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+/* Instructions */
+
+.instructions {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.instructions h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: #2d3748;
+}
+
+.bin-info {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.bin-info-item {
+    padding: 6px 8px;
+    border-radius: 8px;
+}
+
+.bin-info-item.yellow {
+    background: #fefcbf;
+}
+
+.bin-info-item.red {
+    background: #fed7d7;
+}
+
+.bin-info-item.white {
+    background: #edf2f7;
+}
+
+.bin-info-item.blue {
+    background: #bee3f8;
+}
+
+.bin-info-item.green {
+    background: #c6f6d5;
+}
+
+/* Modal */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #1a365d;
+}
+
+.modal-content p {
+    font-size: 0.95rem;
+    color: #4a5568;
+    margin: 4px 0;
+}
+
+.primary-btn {
+    margin-top: 12px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #3182ce, #2b6cb0);
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 6px 14px rgba(49, 130, 206, 0.5);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(49, 130, 206, 0.7);
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+    .title {
+        font-size: 1.5rem;
     }
-};
-
-// Load items.json then start game
-document.addEventListener("DOMContentLoaded", () => {
-    initializeGame();
-});
-
-async function initializeGame() {
-    try {
-        showLoadingState(true);
-        
-        const response = await fetch("items.json");
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        itemsData = await response.json();
-        itemNames = Object.keys(itemsData);
-        
-        if (itemNames.length === 0) {
-            throw new Error("No items found in items.json");
-        }
-        
-        attachBinHandlers();
-        resetGame();
-        updateGameStats();
-        
-    } catch (error) {
-        console.error("Error loading items.json", error);
-        showError("Unable to load game data. Please check if items.json exists and contains valid data.");
-    } finally {
-        showLoadingState(false);
+    .timer-box {
+        width: 100%;
+        align-items: center;
     }
-}
-
-// Attach click listeners to each bin button with enhanced feedback
-function attachBinHandlers() {
-    domElements.binButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (questionsAnswered >= totalQuestions) return;
-            
-            const bin = btn.getAttribute("data-bin");
-            handleAnswer(bin);
-            
-            // Visual feedback for button press
-            animateButtonPress(btn);
-        });
-        
-        // Keyboard navigation support
-        btn.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                btn.click();
-            }
-        });
-    });
-}
-
-// Start a new round with a random item
-function newRound() {
-    if (itemNames.length === 0) {
-        showError("No items available for the game.");
-        return;
-    }
-
-    // Ensure we don't repeat the same item consecutively
-    let randomIndex;
-    do {
-        randomIndex = Math.floor(Math.random() * itemNames.length);
-    } while (itemNames[randomIndex] === currentItemName && itemNames.length > 1);
-    
-    currentItemName = itemNames[randomIndex];
-    const item = itemsData[currentItemName];
-
-    // Update DOM with new item
-    domElements.itemImage.src = item.image;
-    domElements.itemImage.alt = currentItemName;
-    domElements.itemName.textContent = currentItemName;
-
-    // Preload next image for better performance
-    preloadNextImage();
-
-    // Clear feedback and enable buttons
-    clearFeedback();
-    enableBinButtons(true);
-    
-    // Add subtle animation to new item
-    animateNewItem();
-}
-
-// Preload next image for smoother transitions
-function preloadNextImage() {
-    if (itemNames.length <= 1) return;
-    
-    const nextIndex = (itemNames.indexOf(currentItemName) + 1) % itemNames.length;
-    const nextItemName = itemNames[nextIndex];
-    const nextItem = itemsData[nextItemName];
-    
-    const preloadImage = new Image();
-    preloadImage.src = nextItem.image;
-}
-
-// Handle user selecting a bin
-function handleAnswer(selectedBin) {
-    if (!currentItemName || questionsAnswered >= totalQuestions) return;
-
-    const correctBin = itemsData[currentItemName].bin;
-    const isCorrect = (selectedBin === correctBin);
-
-    // Disable buttons during feedback to prevent multiple clicks
-    enableBinButtons(false);
-
-    // Update game state
-    updateGameState(isCorrect, correctBin);
-    updateScoreDisplay();
-    updateProgressBar();
-    showFeedback(isCorrect, correctBin);
-    updateGameStats();
-
-    // Move to next round or end game
-    setTimeout(() => {
-        if (questionsAnswered >= totalQuestions) {
-            endGame();
-        } else {
-            newRound();
-        }
-    }, config.timing.newRoundDelay);
-}
-
-// Update all game state variables
-function updateGameState(isCorrect, correctBin) {
-    if (isCorrect) {
-        score += config.points.correct;
-        correctAnswers++;
-        streak++;
-        
-        // Streak bonus
-        if (streak >= 3) {
-            const bonus = Math.floor(streak / 3) * config.points.streakBonus;
-            score += bonus;
-        }
-        
-        maxStreak = Math.max(maxStreak, streak);
-    } else {
-        score += config.points.incorrect;
-        if (score < 0) score = 0;
-        streak = 0;
-    }
-    
-    questionsAnswered++;
-}
-
-// Update score on screen with animation
-function updateScoreDisplay() {
-    const scoreElement = domElements.score;
-    const oldScore = parseInt(scoreElement.textContent);
-    const newScore = score;
-    
-    // Animate score change
-    animateScoreChange(oldScore, newScore, scoreElement);
-}
-
-// Animate score changing
-function animateScoreChange(oldScore, newScore, element) {
-    const duration = 500;
-    const startTime = performance.now();
-    const difference = newScore - oldScore;
-    
-    function updateScore(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for smooth animation
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentValue = oldScore + Math.floor(difference * easeOut);
-        
-        element.textContent = currentValue;
-        
-        // Add visual feedback for score changes
-        if (difference > 0) {
-            element.style.color = '#1C9C31';
-        } else if (difference < 0) {
-            element.style.color = '#E3342F';
-        }
-        
-        if (progress < 1) {
-            requestAnimationFrame(updateScore);
-        } else {
-            // Reset color after animation
-            setTimeout(() => {
-                element.style.color = '#1F5FD6';
-            }, 500);
-        }
-    }
-    
-    requestAnimationFrame(updateScore);
-}
-
-// Update progress bar with smooth animation
-function updateProgressBar() {
-    const percent = Math.min(100, (questionsAnswered / totalQuestions) * 100);
-    domElements.progressFill.style.width = percent + "%";
-    
-    // Add completion animation when full
-    if (percent >= 100) {
-        domElements.progressFill.style.animation = 'pulse 1s infinite';
-    }
-}
-
-// Show enhanced feedback with more information
-function showFeedback(isCorrect, correctBin) {
-    const fb = domElements.feedback;
-    
-    if (isCorrect) {
-        let feedbackText = `
-            <img src="images/check.png" class="result-icon" alt="Correct">
-            <span class="correct-text">Correct! +${config.points.correct} points</span>
-        `;
-        
-        // Add streak bonus message
-        if (streak >= 3) {
-            const bonus = Math.floor(streak / 3) * config.points.streakBonus;
-            feedbackText += `<div style="font-size: 0.9em; margin-top: 5px;">${streak} in a row! +${bonus} bonus</div>`;
-        }
-        
-        fb.innerHTML = feedbackText;
-        fb.className = 'feedback correct';
-    } else {
-        fb.innerHTML = `
-            <img src="images/cross.png" class="result-icon" alt="Wrong">
-            <span class="wrong-text">Incorrect! ${config.points.incorrect} points</span>
-            <div style="font-size: 0.9em; margin-top: 5px;">Correct bin: 
-                <span style="color: ${getBinColor(correctBin)}; font-weight: bold;">${correctBin}</span>
-            </div>
-        `;
-        fb.className = 'feedback incorrect';
-    }
-    
-    // Add animation
-    fb.style.animation = 'none';
-    setTimeout(() => {
-        fb.style.animation = 'pop 0.3s ease-out';
-    }, 10);
-}
-
-// Get color for bin type
-function getBinColor(bin) {
-    const colors = {
-        'Yellow': '#FFD600',
-        'Red': '#E3342F',
-        'White': '#718096',
-        'Blue': '#1F5FD6',
-        'Green': '#1C9C31'
-    };
-    return colors[bin] || '#718096';
-}
-
-// Clear feedback area
-function clearFeedback() {
-    domElements.feedback.innerHTML = '';
-    domElements.feedback.className = 'feedback';
-}
-
-// Enable or disable bin buttons
-function enableBinButtons(enabled) {
-    domElements.binButtons.forEach(btn => {
-        if (enabled) {
-            btn.removeAttribute('disabled');
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-        } else {
-            btn.setAttribute('disabled', 'true');
-            btn.style.opacity = '0.6';
-            btn.style.cursor = 'not-allowed';
-        }
-    });
-}
-
-// When totalQuestions reached - enhanced end game
-function endGame() {
-    const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
-    const performance = getPerformanceRating(accuracy);
-    
-    domElements.feedback.innerHTML = `
-        <div style="text-align: center;">
-            <h3 style="color: #1F5FD6; margin-bottom: 10px;">Game Completed! 🎉</h3>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #1C9C31; margin: 10px 0;">
-                Final Score: ${score}
-            </div>
-            <div style="margin: 5px 0;">Accuracy: ${accuracy}% (${correctAnswers}/${totalQuestions})</div>
-            <div style="margin: 5px 0;">Best Streak: ${maxStreak} in a row</div>
-            <div style="margin: 10px 0; font-weight: bold; color: ${performance.color};">
-                ${performance.message}
-            </div>
-            <button id="playAgainBtn" style="
-                background: #1F5FD6;
-                color: white;
-                border: none;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 1rem;
-                cursor: pointer;
-                margin-top: 15px;
-                transition: background 0.3s;
-            ">Play Again</button>
-        </div>
-    `;
-    
-    // Add play again button handler
-    document.getElementById('playAgainBtn').addEventListener('click', resetGame);
-    
-    // Celebrate completion
-    celebrateCompletion();
-}
-
-// Get performance rating based on accuracy
-function getPerformanceRating(accuracy) {
-    if (accuracy >= 90) return { message: "Expert Level! 🏆", color: "#FFD600" };
-    if (accuracy >= 80) return { message: "Great Job! 👍", color: "#1C9C31" };
-    if (accuracy >= 70) return { message: "Good Work! 👏", color: "#1F5FD6" };
-    if (accuracy >= 60) return { message: "Not Bad! 💪", color: "#F6AD55" };
-    return { message: "Keep Practicing! 📚", color: "#718096" };
-}
-
-// Reset game to initial state
-function resetGame() {
-    score = 0;
-    questionsAnswered = 0;
-    correctAnswers = 0;
-    streak = 0;
-    maxStreak = 0;
-    
-    // show 0 immediately
-    domElements.score.textContent = '0';
-    updateProgressBar();
-    clearFeedback();
-    enableBinButtons(true);
-    updateGameStats();
-    
-    newRound();
-}
-
-// Update game statistics display
-function updateGameStats() {
-    const statsElement = document.getElementById('gameStats');
-    if (statsElement) {
-        const accuracy = questionsAnswered > 0 ? Math.round((correctAnswers / questionsAnswered) * 100) : 0;
-        statsElement.innerHTML = `
-            <div>Streak: ${streak}</div>
-            <div>Accuracy: ${accuracy}%</div>
-        `;
+    .timer-value {
+        font-size: 1.3rem;
     }
 }
-
-// Animation functions
-function animateButtonPress(button) {
-    button.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
-}
-
-function animateNewItem() {
-    domElements.itemImage.style.opacity = '0.7';
-    domElements.itemImage.style.transform = 'scale(0.9)';
-    
-    setTimeout(() => {
-        domElements.itemImage.style.transition = 'all 0.3s ease';
-        domElements.itemImage.style.opacity = '1';
-        domElements.itemImage.style.transform = 'scale(1)';
-    }, 50);
-}
-
-function celebrateCompletion() {
-    domElements.feedback.style.animation = 'celebrate 0.6s ease-out';
-}
-
-// Utility functions
-function showLoadingState(show) {
-    const container = document.querySelector('.container');
-    if (show) {
-        container.classList.add('loading');
-    } else {
-        container.classList.remove('loading');
-    }
-}
-
-function showError(message) {
-    domElements.feedback.innerHTML = `
-        <span style="color: #E3342F; font-weight: bold;">
-            ⚠️ ${message}
-        </span>
-    `;
-}
-
-// Extra animations (for progress bar etc.)
-const extraStyle = document.createElement('style');
-extraStyle.textContent = `
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
-    }
-`;
-document.head.appendChild(extraStyle);
