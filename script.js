@@ -1,212 +1,357 @@
-// --- Configuration ---
-const GAME_DURATION = 60; // seconds
-
-// --- Game State ---
+// =======================================================
+// GLOBAL VARIABLES
+// =======================================================
 let items = [];
 let currentItem = null;
+
 let score = 0;
 let correctCount = 0;
 let wrongCount = 0;
-let timeLeft = GAME_DURATION;
+
+let timeLeft = 60;
+let totalTime = 60;
 let timerInterval = null;
-let gameActive = false;
 
-// --- DOM Elements ---
-const scoreDisplay = document.getElementById("score");
-const itemImage = document.getElementById("itemImage");
-const itemName = document.getElementById("itemName");
-const feedback = document.getElementById("feedback");
-const progressFill = document.getElementById("progressFill");
-const timerValue = document.getElementById("timerValue");
-const gameStats = document.getElementById("gameStats");
-const gameOverModal = document.getElementById("gameOverModal");
-const finalScoreText = document.getElementById("finalScoreText");
-const finalStatsText = document.getElementById("finalStatsText");
-const playAgainBtn = document.getElementById("playAgainBtn");
+let selectedDifficulty = null;
 
-// --- Utility: format time as MM:SS ---
-function formatTime(seconds) {
-    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
+// Game Link (for QR + certificate)
+const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
+
+
+// =======================================================
+// LOAD ITEMS
+// =======================================================
+async function loadItems() {
+    const response = await fetch("items.json");
+    items = await response.json();
 }
 
-// --- Update Timer UI ---
-function updateTimerUI() {
-    timerValue.textContent = formatTime(timeLeft);
-    const percent = (timeLeft / GAME_DURATION) * 100;
-    progressFill.style.width = `${percent}%`;
-}
 
-// --- Start Timer ---
-function startTimer() {
-    timeLeft = GAME_DURATION;
-    updateTimerUI();
+// =======================================================
+// START SCREEN LOGIC
+// =======================================================
+const diffCards = document.querySelectorAll(".difficulty-card");
+const startBtn = document.getElementById("startGameBtn");
 
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerUI();
+diffCards.forEach(card => {
+    card.addEventListener("click", () => {
+        diffCards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
 
-        if (timeLeft <= 0) {
-            timeLeft = 0;
-            updateTimerUI();
-            clearInterval(timerInterval);
-            endGame();
-        }
-    }, 1000);
-}
+        selectedDifficulty = card.getAttribute("data-level");
 
-// --- End Game ---
-function endGame() {
-    gameActive = false;
-
-    // Disable buttons
-    document.querySelectorAll(".bin-btn").forEach(btn => {
-        btn.disabled = true;
+        startBtn.disabled = false;
+        startBtn.classList.remove("disabled");
     });
+});
 
-    const totalAttempts = correctCount + wrongCount;
-    const accuracy = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
-
-    feedback.textContent = "⏳ Time's up! Great effort.";
-    feedback.classList.remove("correct", "wrong");
-
-    finalScoreText.textContent = `Final Score: ${score}`;
-    finalStatsText.textContent =
-        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-
-    gameOverModal.classList.remove("hidden");
-}
-
-// --- Update Score & Stats (score can go negative) ---
-function updateScore(isCorrect) {
-    if (isCorrect) {
-        score++;
-        correctCount++;
-    } else {
-        score--; // allow negative score
-        wrongCount++;
-    }
-
-    scoreDisplay.textContent = score;
-
-    const total = correctCount + wrongCount;
-    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-    gameStats.textContent =
-        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-}
-
-// --- Smoothly Load Next Item ---
-function loadNextItem() {
-    if (!items.length) return;
-
-    const randomIndex = Math.floor(Math.random() * items.length);
-    const nextItem = items[randomIndex];
-    currentItem = nextItem;
-
-    // Smooth fade-out and fade-in effect
-    itemImage.classList.add("fade-out");
-    setTimeout(() => {
-        itemImage.src = currentItem.image;
-        itemName.textContent = currentItem.name;
-        itemImage.onload = () => {
-            itemImage.classList.remove("fade-out");
-            itemImage.classList.add("fade-in");
-            setTimeout(() => itemImage.classList.remove("fade-in"), 200);
-        };
-    }, 150);
-}
-
-// --- Handle Bin Click ---
-function handleBinClick(binName) {
-    if (!gameActive || timeLeft <= 0 || !currentItem) return;
-
-    const isCorrect = (binName === currentItem.bin);
-
-    // Feedback styling
-    feedback.classList.remove("correct", "wrong");
-    if (isCorrect) {
-        feedback.textContent = "✔ Correct segregation!";
-        feedback.classList.add("correct");
-    } else {
-        feedback.textContent = `✖ Wrong bin. Correct bin: ${currentItem.bin}`;
-        feedback.classList.add("wrong");
-    }
-
-    updateScore(isCorrect);
-    loadNextItem();
-}
-
-// --- Attach Event Listeners to Bins ---
-function setupBinButtons() {
-    document.querySelectorAll(".bin-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const selectedBin = btn.dataset.bin;
-            handleBinClick(selectedBin);
-        });
-    });
-}
-
-// --- Start Game ---
-function startGame() {
-    score = 0;
-    correctCount = 0;
-    wrongCount = 0;
-    scoreDisplay.textContent = score;
-    gameStats.textContent = "Correct: 0 | Wrong: 0 | Accuracy: 0%";
-    feedback.textContent = "";
-    gameActive = true;
-
-    document.querySelectorAll(".bin-btn").forEach(btn => {
-        btn.disabled = false;
-    });
-
-    gameOverModal.classList.add("hidden");
-
-    loadNextItem();
-    startTimer();
-}
-
-// --- Load Items (from items.json with fallback) ---
-function loadItems() {
-    fetch("items.json")
-        .then(res => res.json())
-        .then(data => {
-            items = data;
-            startGame();
-        })
-        .catch(err => {
-            console.error("Error loading items.json, using fallback items.", err);
-            // Fallback items in case JSON fails
-            items = [
-                { name: "Used syringe with needle", image: "images/syringe_needle.png", bin: "White" },
-                { name: "IV set", image: "images/iv_set.png", bin: "Red" },
-                { name: "Blood bag (used)", image: "images/blood_bag.png", bin: "Yellow" },
-                { name: "Soiled gauze with blood", image: "images/gauze_blood.png", bin: "Yellow" },
-                { name: "Broken glass vial", image: "images/broken_vial.png", bin: "Blue" },
-                { name: "Scalpel blade", image: "images/scalpel_blade.png", bin: "White" },
-                { name: "Face mask (used)", image: "images/used_mask.png", bin: "Yellow" },
-                { name: "Catheter tubing", image: "images/catheter_tube.png", bin: "Red" },
-                { name: "Food leftovers", image: "images/food_leftovers.png", bin: "Green" },
-                { name: "Paper wrapper (clean)", image: "images/paper_wrapper.png", bin: "Green" },
-                { name: "Ampoule (unbroken)", image: "images/ampoule.png", bin: "Blue" },
-                { name: "Needle cutter sharps container", image: "images/sharps_box.png", bin: "White" }
-            ];
-            startGame();
-        });
-}
-
-// --- Play Again Button ---
-playAgainBtn.addEventListener("click", () => {
-    clearInterval(timerInterval);
-    timeLeft = GAME_DURATION;
-    updateTimerUI();
+startBtn.addEventListener("click", () => {
     startGame();
 });
 
-// --- Initialize on DOM Ready ---
-document.addEventListener("DOMContentLoaded", () => {
-    setupBinButtons();
+
+// =======================================================
+// DIFFICULTY VALUES
+// =======================================================
+function applyDifficulty(level) {
+    if (level === "easy") totalTime = 90;
+    if (level === "medium") totalTime = 60;
+    if (level === "hard") totalTime = 30;
+
+    timeLeft = totalTime;
+
+    gtag("event", "difficulty_selected", {
+        level: selectedDifficulty,
+        duration: totalTime
+    });
+}
+
+
+// =======================================================
+// START GAME
+// =======================================================
+function startGame() {
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("gameContainer").classList.remove("hidden");
+
+    applyDifficulty(selectedDifficulty);
+
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+
+    updateStats();
     updateTimerUI();
-    loadItems();
+
+    gtag("event", "game_started", {
+        difficulty: selectedDifficulty
+    });
+
+    loadNextItem();
+
+    // Timer
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerUI();
+        if (timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+
+// =======================================================
+// NEXT ITEM
+// =======================================================
+function loadNextItem() {
+    currentItem = items[Math.floor(Math.random() * items.length)];
+
+    fadeSwap("itemImage", currentItem.image);
+    fadeSwap("itemName", currentItem.name);
+}
+
+
+// fade animation for swapping item
+function fadeSwap(id, newValue) {
+    const elem = document.getElementById(id);
+    elem.classList.add("fade-out");
+
+    setTimeout(() => {
+        if (id === "itemImage") elem.src = newValue;
+        else elem.textContent = newValue;
+
+        elem.classList.remove("fade-out");
+        elem.classList.add("fade-in");
+
+        setTimeout(() => elem.classList.remove("fade-in"), 250);
+    }, 200);
+}
+
+
+// =======================================================
+// BIN CLICK HANDLING
+// =======================================================
+document.querySelectorAll(".bin-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        let chosen = btn.dataset.bin;
+
+        if (chosen === currentItem.bin) {
+            score++;
+            correctCount++;
+
+            showFeedback("Correct segregation!", true);
+
+            gtag("event", "correct_answer", {
+                item: currentItem.name,
+                bin: currentItem.bin,
+                difficulty: selectedDifficulty
+            });
+
+        } else {
+            score--;
+            wrongCount++;
+
+            showFeedback(`Wrong! Correct bin: ${currentItem.bin}`, false);
+
+            gtag("event", "wrong_answer", {
+                item: currentItem.name,
+                chosen_bin: chosen,
+                correct_bin: currentItem.bin,
+                difficulty: selectedDifficulty
+            });
+        }
+
+        updateStats();
+        loadNextItem();
+    });
 });
+
+
+// =======================================================
+// UPDATE TIMER
+// =======================================================
+function updateTimerUI() {
+    const tv = document.getElementById("timerValue");
+    tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
+
+    document.getElementById("progressFill").style.width =
+        (timeLeft / totalTime * 100) + "%";
+}
+
+
+// =======================================================
+// UPDATE SCORE PANEL
+// =======================================================
+function updateStats() {
+    let accuracy =
+        correctCount + wrongCount === 0
+            ? 0
+            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+
+    document.getElementById("score").textContent = score;
+
+    document.getElementById("gameStats").textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+}
+
+
+// =======================================================
+// FEEDBACK
+// =======================================================
+function showFeedback(text, good) {
+    const fb = document.getElementById("feedback");
+    fb.textContent = text;
+
+    fb.className = "feedback " + (good ? "correct" : "wrong");
+
+    setTimeout(() => {
+        fb.className = "feedback";
+    }, 1500);
+}
+
+
+// =======================================================
+// COLLAPSIBLE INSTRUCTIONS
+// =======================================================
+document.getElementById("toggleInstructions").addEventListener("click", () => {
+    const panel = document.getElementById("instructionsPanel");
+    const btn = document.getElementById("toggleInstructions");
+
+    if (panel.classList.contains("hidden")) {
+        panel.classList.remove("hidden");
+        btn.textContent = "▲ Hide Instructions";
+    } else {
+        panel.classList.add("hidden");
+        btn.textContent = "▼ Show Instructions";
+    }
+});
+
+
+// =======================================================
+// END GAME
+// =======================================================
+function endGame() {
+    clearInterval(timerInterval);
+
+    const modal = document.getElementById("gameOverModal");
+
+    let accuracy =
+        correctCount + wrongCount === 0
+            ? 0
+            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+
+    gtag("event", "game_finished", {
+        score: score,
+        correct: correctCount,
+        wrong: wrongCount,
+        accuracy: accuracy,
+        difficulty: selectedDifficulty
+    });
+
+    document.getElementById("finalScoreText").textContent = `Your Score: ${score}`;
+    document.getElementById("finalStatsText").textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+
+    modal.classList.remove("hidden");
+}
+
+
+// =======================================================
+// PLAY AGAIN
+// =======================================================
+document.getElementById("playAgainBtn").addEventListener("click", () => {
+    document.getElementById("gameOverModal").classList.add("hidden");
+    startGame();
+});
+
+
+// =======================================================
+// CERTIFICATE GENERATION
+// =======================================================
+document.getElementById("downloadCertBtn").addEventListener("click", () => {
+    generateCertificate();
+});
+
+function generateCertificate() {
+
+    let playerName = prompt("Enter your Name:");
+    if (!playerName) playerName = "Anonymous";
+
+    let org = prompt("Enter your Organization:");
+    if (!org) org = "Not Specified";
+
+    let accuracy =
+        correctCount + wrongCount === 0
+            ? 0
+            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+
+    // Random certificate ID
+    let certID = "BMW-" + Math.floor(Math.random() * 999999);
+
+    // Certificate container
+    let certWindow = window.open("", "_blank");
+
+    certWindow.document.write(`
+        <html>
+        <head>
+        <title>Certificate</title>
+        <style>
+            body {
+                font-family: Arial;
+                text-align: center;
+                padding: 20px;
+            }
+            .cert-box {
+                border: 4px solid #2b6cb0;
+                padding: 20px;
+                border-radius: 16px;
+            }
+            h2 { color:#2b6cb0; }
+            .credit {
+                margin-top: 12px;
+                color:#555;
+                font-size: 0.8rem;
+            }
+        </style>
+        </head>
+        <body>
+        <div class="cert-box">
+            <h2>Certificate of Completion</h2>
+            <p>This is to certify that</p>
+            <h3><strong>${playerName}</strong></h3>
+            <p>from <strong>${org}</strong></p>
+            <p> has successfully completed the <br>
+                <strong>Biomedical Waste Segregation Game</strong></p>
+
+            <p><br><strong>Score:</strong> ${score}</p>
+            <p><strong>Accuracy:</strong> ${accuracy}%</p>
+            <p><strong>Difficulty:</strong> ${selectedDifficulty.toUpperCase()}</p>
+            <p><strong>Certificate ID:</strong> ${certID}</p>
+
+            <div id="qrcode"></div>
+
+            <p style="margin-top:10px;font-size:0.8rem;">Scan to Play: ${GAME_URL}</p>
+
+            <p class="credit">Designed & Developed by <strong>Gokul T.B</strong></p>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        <script>
+            new QRCode(document.getElementById("qrcode"), "${GAME_URL}");
+        </script>
+        </body>
+        </html>
+    `);
+
+    certWindow.document.close();
+
+    gtag("event", "certificate_generated", {
+        difficulty: selectedDifficulty,
+        score: score,
+        accuracy: accuracy
+    });
+}
+
+
+// =======================================================
+// INIT
+// =======================================================
+loadItems();
