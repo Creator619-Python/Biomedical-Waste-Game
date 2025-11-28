@@ -12,13 +12,8 @@ let timeLeft = 60;
 let totalTime = 60;
 let timerInterval = null;
 
-let selectedDifficulty = null;
+let selectedDifficulty = "medium"; // default if no start screen exists
 
-// references for difficulty UI (if present)
-let diffCards = [];
-let startBtn = null;
-
-// Game Link (for QR + certificate)
 const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
 
@@ -32,15 +27,15 @@ async function loadItems() {
 
 
 // =======================================================
-// INITIALISE GAME (detect UI + start appropriately)
+// INITIALISE GAME
 // =======================================================
 async function initGame() {
     await loadItems();
 
-    diffCards = document.querySelectorAll(".difficulty-card");
-    startBtn = document.getElementById("startGameBtn");
+    const diffCards = document.querySelectorAll(".difficulty-card");
+    const startBtn = document.getElementById("startGameBtn");
 
-    // CASE 1: Difficulty screen + start button exist
+    // CASE 1: Difficulty UI exists
     if (diffCards.length && startBtn) {
         diffCards.forEach(card => {
             card.addEventListener("click", () => {
@@ -54,34 +49,24 @@ async function initGame() {
             });
         });
 
-        startBtn.addEventListener("click", () => {
-            startGame();
-        });
+        startBtn.addEventListener("click", startGame);
     }
-    // CASE 2: No start screen in HTML → auto start with medium difficulty
+    // CASE 2: No difficulty screen → auto start
     else {
-        selectedDifficulty = "medium";
         startGame();
     }
 }
 
 
 // =======================================================
-// DIFFICULTY VALUES
+// APPLY DIFFICULTY
 // =======================================================
 function applyDifficulty(level) {
     if (level === "easy") totalTime = 90;
     else if (level === "hard") totalTime = 30;
-    else totalTime = 60; // default = medium
+    else totalTime = 60;
 
     timeLeft = totalTime;
-
-    if (typeof gtag === "function") {
-        gtag("event", "difficulty_selected", {
-            level: selectedDifficulty,
-            duration: totalTime
-        });
-    }
 }
 
 
@@ -89,17 +74,12 @@ function applyDifficulty(level) {
 // START GAME
 // =======================================================
 function startGame() {
-    // default if somehow still null
-    if (!selectedDifficulty) selectedDifficulty = "medium";
-
-    // hide start screen if present
     const startScreen = document.getElementById("startScreen");
-    if (startScreen) startScreen.classList.add("hidden");
-
     const gameContainer = document.getElementById("gameContainer");
+
+    if (startScreen) startScreen.classList.add("hidden");
     if (gameContainer) gameContainer.classList.remove("hidden");
 
-    // reset timer + score
     clearInterval(timerInterval);
     applyDifficulty(selectedDifficulty);
 
@@ -110,15 +90,8 @@ function startGame() {
     updateStats();
     updateTimerUI();
 
-    if (typeof gtag === "function") {
-        gtag("event", "game_started", {
-            difficulty: selectedDifficulty
-        });
-    }
-
     loadNextItem();
 
-    // Timer
     timerInterval = setInterval(() => {
         timeLeft--;
         updateTimerUI();
@@ -128,11 +101,9 @@ function startGame() {
 
 
 // =======================================================
-// NEXT ITEM
+// LOAD NEXT ITEM
 // =======================================================
 function loadNextItem() {
-    if (!items.length) return;
-
     currentItem = items[Math.floor(Math.random() * items.length)];
 
     fadeSwap("itemImage", currentItem.image);
@@ -140,7 +111,7 @@ function loadNextItem() {
 }
 
 
-// fade animation for swapping item
+// fade swap animation
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -164,38 +135,16 @@ function fadeSwap(id, newValue) {
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        if (!currentItem) return;
-
         let chosen = btn.dataset.bin;
 
         if (chosen === currentItem.bin) {
             score++;
             correctCount++;
-
             showFeedback("Correct segregation!", true);
-
-            if (typeof gtag === "function") {
-                gtag("event", "correct_answer", {
-                    item: currentItem.name,
-                    bin: currentItem.bin,
-                    difficulty: selectedDifficulty
-                });
-            }
-
         } else {
             score--;
             wrongCount++;
-
             showFeedback(`Wrong! Correct bin: ${currentItem.bin}`, false);
-
-            if (typeof gtag === "function") {
-                gtag("event", "wrong_answer", {
-                    item: currentItem.name,
-                    chosen_bin: chosen,
-                    correct_bin: currentItem.bin,
-                    difficulty: selectedDifficulty
-                });
-            }
         }
 
         updateStats();
@@ -205,38 +154,30 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 
 
 // =======================================================
-// UPDATE TIMER
+// TIMER UPDATE
 // =======================================================
 function updateTimerUI() {
     const tv = document.getElementById("timerValue");
-    if (!tv) return;
+    tv.textContent = `00:${timeLeft < 10 ? "0" + timeLeft : timeLeft}`;
 
-    tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
-
-    const pf = document.getElementById("progressFill");
-    if (pf) {
-        pf.style.width = (timeLeft / totalTime * 100) + "%";
-    }
+    document.getElementById("progressFill").style.width =
+        (timeLeft / totalTime * 100) + "%";
 }
 
 
 // =======================================================
-// UPDATE SCORE PANEL
+// SCORE + ACCURACY
 // =======================================================
 function updateStats() {
-    let accuracy =
+    const accuracy =
         correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
-    const scoreElem = document.getElementById("score");
-    if (scoreElem) scoreElem.textContent = score;
+    document.getElementById("score").textContent = score;
 
-    const statsElem = document.getElementById("gameStats");
-    if (statsElem) {
-        statsElem.textContent =
-            `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-    }
+    document.getElementById("gameStats").textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 }
 
 
@@ -245,36 +186,11 @@ function updateStats() {
 // =======================================================
 function showFeedback(text, good) {
     const fb = document.getElementById("feedback");
-    if (!fb) return;
-
     fb.textContent = text;
+
     fb.className = "feedback " + (good ? "correct" : "wrong");
 
-    setTimeout(() => {
-        fb.className = "feedback";
-    }, 1500);
-}
-
-
-// =======================================================
-// COLLAPSIBLE INSTRUCTIONS
-// =======================================================
-const toggleBtn = document.getElementById("toggleInstructions");
-if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-        const panel = document.getElementById("instructionsPanel");
-        const btn = document.getElementById("toggleInstructions");
-
-        if (!panel || !btn) return;
-
-        if (panel.classList.contains("hidden")) {
-            panel.classList.remove("hidden");
-            btn.textContent = "▲ Hide Instructions";
-        } else {
-            panel.classList.add("hidden");
-            btn.textContent = "▼ Show Instructions";
-        }
-    });
+    setTimeout(() => fb.className = "feedback", 1500);
 }
 
 
@@ -286,57 +202,34 @@ function endGame() {
 
     const modal = document.getElementById("gameOverModal");
 
-    let accuracy =
+    const accuracy =
         correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
-    if (typeof gtag === "function") {
-        gtag("event", "game_finished", {
-            score: score,
-            correct: correctCount,
-            wrong: wrongCount,
-            accuracy: accuracy,
-            difficulty: selectedDifficulty
-        });
-    }
+    document.getElementById("finalScoreText").textContent = `Your Score: ${score}`;
+    document.getElementById("finalStatsText").textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 
-    if (modal) {
-        const s = document.getElementById("finalScoreText");
-        const st = document.getElementById("finalStatsText");
-        if (s) s.textContent = `Your Score: ${score}`;
-        if (st) st.textContent =
-            `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-
-        modal.classList.remove("hidden");
-    }
+    modal.classList.remove("hidden");
 }
 
 
 // =======================================================
 // PLAY AGAIN
 // =======================================================
-const playAgainBtn = document.getElementById("playAgainBtn");
-if (playAgainBtn) {
-    playAgainBtn.addEventListener("click", () => {
-        const modal = document.getElementById("gameOverModal");
-        if (modal) modal.classList.add("hidden");
-        startGame();
-    });
-}
+document.getElementById("playAgainBtn").addEventListener("click", () => {
+    document.getElementById("gameOverModal").classList.add("hidden");
+    startGame();
+});
 
 
 // =======================================================
-// CERTIFICATE GENERATION
+// AUTO PDF CERTIFICATE
 // =======================================================
-const downloadCertBtn = document.getElementById("downloadCertBtn");
-if (downloadCertBtn) {
-    downloadCertBtn.addEventListener("click", () => {
-        generateCertificate();
-    });
-}
+document.getElementById("downloadCertBtn").addEventListener("click", generateCertificate);
 
-function generateCertificate() {
+async function generateCertificate() {
 
     let playerName = prompt("Enter your Name:");
     if (!playerName) playerName = "Anonymous";
@@ -344,78 +237,90 @@ function generateCertificate() {
     let org = prompt("Enter your Organization:");
     if (!org) org = "Not Specified";
 
-    let accuracy =
+    const accuracy =
         correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
-    // Random certificate ID
-    let certID = "BMW-" + Math.floor(Math.random() * 999999);
+    const certID = "BMW-" + Math.floor(100000 + Math.random() * 900000);
+    const certDate = new Date().toLocaleDateString();
 
-    // Certificate container
-    let certWindow = window.open("", "_blank");
+    // Load jsPDF + html2canvas
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
 
-    certWindow.document.write(`
-        <html>
-        <head>
-        <title>Certificate</title>
-        <style>
-            body {
-                font-family: Arial;
-                text-align: center;
-                padding: 20px;
-            }
-            .cert-box {
-                border: 4px solid #2b6cb0;
-                padding: 20px;
-                border-radius: 16px;
-            }
-            h2 { color:#2b6cb0; }
-            .credit {
-                margin-top: 12px;
-                color:#555;
-                font-size: 0.8rem;
-            }
-        </style>
-        </head>
-        <body>
-        <div class="cert-box">
-            <h2>Certificate of Completion</h2>
+    // Create certificate HTML
+    const certDiv = document.createElement("div");
+    certDiv.style.width = "800px";
+    certDiv.style.padding = "40px";
+    certDiv.style.textAlign = "center";
+    certDiv.style.fontFamily = "Arial";
+
+    certDiv.innerHTML = `
+        <div style="
+            border: 8px solid #2b6cb0;
+            padding: 30px;
+            border-radius: 12px;
+        ">
+            <h1 style="color:#2b6cb0;">Certificate of Completion</h1>
+
             <p>This is to certify that</p>
-            <h3><strong>${playerName}</strong></h3>
-            <p>from <strong>${org}</strong></p>
-            <p> has successfully completed the <br>
-                <strong>Biomedical Waste Segregation Game</strong></p>
+            <h2><strong>${playerName}</strong></h2>
 
-            <p><br><strong>Score:</strong> ${score}</p>
+            <p>from <strong>${org}</strong></p>
+
+            <p>has successfully completed the</p>
+
+            <h3><strong>Biomedical Waste Segregation Training Game</strong></h3>
+
+            <br>
+            <p><strong>Score:</strong> ${score}</p>
             <p><strong>Accuracy:</strong> ${accuracy}%</p>
             <p><strong>Difficulty:</strong> ${selectedDifficulty.toUpperCase()}</p>
+            <p><strong>Date:</strong> ${certDate}</p>
             <p><strong>Certificate ID:</strong> ${certID}</p>
 
-            <div id="qrcode"></div>
+            <div id="qr-area"></div>
 
-            <p style="margin-top:10px;font-size:0.8rem;">Scan to Play: ${GAME_URL}</p>
+            <p style="margin-top:12px;font-size:0.9rem;">
+                Scan to Play Again: ${GAME_URL}
+            </p>
 
-            <p class="credit">Designed & Developed by <strong>Gokul T.B</strong></p>
+            <p style="margin-top:16px;font-size:0.8rem;color:#444;">
+                Designed & Developed by <strong>Gokul T.B</strong>
+            </p>
         </div>
+    `;
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-        <script>
-            new QRCode(document.getElementById("qrcode"), "${GAME_URL}");
-        </script>
-        </body>
-        </html>
-    `);
+    // Add QR code
+    const qrDiv = certDiv.querySelector("#qr-area");
+    new QRCode(qrDiv, GAME_URL);
 
-    certWindow.document.close();
+    // Render image
+    const canvas = await html2canvas(certDiv);
+    const img = canvas.toDataURL("image/png");
 
-    if (typeof gtag === "function") {
-        gtag("event", "certificate_generated", {
-            difficulty: selectedDifficulty,
-            score: score,
-            accuracy: accuracy
-        });
-    }
+    // Create PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("landscape", "pt", "a4");
+
+    const width = pdf.internal.pageSize.getWidth();
+    const height = pdf.internal.pageSize.getHeight();
+
+    pdf.addImage(img, "PNG", 0, 0, width, height);
+
+    pdf.save("certificate.pdf");
+}
+
+
+// helper to load external libraries
+function loadScript(url) {
+    return new Promise(resolve => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.onload = resolve;
+        document.body.appendChild(script);
+    });
 }
 
 
