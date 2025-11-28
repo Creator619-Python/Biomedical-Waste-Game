@@ -5,15 +5,62 @@
     <title>Biomedical Waste Sorting Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="style.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-4DQYGRYMM7');
+    </script>
+
+    <!-- QR Code Generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-<div class="container">
-    <h1 class="title">Biomedical Waste Sorting Game</h1>
-    <p class="subtitle">
-        Click the correct bin for each biomedical waste item. Learn correct segregation and improve your score!
+
+<!-- ========= START SCREEN ========= -->
+<div id="startScreen" class="start-screen">
+
+    <h1 class="start-title">Biomedical Waste Sorting Game</h1>
+    <p class="start-subtitle">Select a difficulty level to begin</p>
+
+    <div class="difficulty-container">
+        <div class="difficulty-card" data-level="easy">
+            <h3>Easy</h3>
+            <p>🟢 90 seconds</p>
+            <small>Beginner mode</small>
+        </div>
+        <div class="difficulty-card" data-level="medium">
+            <h3>Medium</h3>
+            <p>🟡 60 seconds</p>
+            <small>Standard mode</small>
+        </div>
+        <div class="difficulty-card" data-level="hard">
+            <h3>Hard</h3>
+            <p>🔴 30 seconds</p>
+            <small>Expert mode</small>
+        </div>
+    </div>
+
+    <button id="startGameBtn" class="primary-btn disabled" disabled>
+        Start Game
+    </button>
+
+    <p class="analytics-note">
+        Note: This training game collects anonymous usage statistics (scores, accuracy, gameplay events).
+        No personal information is collected or stored. Names used in certificates stay on your device only.
     </p>
 
-    <!-- Status Bar: Timer + Progress -->
+    <div class="footer-credit">Designed & Developed by <strong>Gokul T.B</strong></div>
+</div>
+
+<!-- ========= MAIN GAME ========= -->
+<div id="gameContainer" class="container hidden">
+    <h1 class="title">Biomedical Waste Sorting Game</h1>
+    <p class="subtitle">Click the correct bin for each biomedical waste item.</p>
+
     <div class="status-bar">
         <div class="timer-box">
             <span class="timer-label">Time Left</span>
@@ -21,97 +68,69 @@
         </div>
 
         <div class="progress-container">
-            <div class="progress-bar">
-                <div id="progressFill"></div>
-            </div>
+            <div class="progress-bar"><div id="progressFill"></div></div>
             <div class="progress-text">Game Time</div>
         </div>
     </div>
 
-    <!-- Cards -->
     <div class="cards-container">
-        <div class="card item-card" id="itemCard">
+        <div class="card item-card">
             <h2>Current Item</h2>
-            <img id="itemImage" class="item-image" alt="Item">
-            <p id="itemName" class="item-name"></p>
+            <img id="itemImage" class="item-image fade-target" alt="Item">
+            <p id="itemName" class="item-name fade-target"></p>
         </div>
 
         <div class="card score-card">
             <h2>Score</h2>
             <p id="score" class="score-value">0</p>
-            <div id="gameStats" class="game-stats">
-                Correct: 0 | Wrong: 0 | Accuracy: 0%
-            </div>
+            <div id="gameStats" class="game-stats">Correct: 0 | Wrong: 0 | Accuracy: 0%</div>
         </div>
     </div>
 
-    <!-- Feedback -->
-    <div id="feedback" class="feedback"></div>
+    <div id="feedback" class="feedback fade-target"></div>
 
     <!-- Bins -->
     <div class="bin-container">
         <button class="bin-btn" data-bin="Yellow">
-            <img src="images/yellowbin.jpg" class="bin-icon" alt="Yellow bin">
-            <div class="bin-label">Yellow</div>
-            <small>Infectious / anatomical waste</small>
+            <img src="images/yellowbin.jpg" class="bin-icon"><div>Yellow</div>
         </button>
-
         <button class="bin-btn" data-bin="Red">
-            <img src="images/redbin.jpg" class="bin-icon" alt="Red bin">
-            <div class="bin-label">Red</div>
-            <small>Contaminated plastics</small>
+            <img src="images/redbin.jpg" class="bin-icon"><div>Red</div>
         </button>
-
         <button class="bin-btn" data-bin="White">
-            <img src="images/translucentbin.png" class="bin-icon" alt="White bin">
-            <div class="bin-label">White</div>
-            <small>Sharps (needles, blades)</small>
+            <img src="images/translucentbin.png" class="bin-icon"><div>White</div>
         </button>
-
         <button class="bin-btn" data-bin="Blue">
-            <img src="images/bluebin.png" class="bin-icon" alt="Blue bin">
-            <div class="bin-label">Blue</div>
-            <small>Glassware & implants</small>
+            <img src="images/bluebin.png" class="bin-icon"><div>Blue</div>
         </button>
-
         <button class="bin-btn" data-bin="Green">
-            <img src="images/greenbin.png" class="bin-icon" alt="Green bin">
-            <div class="bin-label">Green</div>
-            <small>General non-infectious waste</small>
+            <img src="images/greenbin.png" class="bin-icon"><div>Green</div>
         </button>
     </div>
 
-    <!-- Instructions -->
-    <div class="bin-info">
-    <div class="bin-info-item yellow">
-        <strong>Yellow Bin:</strong> Human anatomical waste, soiled dressings, blood bags, placenta, masks,
-        expired medications, cytotoxic drugs, and pharmaceutical waste.
+    <button id="toggleInstructions" class="secondary-btn">▼ Show Instructions</button>
+
+    <div id="instructionsPanel" class="instructions hidden fade">
+        <div class="bin-info">
+            <div class="bin-info-item yellow"><strong>Yellow:</strong> Infectious, anatomical, expired medicines</div>
+            <div class="bin-info-item red"><strong>Red:</strong> Contaminated plastics</div>
+            <div class="bin-info-item white"><strong>White:</strong> Sharps</div>
+            <div class="bin-info-item blue"><strong>Blue:</strong> Glassware</div>
+            <div class="bin-info-item green"><strong>Green:</strong> General waste</div>
+        </div>
     </div>
 
-    <div class="bin-info-item red">
-        <strong>Red Bin:</strong> Contaminated plastics like IV sets, catheters, urine bags, tubing, vacutainers.
-    </div>
-
-    <div class="bin-info-item white">
-        <strong>White (Translucent) Bin:</strong> Sharps such as needles, scalpels, blades, scissors.
-    </div>
-
-    <div class="bin-info-item blue">
-        <strong>Blue Bin:</strong> Glassware, vials, ampoules, metallic implants. No expired medicines.
-    </div>
-
-    <div class="bin-info-item green">
-        <strong>Green Bin:</strong> General non-infectious waste like paper and food waste.
-    </div>
+    <div class="footer-credit">Designed & Developed by <strong>Gokul T.B</strong></div>
 </div>
 
-<!-- Game Over Modal -->
+<!-- ========= GAME OVER MODAL ========= -->
 <div id="gameOverModal" class="modal hidden">
     <div class="modal-content">
         <h2>Time's Up!</h2>
         <p id="finalScoreText"></p>
         <p id="finalStatsText"></p>
-        <button id="playAgainBtn" class="primary-btn">Play Again</button>
+        <button id="downloadCertBtn" class="primary-btn">Download Certificate</button>
+        <button id="playAgainBtn" class="secondary-btn">Play Again</button>
     </div>
 </div>
 
