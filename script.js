@@ -14,6 +14,10 @@ let timerInterval = null;
 
 let selectedDifficulty = null;
 
+// references for difficulty UI (if present)
+let diffCards = [];
+let startBtn = null;
+
 // Game Link (for QR + certificate)
 const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
@@ -28,26 +32,38 @@ async function loadItems() {
 
 
 // =======================================================
-// START SCREEN LOGIC
+// INITIALISE GAME (detect UI + start appropriately)
 // =======================================================
-const diffCards = document.querySelectorAll(".difficulty-card");
-const startBtn = document.getElementById("startGameBtn");
+async function initGame() {
+    await loadItems();
 
-diffCards.forEach(card => {
-    card.addEventListener("click", () => {
-        diffCards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
+    diffCards = document.querySelectorAll(".difficulty-card");
+    startBtn = document.getElementById("startGameBtn");
 
-        selectedDifficulty = card.getAttribute("data-level");
+    // CASE 1: Difficulty screen + start button exist
+    if (diffCards.length && startBtn) {
+        diffCards.forEach(card => {
+            card.addEventListener("click", () => {
+                diffCards.forEach(c => c.classList.remove("selected"));
+                card.classList.add("selected");
 
-        startBtn.disabled = false;
-        startBtn.classList.remove("disabled");
-    });
-});
+                selectedDifficulty = card.getAttribute("data-level");
 
-startBtn.addEventListener("click", () => {
-    startGame();
-});
+                startBtn.disabled = false;
+                startBtn.classList.remove("disabled");
+            });
+        });
+
+        startBtn.addEventListener("click", () => {
+            startGame();
+        });
+    }
+    // CASE 2: No start screen in HTML → auto start with medium difficulty
+    else {
+        selectedDifficulty = "medium";
+        startGame();
+    }
+}
 
 
 // =======================================================
@@ -55,15 +71,17 @@ startBtn.addEventListener("click", () => {
 // =======================================================
 function applyDifficulty(level) {
     if (level === "easy") totalTime = 90;
-    if (level === "medium") totalTime = 60;
-    if (level === "hard") totalTime = 30;
+    else if (level === "hard") totalTime = 30;
+    else totalTime = 60; // default = medium
 
     timeLeft = totalTime;
 
-    gtag("event", "difficulty_selected", {
-        level: selectedDifficulty,
-        duration: totalTime
-    });
+    if (typeof gtag === "function") {
+        gtag("event", "difficulty_selected", {
+            level: selectedDifficulty,
+            duration: totalTime
+        });
+    }
 }
 
 
@@ -71,9 +89,18 @@ function applyDifficulty(level) {
 // START GAME
 // =======================================================
 function startGame() {
-    document.getElementById("startScreen").classList.add("hidden");
-    document.getElementById("gameContainer").classList.remove("hidden");
+    // default if somehow still null
+    if (!selectedDifficulty) selectedDifficulty = "medium";
 
+    // hide start screen if present
+    const startScreen = document.getElementById("startScreen");
+    if (startScreen) startScreen.classList.add("hidden");
+
+    const gameContainer = document.getElementById("gameContainer");
+    if (gameContainer) gameContainer.classList.remove("hidden");
+
+    // reset timer + score
+    clearInterval(timerInterval);
     applyDifficulty(selectedDifficulty);
 
     score = 0;
@@ -83,9 +110,11 @@ function startGame() {
     updateStats();
     updateTimerUI();
 
-    gtag("event", "game_started", {
-        difficulty: selectedDifficulty
-    });
+    if (typeof gtag === "function") {
+        gtag("event", "game_started", {
+            difficulty: selectedDifficulty
+        });
+    }
 
     loadNextItem();
 
@@ -102,6 +131,8 @@ function startGame() {
 // NEXT ITEM
 // =======================================================
 function loadNextItem() {
+    if (!items.length) return;
+
     currentItem = items[Math.floor(Math.random() * items.length)];
 
     fadeSwap("itemImage", currentItem.image);
@@ -112,6 +143,8 @@ function loadNextItem() {
 // fade animation for swapping item
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
+    if (!elem) return;
+
     elem.classList.add("fade-out");
 
     setTimeout(() => {
@@ -131,6 +164,8 @@ function fadeSwap(id, newValue) {
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
+        if (!currentItem) return;
+
         let chosen = btn.dataset.bin;
 
         if (chosen === currentItem.bin) {
@@ -139,11 +174,13 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 
             showFeedback("Correct segregation!", true);
 
-            gtag("event", "correct_answer", {
-                item: currentItem.name,
-                bin: currentItem.bin,
-                difficulty: selectedDifficulty
-            });
+            if (typeof gtag === "function") {
+                gtag("event", "correct_answer", {
+                    item: currentItem.name,
+                    bin: currentItem.bin,
+                    difficulty: selectedDifficulty
+                });
+            }
 
         } else {
             score--;
@@ -151,12 +188,14 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 
             showFeedback(`Wrong! Correct bin: ${currentItem.bin}`, false);
 
-            gtag("event", "wrong_answer", {
-                item: currentItem.name,
-                chosen_bin: chosen,
-                correct_bin: currentItem.bin,
-                difficulty: selectedDifficulty
-            });
+            if (typeof gtag === "function") {
+                gtag("event", "wrong_answer", {
+                    item: currentItem.name,
+                    chosen_bin: chosen,
+                    correct_bin: currentItem.bin,
+                    difficulty: selectedDifficulty
+                });
+            }
         }
 
         updateStats();
@@ -170,10 +209,14 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 // =======================================================
 function updateTimerUI() {
     const tv = document.getElementById("timerValue");
+    if (!tv) return;
+
     tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
 
-    document.getElementById("progressFill").style.width =
-        (timeLeft / totalTime * 100) + "%";
+    const pf = document.getElementById("progressFill");
+    if (pf) {
+        pf.style.width = (timeLeft / totalTime * 100) + "%";
+    }
 }
 
 
@@ -186,10 +229,14 @@ function updateStats() {
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
-    document.getElementById("score").textContent = score;
+    const scoreElem = document.getElementById("score");
+    if (scoreElem) scoreElem.textContent = score;
 
-    document.getElementById("gameStats").textContent =
-        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+    const statsElem = document.getElementById("gameStats");
+    if (statsElem) {
+        statsElem.textContent =
+            `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+    }
 }
 
 
@@ -198,8 +245,9 @@ function updateStats() {
 // =======================================================
 function showFeedback(text, good) {
     const fb = document.getElementById("feedback");
-    fb.textContent = text;
+    if (!fb) return;
 
+    fb.textContent = text;
     fb.className = "feedback " + (good ? "correct" : "wrong");
 
     setTimeout(() => {
@@ -211,18 +259,23 @@ function showFeedback(text, good) {
 // =======================================================
 // COLLAPSIBLE INSTRUCTIONS
 // =======================================================
-document.getElementById("toggleInstructions").addEventListener("click", () => {
-    const panel = document.getElementById("instructionsPanel");
-    const btn = document.getElementById("toggleInstructions");
+const toggleBtn = document.getElementById("toggleInstructions");
+if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+        const panel = document.getElementById("instructionsPanel");
+        const btn = document.getElementById("toggleInstructions");
 
-    if (panel.classList.contains("hidden")) {
-        panel.classList.remove("hidden");
-        btn.textContent = "▲ Hide Instructions";
-    } else {
-        panel.classList.add("hidden");
-        btn.textContent = "▼ Show Instructions";
-    }
-});
+        if (!panel || !btn) return;
+
+        if (panel.classList.contains("hidden")) {
+            panel.classList.remove("hidden");
+            btn.textContent = "▲ Hide Instructions";
+        } else {
+            panel.classList.add("hidden");
+            btn.textContent = "▼ Show Instructions";
+        }
+    });
+}
 
 
 // =======================================================
@@ -238,37 +291,50 @@ function endGame() {
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
-    gtag("event", "game_finished", {
-        score: score,
-        correct: correctCount,
-        wrong: wrongCount,
-        accuracy: accuracy,
-        difficulty: selectedDifficulty
-    });
+    if (typeof gtag === "function") {
+        gtag("event", "game_finished", {
+            score: score,
+            correct: correctCount,
+            wrong: wrongCount,
+            accuracy: accuracy,
+            difficulty: selectedDifficulty
+        });
+    }
 
-    document.getElementById("finalScoreText").textContent = `Your Score: ${score}`;
-    document.getElementById("finalStatsText").textContent =
-        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+    if (modal) {
+        const s = document.getElementById("finalScoreText");
+        const st = document.getElementById("finalStatsText");
+        if (s) s.textContent = `Your Score: ${score}`;
+        if (st) st.textContent =
+            `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 
-    modal.classList.remove("hidden");
+        modal.classList.remove("hidden");
+    }
 }
 
 
 // =======================================================
 // PLAY AGAIN
 // =======================================================
-document.getElementById("playAgainBtn").addEventListener("click", () => {
-    document.getElementById("gameOverModal").classList.add("hidden");
-    startGame();
-});
+const playAgainBtn = document.getElementById("playAgainBtn");
+if (playAgainBtn) {
+    playAgainBtn.addEventListener("click", () => {
+        const modal = document.getElementById("gameOverModal");
+        if (modal) modal.classList.add("hidden");
+        startGame();
+    });
+}
 
 
 // =======================================================
 // CERTIFICATE GENERATION
 // =======================================================
-document.getElementById("downloadCertBtn").addEventListener("click", () => {
-    generateCertificate();
-});
+const downloadCertBtn = document.getElementById("downloadCertBtn");
+if (downloadCertBtn) {
+    downloadCertBtn.addEventListener("click", () => {
+        generateCertificate();
+    });
+}
 
 function generateCertificate() {
 
@@ -343,15 +409,17 @@ function generateCertificate() {
 
     certWindow.document.close();
 
-    gtag("event", "certificate_generated", {
-        difficulty: selectedDifficulty,
-        score: score,
-        accuracy: accuracy
-    });
+    if (typeof gtag === "function") {
+        gtag("event", "certificate_generated", {
+            difficulty: selectedDifficulty,
+            score: score,
+            accuracy: accuracy
+        });
+    }
 }
 
 
 // =======================================================
 // INIT
 // =======================================================
-loadItems();
+initGame();
