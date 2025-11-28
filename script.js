@@ -12,7 +12,7 @@ let timeLeft = 60;
 let totalTime = 60;
 let timerInterval = null;
 
-let selectedDifficulty = "medium"; // Default
+let selectedDifficulty = "medium";
 
 const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
@@ -108,6 +108,7 @@ function loadNextItem() {
 }
 
 
+// Fade animation
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -131,7 +132,7 @@ function fadeSwap(id, newValue) {
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        const chosen = btn.dataset.bin;
+        let chosen = btn.dataset.bin;
 
         if (chosen === currentItem.bin) {
             score++;
@@ -166,7 +167,7 @@ function updateTimerUI() {
 // =======================================================
 function updateStats() {
     const accuracy =
-        (correctCount + wrongCount === 0)
+        correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
@@ -199,7 +200,7 @@ function endGame() {
     const modal = document.getElementById("gameOverModal");
 
     const accuracy =
-        (correctCount + wrongCount === 0)
+        correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
@@ -221,51 +222,100 @@ document.getElementById("playAgainBtn").addEventListener("click", () => {
 
 
 // =======================================================
-// FINAL WORKING CERTIFICATE GENERATION
+// CERTIFICATE DOWNLOAD (FIXED VERSION)
 // =======================================================
 document.getElementById("downloadCertBtn").addEventListener("click", generateCertificate);
 
 async function generateCertificate() {
 
-    let name = prompt("Enter your Name:");
-    if (!name) name = "Anonymous";
+    let playerName = prompt("Enter your Name:");
+    if (!playerName) playerName = "Anonymous";
 
     let org = prompt("Enter your Organization:");
     if (!org) org = "Not Specified";
 
     const accuracy =
-        (correctCount + wrongCount === 0)
+        correctCount + wrongCount === 0
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
     const certID = "BMW-" + Math.floor(100000 + Math.random() * 900000);
+    const certDate = new Date().toLocaleDateString();
 
-    // Fill template
-    document.getElementById("certName").textContent = name;
-    document.getElementById("certOrg").textContent = org;
-    document.getElementById("certScore").textContent = score;
-    document.getElementById("certAccuracy").textContent = accuracy;
-    document.getElementById("certDifficulty").textContent = selectedDifficulty.toUpperCase();
-    document.getElementById("certID").textContent = certID;
 
-    // Generate QR
-    document.getElementById("certQR").innerHTML = "";
-    new QRCode(document.getElementById("certQR"), GAME_URL);
+    // Load libraries
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
 
-    const element = document.getElementById("certificateContainer");
+    // Create certificate HTML element
+    const certDiv = document.createElement("div");
+    certDiv.style.width = "900px";
+    certDiv.style.padding = "40px";
+    certDiv.style.background = "white";
+    certDiv.style.fontFamily = "Arial";
+    certDiv.style.textAlign = "center";
 
-    // Convert to PDF
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    certDiv.innerHTML = `
+        <div style="border: 8px solid #2b6cb0; padding: 40px; border-radius: 12px;">
+            <h1 style="color:#2b6cb0;">Certificate of Completion</h1>
+            <p>This certifies that</p>
+            <h2><strong>${playerName}</strong></h2>
+            <p>from <strong>${org}</strong></p>
+            <p>has successfully completed the</p>
+            <h3><strong>Biomedical Waste Segregation Training Game</strong></h3>
+            <br>
+            <p><strong>Score:</strong> ${score}</p>
+            <p><strong>Accuracy:</strong> ${accuracy}%</p>
+            <p><strong>Difficulty:</strong> ${selectedDifficulty.toUpperCase()}</p>
+            <p><strong>Date:</strong> ${certDate}</p>
+            <p><strong>Certificate ID:</strong> ${certID}</p>
 
-    const pdf = new jspdf.jsPDF("p", "mm", "a4");
+            <div id="qr-area"></div>
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const ratio = canvas.height / canvas.width;
-    const pdfHeight = pdfWidth * ratio;
+            <p style="margin-top: 12px; font-size: 0.9rem;">Scan to Play Again: ${GAME_URL}</p>
 
-    pdf.addImage(imgData, "PNG", 0, 5, pdfWidth, pdfHeight);
-    pdf.save(`Certificate_${name}.pdf`);
+            <p style="margin-top:16px; font-size:0.8rem; color:#444;">
+                Designed & Developed by <strong>Gokul T.B</strong>
+            </p>
+        </div>
+    `;
+
+    // Generate QR Code
+    const qrDiv = certDiv.querySelector("#qr-area");
+    new QRCode(qrDiv, GAME_URL);
+
+    // FIX: wait for QR image to load
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    // FIX: html2canvas settings
+    const canvas = await html2canvas(certDiv, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        imageTimeout: 2000
+    });
+
+    const img = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("landscape", "pt", "a4");
+
+    pdf.addImage(img, "PNG", 0, 0, pdf.internal.pageSize.width, pdf.internal.pageSize.height);
+
+    pdf.save("certificate.pdf");
+}
+
+
+// =======================================================
+// HELPER FUNCTION TO LOAD SCRIPTS
+// =======================================================
+function loadScript(url) {
+    return new Promise(resolve => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.onload = resolve;
+        document.body.appendChild(script);
+    });
 }
 
 
