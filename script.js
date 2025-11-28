@@ -12,7 +12,7 @@ let timeLeft = 60;
 let totalTime = 60;
 let timerInterval = null;
 
-let selectedDifficulty = "medium"; // default if no start screen exists
+let selectedDifficulty = "medium"; // Default
 
 const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
@@ -35,7 +35,6 @@ async function initGame() {
     const diffCards = document.querySelectorAll(".difficulty-card");
     const startBtn = document.getElementById("startGameBtn");
 
-    // CASE 1: Difficulty UI exists
     if (diffCards.length && startBtn) {
         diffCards.forEach(card => {
             card.addEventListener("click", () => {
@@ -50,9 +49,7 @@ async function initGame() {
         });
 
         startBtn.addEventListener("click", startGame);
-    }
-    // CASE 2: No difficulty screen → auto start
-    else {
+    } else {
         startGame();
     }
 }
@@ -111,7 +108,6 @@ function loadNextItem() {
 }
 
 
-// fade swap animation
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -135,7 +131,7 @@ function fadeSwap(id, newValue) {
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        let chosen = btn.dataset.bin;
+        const chosen = btn.dataset.bin;
 
         if (chosen === currentItem.bin) {
             score++;
@@ -170,7 +166,7 @@ function updateTimerUI() {
 // =======================================================
 function updateStats() {
     const accuracy =
-        correctCount + wrongCount === 0
+        (correctCount + wrongCount === 0)
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
@@ -203,7 +199,7 @@ function endGame() {
     const modal = document.getElementById("gameOverModal");
 
     const accuracy =
-        correctCount + wrongCount === 0
+        (correctCount + wrongCount === 0)
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
@@ -225,102 +221,51 @@ document.getElementById("playAgainBtn").addEventListener("click", () => {
 
 
 // =======================================================
-// AUTO PDF CERTIFICATE
+// FINAL WORKING CERTIFICATE GENERATION
 // =======================================================
 document.getElementById("downloadCertBtn").addEventListener("click", generateCertificate);
 
 async function generateCertificate() {
 
-    let playerName = prompt("Enter your Name:");
-    if (!playerName) playerName = "Anonymous";
+    let name = prompt("Enter your Name:");
+    if (!name) name = "Anonymous";
 
     let org = prompt("Enter your Organization:");
     if (!org) org = "Not Specified";
 
     const accuracy =
-        correctCount + wrongCount === 0
+        (correctCount + wrongCount === 0)
             ? 0
             : Math.round((correctCount / (correctCount + wrongCount)) * 100);
 
     const certID = "BMW-" + Math.floor(100000 + Math.random() * 900000);
-    const certDate = new Date().toLocaleDateString();
 
-    // Load jsPDF + html2canvas
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+    // Fill template
+    document.getElementById("certName").textContent = name;
+    document.getElementById("certOrg").textContent = org;
+    document.getElementById("certScore").textContent = score;
+    document.getElementById("certAccuracy").textContent = accuracy;
+    document.getElementById("certDifficulty").textContent = selectedDifficulty.toUpperCase();
+    document.getElementById("certID").textContent = certID;
 
-    // Create certificate HTML
-    const certDiv = document.createElement("div");
-    certDiv.style.width = "800px";
-    certDiv.style.padding = "40px";
-    certDiv.style.textAlign = "center";
-    certDiv.style.fontFamily = "Arial";
+    // Generate QR
+    document.getElementById("certQR").innerHTML = "";
+    new QRCode(document.getElementById("certQR"), GAME_URL);
 
-    certDiv.innerHTML = `
-        <div style="
-            border: 8px solid #2b6cb0;
-            padding: 30px;
-            border-radius: 12px;
-        ">
-            <h1 style="color:#2b6cb0;">Certificate of Completion</h1>
+    const element = document.getElementById("certificateContainer");
 
-            <p>This is to certify that</p>
-            <h2><strong>${playerName}</strong></h2>
+    // Convert to PDF
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
 
-            <p>from <strong>${org}</strong></p>
+    const pdf = new jspdf.jsPDF("p", "mm", "a4");
 
-            <p>has successfully completed the</p>
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const ratio = canvas.height / canvas.width;
+    const pdfHeight = pdfWidth * ratio;
 
-            <h3><strong>Biomedical Waste Segregation Training Game</strong></h3>
-
-            <br>
-            <p><strong>Score:</strong> ${score}</p>
-            <p><strong>Accuracy:</strong> ${accuracy}%</p>
-            <p><strong>Difficulty:</strong> ${selectedDifficulty.toUpperCase()}</p>
-            <p><strong>Date:</strong> ${certDate}</p>
-            <p><strong>Certificate ID:</strong> ${certID}</p>
-
-            <div id="qr-area"></div>
-
-            <p style="margin-top:12px;font-size:0.9rem;">
-                Scan to Play Again: ${GAME_URL}
-            </p>
-
-            <p style="margin-top:16px;font-size:0.8rem;color:#444;">
-                Designed & Developed by <strong>Gokul T.B</strong>
-            </p>
-        </div>
-    `;
-
-    // Add QR code
-    const qrDiv = certDiv.querySelector("#qr-area");
-    new QRCode(qrDiv, GAME_URL);
-
-    // Render image
-    const canvas = await html2canvas(certDiv);
-    const img = canvas.toDataURL("image/png");
-
-    // Create PDF
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("landscape", "pt", "a4");
-
-    const width = pdf.internal.pageSize.getWidth();
-    const height = pdf.internal.pageSize.getHeight();
-
-    pdf.addImage(img, "PNG", 0, 0, width, height);
-
-    pdf.save("certificate.pdf");
-}
-
-
-// helper to load external libraries
-function loadScript(url) {
-    return new Promise(resolve => {
-        const script = document.createElement("script");
-        script.src = url;
-        script.onload = resolve;
-        document.body.appendChild(script);
-    });
+    pdf.addImage(imgData, "PNG", 0, 5, pdfWidth, pdfHeight);
+    pdf.save(`Certificate_${name}.pdf`);
 }
 
 
