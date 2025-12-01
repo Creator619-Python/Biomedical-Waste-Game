@@ -1,327 +1,338 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Biomedical Waste Segregation Game</title>
+    <title>Biomedical Waste Training Game</title>
 
-<style>
-/* ----------------------------------------------
-   GLOBAL APP BACKGROUND
----------------------------------------------- */
-body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(to bottom, #3c7df0, #dbe7ff);
-    font-family: "Segoe UI", Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-}
+    <style>
+    /* ------------------------------
+       GLOBAL APP LAYOUT
+    ------------------------------ */
+    body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
 
-/* ----------------------------------------------
-   SCREEN CONTAINER (shows one at a time)
----------------------------------------------- */
-.screen {
-    width: 92%;
-    max-width: 460px;
-    background: white;
-    margin-top: 35px;
-    border-radius: 22px;
-    padding: 28px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-    display: none;
-    animation: fadeIn 0.4s ease;
-}
+    /* ------------------------------
+       GRADIENT HEADER (TOP)
+    ------------------------------ */
+    .header-bg {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(to bottom, #3c7df0, #82afff);
+        border-bottom-left-radius: 28px;
+        border-bottom-right-radius: 28px;
+    }
 
-/* FADE ANIMATION */
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(14px);}
-    to   {opacity: 1; transform: translateY(0);}
-}
+    /* ------------------------------
+       SCREEN CONTAINER (FULL-WIDTH)
+    ------------------------------ */
+    .screen {
+        width: 100%;
+        max-width: 550px;
+        margin: -120px auto 0 auto;  /* pulls the white card upward into the gradient */
+        background: white;
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+        animation: fadeIn 0.4s ease;
+        display: none;
+    }
 
-/* HEADERS */
-h1, h2, h3 {
-    margin-top: 0;
-    color: #1b3b82;
-    font-weight: 700;
-}
+    /* ANIMATION */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-/* PARAGRAPHS */
-p {
-    color: #444;
-    font-size: 16px;
-    line-height: 1.5;
-}
+    /* HEADINGS */
+    h1, h2 {
+        color: #1a3f8b;
+        margin-top: 0;
+        font-weight: 700;
+    }
 
-/* ----------------------------------------------
-   BUTTONS
----------------------------------------------- */
-.btn {
-    width: 100%;
-    background: #1e5aff;
-    color: white;
-    padding: 14px;
-    border-radius: 14px;
-    font-size: 18px;
-    margin: 10px 0;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: 0.25s;
-}
+    /* BUTTONS */
+    .btn {
+        width: 100%;
+        background: #1e5aff;
+        color: white;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 14px 0;
+        cursor: pointer;
+    }
 
-.btn:hover {
-    background: #0c3ecc;
-    transform: scale(1.03);
-}
+    .btn:hover {
+        background: #0c3ecc;
+    }
 
-.difficulty-btn {
-    background: #ffffff;
-    color: #1e5aff;
-    border: 2px solid #1e5aff;
-}
+    .difficulty-btn {
+        background: white;
+        color: #1e5aff;
+        border: 2px solid #1e5aff;
+    }
 
-.difficulty-btn:hover {
-    background: #1e5aff;
-    color: white;
-}
+    .difficulty-btn:hover {
+        background: #1e5aff;
+        color: white;
+    }
 
-/* ----------------------------------------------
-   MICRO-CARDS (Icon Cards)
----------------------------------------------- */
-.card-box {
-    background: #f3f6ff;
-    border-left: 5px solid #1e5aff;
-    border-radius: 14px;
-    padding: 15px;
-    margin: 12px 0;
-    display: flex;
-    align-items: center;
-}
+    .wa-btn {
+        background: #25D366;
+        color: #fff;
+        border: none;
+    }
 
-.card-icon {
-    font-size: 32px;
-    margin-right: 15px;
-}
+    .wa-btn:hover {
+        background: #1ba555;
+    }
 
-.card-content-title {
-    font-size: 17px;
-    font-weight: bold;
-    color: #1b3b82;
-    margin-bottom: 4px;
-}
+    /* ------------------------------
+       MICRO CARDS
+    ------------------------------ */
+    .card-box {
+        background: #f3f6ff;
+        border-left: 5px solid #1e5aff;
+        border-radius: 14px;
+        padding: 15px;
+        margin: 12px 0;
+        display: flex;
+        align-items: center;
+    }
 
-/* ----------------------------------------------
-   PROGRESS BAR TIMER
----------------------------------------------- */
-#timerBarContainer {
-    width: 100%;
-    background: #d0ddff;
-    height: 10px;
-    border-radius: 10px;
-    margin-bottom: 12px;
-}
+    .card-icon {
+        font-size: 32px;
+        margin-right: 14px;
+    }
 
-#timerBar {
-    height: 10px;
-    background: #1e5aff;
-    width: 100%;
-    border-radius: 10px;
-    transition: width 1s linear;
-}
+    .card-title {
+        font-size: 17px;
+        font-weight: bold;
+        color: #1a3f8b;
+        margin-bottom: 4px;
+    }
 
-/* ----------------------------------------------
-   ITEM DISPLAY
----------------------------------------------- */
-#itemImage {
-    width: 240px;
-    height: 240px;
-    object-fit: contain;
-    background: #f3f6ff;
-    border-radius: 18px;
-    padding: 12px;
-    border: 2px solid #bfd2ff;
-    display: block;
-    margin: 18px auto;
-}
+    /* ------------------------------
+       TIMER PROGRESS BAR
+    ------------------------------ */
+    #timerBarContainer {
+        width: 100%;
+        background: #d0ddff;
+        height: 10px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
 
-#itemName {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1b3b82;
-    margin-bottom: 15px;
-}
+    #timerBar {
+        height: 10px;
+        background: #1e5aff;
+        width: 100%;
+        border-radius: 10px;
+        transition: width 1s linear;
+    }
 
-/* ----------------------------------------------
-   BINS GRID
----------------------------------------------- */
-.bins-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
-    margin-top: 20px;
-}
+    /* ------------------------------
+       ITEM DISPLAY
+    ------------------------------ */
+    #itemImage {
+        width: 240px;
+        height: 240px;
+        background: #f3f6ff;
+        object-fit: contain;
+        border-radius: 18px;
+        padding: 12px;
+        margin: 20px auto;
+        display: block;
+    }
 
-.bin {
-    width: 140px;
-    border-radius: 14px;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    padding: 12px;
-    cursor: pointer;
-}
+    #itemName {
+        font-weight: 600;
+        color: #1a3f8b;
+        margin-bottom: 8px;
+    }
 
-/* ----------------------------------------------
-   FEEDBACK POPUP (toast)
----------------------------------------------- */
-#toast {
-    position: fixed;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #ff4141;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: bold;
-    display: none;
-    z-index: 999;
-    animation: fadeIn 0.3s;
-}
+    /* ------------------------------
+       BIN GRID
+    ------------------------------ */
+    .bins-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
 
-</style>
+    /* ------------------------------
+       FOOTER CREDIT
+    ------------------------------ */
+    .footer-credit {
+        text-align: center;
+        color: #777;
+        font-size: 13px;
+        margin-top: 25px;
+    }
+
+    /* ------------------------------
+       FEEDBACK TOAST
+    ------------------------------ */
+    #toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4444;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        display: none;
+        z-index: 999;
+    }
+    </style>
+
+    <!-- Confetti library (lightweight, browser-only) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 
 <body>
 
+<div class="header-bg"></div>
+
 <div id="toast"></div>
 
-<!-- ⭐ SCREEN: WELCOME -->
+<!-- ⭐ WELCOME SCREEN -->
 <div id="welcomeScreen" class="screen" style="display:block;">
+
     <h1>Biomedical Waste Training Game</h1>
     <p>Learn correct biomedical waste segregation with this fast, interactive training tool.</p>
 
-    <!-- MICRO CARD 1 -->
+    <!-- OBJECTIVE -->
     <div class="card-box">
         <div class="card-icon">📘</div>
         <div>
-            <div class="card-content-title">Objective</div>
+            <div class="card-title">Objective</div>
             Segregate each medical item into the correct waste bin.
         </div>
     </div>
 
-    <!-- MICRO CARD 2 -->
+    <!-- HOW TO PLAY -->
     <div class="card-box">
         <div class="card-icon">🧪</div>
         <div>
-            <div class="card-content-title">How to Play</div>
+            <div class="card-title">How to Play</div>
             An item appears → tap the correct bin → earn points.
         </div>
     </div>
 
-    <!-- MICRO CARD 3 -->
+    <!-- TIMING -->
     <div class="card-box">
         <div class="card-icon">⏱️</div>
         <div>
-            <div class="card-content-title">Timing & Scoring</div>
-            Easy = no penalty, Medium/Hard = auto-skip & penalties.
+            <div class="card-title">Timing & Scoring</div>
+            Easy: no penalty • Medium/Hard: auto-skip + penalties.
         </div>
     </div>
 
     <button class="btn" onclick="showScreen('difficultyScreen')">Start</button>
+
+    <p class="footer-credit">
+        Designed & Developed by <b>Gokul T.B.</b>
+    </p>
+
 </div>
 
 
-
-<!-- ⭐ SCREEN: DIFFICULTY -->
+<!-- ⭐ DIFFICULTY SCREEN -->
 <div id="difficultyScreen" class="screen">
+
     <h2>Select Difficulty</h2>
 
     <div class="card-box">
         <div class="card-icon">😊</div>
         <div>
-            <div class="card-content-title">Easy</div>
-            90 sec, no penalty, slow pace.
+            <div class="card-title">Easy</div>
+            90 sec, no penalty, slower pace.
         </div>
     </div>
-
     <button class="btn difficulty-btn" onclick="startGame('easy')">Easy</button>
 
     <div class="card-box">
         <div class="card-icon">⚡</div>
         <div>
-            <div class="card-content-title">Medium</div>
-            60 sec, 5 sec auto-skip, penalties.
+            <div class="card-title">Medium</div>
+            60 sec, 5 sec auto-skip + penalties.
         </div>
     </div>
-
     <button class="btn difficulty-btn" onclick="startGame('medium')">Medium</button>
 
     <div class="card-box">
         <div class="card-icon">🔥</div>
         <div>
-            <div class="card-content-title">Hard</div>
-            30 sec, 3 sec auto-skip, tricky items.
+            <div class="card-title">Hard</div>
+            30 sec, 3 sec auto-skip + tricky items.
         </div>
     </div>
-
     <button class="btn difficulty-btn" onclick="startGame('hard')">Hard</button>
+
 </div>
 
 
-
-<!-- ⭐ SCREEN: GAME -->
+<!-- ⭐ GAME SCREEN -->
 <div id="gameScreen" class="screen">
 
-    <!-- TIMER BAR -->
-    <div id="timerBarContainer">
-        <div id="timerBar"></div>
-    </div>
+    <div id="timerBarContainer"><div id="timerBar"></div></div>
 
     <h2>Choose the Correct Bin</h2>
     <p id="difficultyDisplay"></p>
-
     <p><b>Score:</b> <span id="scoreDisplay">0</span></p>
 
     <p id="itemName"></p>
-    <img id="itemImage" src="" alt="Item">
+    <img id="itemImage" alt="Item">
 
     <div class="bins-grid">
-        <img src="images/redbin.jpg" class="bin" onclick="checkAnswer('red')">
-        <img src="images/yellowbin.jpg" class="bin" onclick="checkAnswer('yellow')">
-        <img src="images/bluebin.png" class="bin" onclick="checkAnswer('blue')">
-        <img src="images/greenbin.png" class="bin" onclick="checkAnswer('green')">
+        <img src="images/redbin.jpg"         class="bin" onclick="checkAnswer('red')">
+        <img src="images/yellowbin.jpg"      class="bin" onclick="checkAnswer('yellow')">
+        <img src="images/bluebin.png"        class="bin" onclick="checkAnswer('blue')">
+        <img src="images/greenbin.png"       class="bin" onclick="checkAnswer('green')">
         <img src="images/translucentbin.png" class="bin" onclick="checkAnswer('translucent')">
     </div>
 
 </div>
 
 
-
-<!-- ⭐ SCREEN: RESULT -->
+<!-- ⭐ RESULT SCREEN -->
 <div id="resultScreen" class="screen">
+
     <h1>🎉 Great Job!</h1>
     <h2>Your Score: <span id="finalScore"></span></h2>
     <p id="finalDifficultyText"></p>
 
     <button class="btn" onclick="showScreen('welcomeScreen')">Play Again</button>
+    <button class="btn wa-btn" onclick="shareOnWhatsApp()">Share Score on WhatsApp</button>
+
+    <p class="footer-credit">
+        Designed & Developed by <b>Gokul T.B.</b>
+    </p>
 </div>
 
 
 
 <script>
-/* ---------------------------------------------------
-   SCREEN NAVIGATION
---------------------------------------------------- */
+/* ------------------------------
+   SHOW SCREEN
+------------------------------ */
 function showScreen(id) {
-    ["welcomeScreen", "difficultyScreen", "gameScreen", "resultScreen"].forEach(s => {
-        document.getElementById(s).style.display = "none";
-    });
+    ["welcomeScreen","difficultyScreen","gameScreen","resultScreen"]
+        .forEach(s => document.getElementById(s).style.display = "none");
     document.getElementById(id).style.display = "block";
 }
 
-/* ---------------------------------------------------
-   SHOW TOAST FEEDBACK
---------------------------------------------------- */
+/* ------------------------------
+   TOAST FEEDBACK
+------------------------------ */
 function showToast(msg) {
     const t = document.getElementById("toast");
     t.innerText = msg;
@@ -329,18 +340,18 @@ function showToast(msg) {
     setTimeout(() => t.style.display = "none", 1400);
 }
 
-/* ---------------------------------------------------
+/* ------------------------------
    DIFFICULTY SETTINGS
---------------------------------------------------- */
+------------------------------ */
 const difficultySettings = {
-    easy: { label:"Easy (90s)", totalTime:90, autoSkipMs:null, itemPool:"easy" },
-    medium:{ label:"Medium (60s, 5s auto-skip)", totalTime:60, autoSkipMs:5000, itemPool:"all" },
-    hard:{ label:"Hard (30s, 3s auto-skip)", totalTime:30, autoSkipMs:3000, itemPool:"allPlusTricky" }
+    easy:   { label:"EASY MODE",   fullLabel:"Easy (90s)",  totalTime:90, autoSkipMs:null,    itemPool:"easy" },
+    medium: { label:"MEDIUM MODE", fullLabel:"Medium (60s)",totalTime:60, autoSkipMs:5000, itemPool:"all" },
+    hard:   { label:"HARD MODE",   fullLabel:"Hard (30s)",  totalTime:30, autoSkipMs:3000, itemPool:"allPlusTricky" }
 };
 
-/* ---------------------------------------------------
-   ITEM POOLS (Your Images)
---------------------------------------------------- */
+/* ------------------------------
+   ITEM LISTS
+------------------------------ */
 const easyItems = [
     {name:"Mask", img:"images/Mask.webp", bin:"red"},
     {name:"Syringe (No Needle)", img:"images/Syringe.webp", bin:"red"},
@@ -357,11 +368,11 @@ const mediumExtraItems = [
     {name:"Dialysis Kit", img:"images/Dialysis Kit.webp", bin:"red"},
     {name:"Urine Bag", img:"images/Urine Bag.webp", bin:"red"},
     {name:"Vacutainers", img:"images/Vacutainers.webp", bin:"red"},
-    {name:"Human Anatomical Waste", img:"images/Human anatomical waste.webp", bin:"yellow"},
+    {name:"Anatomical Waste", img:"images/Human anatomical waste.webp", bin:"yellow"},
     {name:"Placenta", img:"images/Placenta.webp", bin:"yellow"},
     {name:"Plaster Cast", img:"images/Plaster cast.jpg", bin:"yellow"},
     {name:"IV Bottles", img:"images/IV bottles.jpg", bin:"blue"},
-    {name:"Metallic Body Implants", img:"images/Metallic body implants.png", bin:"blue"},
+    {name:"Metallic Implants", img:"images/Metallic body implants.png", bin:"blue"},
     {name:"Lab Slides", img:"images/Lab Slides.jpg", bin:"blue"}
 ];
 
@@ -374,12 +385,12 @@ const trickyItems = [
     {name:"Scissors", img:"images/Scissors.webp", bin:"red"}
 ];
 
-const allItems = easyItems.concat(mediumExtraItems);
+const allItems      = easyItems.concat(mediumExtraItems);
 const allPlusTricky = allItems.concat(trickyItems);
 
-/* ---------------------------------------------------
+/* ------------------------------
    GAME STATE
---------------------------------------------------- */
+------------------------------ */
 let score = 0;
 let timer = 0;
 let currentItem = null;
@@ -387,9 +398,9 @@ let timerInterval = null;
 let itemTimeout = null;
 let currentSettings = null;
 
-/* ---------------------------------------------------
+/* ------------------------------
    START GAME
---------------------------------------------------- */
+------------------------------ */
 function startGame(level) {
     showScreen("gameScreen");
 
@@ -397,44 +408,46 @@ function startGame(level) {
     score = 0;
     timer = currentSettings.totalTime;
 
-    document.getElementById("difficultyDisplay").innerText = currentSettings.label;
+    document.getElementById("difficultyDisplay").innerText = currentSettings.fullLabel;
     document.getElementById("scoreDisplay").innerText = score;
+    document.getElementById("timerBar").style.width = "100%";
 
     startTimer();
     loadNextItem();
 }
 
-/* ---------------------------------------------------
-   TIMER (with progress bar)
---------------------------------------------------- */
+/* ------------------------------
+   TIMER BAR
+------------------------------ */
 function startTimer() {
     clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         timer--;
+
         const percent = (timer / currentSettings.totalTime) * 100;
-        document.getElementById("timerBar").style.width = percent + "%";
+        const bar = document.getElementById("timerBar");
+        bar.style.width = Math.max(percent, 0) + "%";
 
-        if (percent < 35) document.getElementById("timerBar").style.background = "#ff4141";
-        else if (percent < 60) document.getElementById("timerBar").style.background = "#ffb20f";
-        else document.getElementById("timerBar").style.background = "#1e5aff";
+        if (percent < 35) bar.style.background = "#ff4444";
+        else if (percent < 60) bar.style.background = "#ffb20f";
+        else bar.style.background = "#1e5aff";
 
-        if (timer <= 0) endGame();
+        if (timer <= 0) {
+            endGame();
+        }
     }, 1000);
 }
 
-/* ---------------------------------------------------
-   ITEM POOL SELECTION
---------------------------------------------------- */
+/* ------------------------------
+   ITEM SELECTION
+------------------------------ */
 function getPool() {
     if (currentSettings.itemPool === "easy") return easyItems;
-    if (currentSettings.itemPool === "all") return allItems;
+    if (currentSettings.itemPool === "all")  return allItems;
     return allPlusTricky;
 }
 
-/* ---------------------------------------------------
-   LOAD ITEM
---------------------------------------------------- */
 function loadNextItem() {
     clearTimeout(itemTimeout);
 
@@ -448,45 +461,73 @@ function loadNextItem() {
         itemTimeout = setTimeout(() => {
             score--;
             document.getElementById("scoreDisplay").innerText = score;
-            showToast("⏱ Auto-skip! -" + 1);
+            showToast("⏱ Auto-skip! -1");
             loadNextItem();
         }, currentSettings.autoSkipMs);
     }
 }
 
-/* ---------------------------------------------------
+/* ------------------------------
    CHECK ANSWER
---------------------------------------------------- */
+------------------------------ */
 function checkAnswer(selectedBin) {
     clearTimeout(itemTimeout);
 
     if (selectedBin === currentItem.bin) {
         score++;
-        document.getElementById("scoreDisplay").innerText = score;
         showToast("✔ Correct! +1");
     } else {
         score--;
-        document.getElementById("scoreDisplay").innerText = score;
         showToast("❌ Wrong! Correct bin: " + currentItem.bin.toUpperCase());
     }
 
-    if (timer > 0) loadNextItem();
+    document.getElementById("scoreDisplay").innerText = score;
+
+    if (timer > 0) {
+        loadNextItem();
+    } else {
+        endGame();
+    }
 }
 
-/* ---------------------------------------------------
-   END GAME
---------------------------------------------------- */
+/* ------------------------------
+   END GAME + CONFETTI
+------------------------------ */
 function endGame() {
     clearInterval(timerInterval);
     clearTimeout(itemTimeout);
 
     document.getElementById("finalScore").innerText = score;
     document.getElementById("finalDifficultyText").innerText =
-        "Difficulty Played: " + currentSettings.label;
+        "Difficulty Played: " + currentSettings.fullLabel + " (" + currentSettings.label + ")";
 
     showScreen("resultScreen");
+
+    // Minimal professional confetti
+    if (window.confetti) {
+        confetti({
+            particleCount: 120,
+            spread: 60,
+            origin: { y: 0.2 }
+        });
+    }
 }
 
+/* ------------------------------
+   WHATSAPP SHARE
+------------------------------ */
+function shareOnWhatsApp() {
+    const finalScore = score;
+    const difficultyText = currentSettings ? currentSettings.label : "this game";
+
+    const message =
+        "I scored " + finalScore + " points on " + difficultyText +
+        " in the Biomedical Waste Training Game!\n" +
+        "Try it here: https://creator619-python.github.io/Biomedical-Waste-Game/";
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+}
 </script>
 
 </body>
