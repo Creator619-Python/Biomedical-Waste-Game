@@ -1,58 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Biomedical Waste Training Game</title>
 
 <style>
     body {
-        font-family: Arial, sans-serif;
         margin: 0;
-        background: #f5f7ff;
+        font-family: Arial, sans-serif;
+        background: #f4f6ff;
         text-align: center;
     }
 
-    #welcomeScreen, #instructionsScreen, #gameScreen, #resultScreen {
+    /* Screens */
+    #startScreen, #gameScreen, #resultScreen {
         display: none;
         padding: 20px;
     }
 
+    /* Buttons */
     .btn {
-        padding: 12px;
+        width: 80%;
+        padding: 14px;
+        margin: 10px 0;
         font-size: 18px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
         background: #1e5aff;
         color: white;
-        border: none;
-        border-radius: 10px;
-        width: 80%;
-        margin-top: 15px;
-        cursor: pointer;
     }
+
+    .btn:hover { background: #0c3ecc; }
 
     .btn-green {
         background: #25D366;
     }
 
+    /* Bins */
     .bin {
-        width: 130px;
-        cursor: pointer;
+        width: 120px;
         margin: 10px;
+        cursor: pointer;
     }
 
+    /* Item image */
     #itemImage {
-        width: 200px;
-        height: 200px;
+        width: 220px;
+        height: 220px;
         background: #e8edff;
-        object-fit: contain;
-        border-radius: 15px;
+        border-radius: 12px;
         padding: 10px;
-        margin-top: 15px;
+        object-fit: contain;
+        margin-top: 10px;
     }
 
+    /* Timer bar */
     #timerBarContainer {
-        width: 90%;
-        background: #ddd;
+        width: 85%;
         height: 12px;
+        background: #d2d7ff;
         border-radius: 10px;
         margin: 10px auto;
     }
@@ -64,27 +71,29 @@
         border-radius: 10px;
     }
 
+    /* Footer credit */
     .footer-credit {
         margin-top: 20px;
         color: #777;
         font-size: 14px;
     }
 
+    /* Toast */
     #toast {
-        display: none;
         position: fixed;
         top: 20px;
-        left:50%;
+        left: 50%;
         transform: translateX(-50%);
         background: #ff4444;
-        padding: 10px 20px;
         color: white;
+        padding: 10px 20px;
         border-radius: 10px;
+        display: none;
         font-weight: bold;
     }
 </style>
 
-<!-- Confetti Library -->
+<!-- Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 </head>
@@ -92,38 +101,30 @@
 
 <div id="toast"></div>
 
-<!-- ⭐ WELCOME SCREEN -->
-<div id="welcomeScreen">
+<!-- ⭐ SINGLE PAGE: WELCOME + INSTRUCTIONS + DIFFICULTY -->
+<div id="startScreen" style="display:block;">
+
     <h1>Biomedical Waste Training Game</h1>
-    <p>Fast, interactive BMW segregation training for healthcare staff.</p>
-    <button class="btn" onclick="showScreen('instructionsScreen')">Continue</button>
+    <p>Quick BMW segregation training for healthcare staff.</p>
+
+    <h3>Instructions</h3>
+    <p>• An item will appear on screen.</p>
+    <p>• Tap the correct waste bin.</p>
+    <p>• Score: +1 correct / -1 wrong.</p>
+
+    <h3>Select Difficulty</h3>
+
+    <button class="btn" onclick="startGame('easy')">Easy (90 sec)</button>
+    <button class="btn" onclick="startGame('medium')">Medium (60 sec)</button>
+    <button class="btn" onclick="startGame('hard')">Hard (30 sec)</button>
 
     <p class="footer-credit">Designed & Developed by <b>Gokul T.B.</b></p>
 </div>
 
-<!-- ⭐ INSTRUCTIONS SCREEN -->
-<div id="instructionsScreen">
-    <h2>Instructions</h2>
-    <p>• An item will appear on screen.</p>
-    <p>• Tap the correct waste bin as fast as possible.</p>
-    <p>• Correct answer = +1</p>
-    <p>• Wrong answer = -1</p>
-    <p>• Medium & Hard modes auto-skip after a few seconds.</p>
 
-    <button class="btn" onclick="showScreen('difficultyScreen')">Next</button>
-</div>
-
-<!-- ⭐ DIFFICULTY SCREEN -->
-<div id="difficultyScreen">
-    <h2>Select Difficulty</h2>
-    <button class="btn" onclick="startGame('easy')">Easy (90 sec)</button>
-    <button class="btn" onclick="startGame('medium')">Medium (60 sec)</button>
-    <button class="btn" onclick="startGame('hard')">Hard (30 sec)</button>
-</div>
-
-<!-- ⭐ GAME SCREEN -->
+<!-- ⭐ GAME SCREEN (old UI preserved) -->
 <div id="gameScreen">
-    <h2 id="difficultyDisplay"></h2>
+    <h2 id="difficultyText"></h2>
 
     <div id="timerBarContainer"><div id="timerBar"></div></div>
 
@@ -141,43 +142,40 @@
     </div>
 </div>
 
+
 <!-- ⭐ RESULT SCREEN -->
 <div id="resultScreen">
-    <h1>🎉 Training Complete!</h1>
+    <h1>🎉 Training Completed!</h1>
     <h2>Your Score: <span id="finalScore"></span></h2>
-    <h3 id="finalDifficultyText"></h3>
+    <h3 id="difficultyResult"></h3>
 
-    <button class="btn" onclick="showScreen('welcomeScreen')">Play Again</button>
-
-    <!-- WhatsApp Share -->
+    <button class="btn" onclick="showStart()">Play Again</button>
     <button class="btn btn-green" onclick="shareOnWhatsApp()">Share Score on WhatsApp</button>
 
     <p class="footer-credit">Designed & Developed by <b>Gokul T.B.</b></p>
 </div>
 
+
 <script>
 /* ------------------------------
-   SCREEN SWITCHING
+   SCREEN SWITCH
 ------------------------------ */
-function showScreen(id) {
-    ["welcomeScreen", "instructionsScreen", "difficultyScreen", "gameScreen", "resultScreen"]
-        .forEach(s => document.getElementById(s).style.display = "none");
-
-    document.getElementById(id).style.display = "block";
+function showStart() {
+    resultScreen.style.display = "none";
+    startScreen.style.display = "block";
 }
 
 /* ------------------------------
-   SETTINGS
+   GAME DATA
 ------------------------------ */
+let score = 0, timeLeft = 0, timerInterval, skipTimer, currentItem, currentLevel;
+
 const settings = {
-    easy:   { time: 90, skip: null, label: "Easy Mode" },
-    medium: { time: 60, skip: 5000, label: "Medium Mode" },
-    hard:   { time: 30, skip: 3000, label: "Hard Mode" }
+    easy:   { label:"Easy Mode",   time:90, skip:null },
+    medium: { label:"Medium Mode", time:60, skip:5000 },
+    hard:   { label:"Hard Mode",   time:30, skip:3000 }
 };
 
-/* ------------------------------
-   ITEMS
------------------------------- */
 const easyItems = [
     {name:"Mask", img:"images/Mask.webp", bin:"red"},
     {name:"Blood Bag", img:"images/Blood Bag.avif", bin:"yellow"},
@@ -185,80 +183,71 @@ const easyItems = [
     {name:"Expired Medicines", img:"images/Expired Medicines.webp", bin:"green"}
 ];
 
-const mediumExtra = [
+const mediumItems = [
     {name:"IV Set", img:"images/IV SET.png", bin:"red"},
     {name:"Lab Slides", img:"images/Lab Slides.jpg", bin:"blue"},
     {name:"Anatomical Waste", img:"images/Human anatomical waste.webp", bin:"yellow"}
 ];
 
-const risky = [
+const hardItems = [
     {name:"Needles", img:"images/Needles.webp", bin:"translucent"},
     {name:"Blade", img:"images/Blade.webp", bin:"translucent"},
 ];
-
-const allItems = easyItems.concat(mediumExtra);
-const hardItems = allItems.concat(risky);
-
-/* ------------------------------
-   GAME STATE
------------------------------- */
-let score = 0, timer = 0, currentItem = null, activeSkip = null, timerInterval = null;
 
 /* ------------------------------
    START GAME
 ------------------------------ */
 function startGame(level) {
 
-    showScreen("gameScreen");
-
+    currentLevel = level;
     score = 0;
-    timer = settings[level].time;
+    timeLeft = settings[level].time;
 
-    document.getElementById("difficultyDisplay").innerText = settings[level].label;
-    document.getElementById("scoreDisplay").innerText = score;
+    startScreen.style.display = "none";
+    gameScreen.style.display = "block";
+
+    difficultyText.innerText = settings[level].label;
+    scoreDisplay.innerText = score;
 
     startTimer();
-
-    loadNextItem(level);
+    loadNextItem();
 }
 
 /* ------------------------------
    TIMER
 ------------------------------ */
 function startTimer() {
-
     timerInterval = setInterval(() => {
-        timer--;
+        timeLeft--;
+        timerBar.style.width = (timeLeft / settings[currentLevel].time * 100) + "%";
 
-        const percent = (timer /  settings[level].time) * 100;
-        document.getElementById("timerBar").style.width = percent + "%";
-
-        if (timer <= 0) endGame();
+        if (timeLeft <= 0) endGame();
     }, 1000);
 }
 
 /* ------------------------------
-   LOAD NEXT ITEM
+   LOAD ITEM
 ------------------------------ */
-function loadNextItem(level) {
+function loadNextItem() {
+    clearTimeout(skipTimer);
 
-    clearTimeout(activeSkip);
-
-    let pool = (level === "easy") ? easyItems :
-               (level === "medium") ? allItems : hardItems;
+    let pool =
+        currentLevel === "easy" ? easyItems :
+        currentLevel === "medium" ? easyItems.concat(mediumItems) :
+                                    easyItems.concat(mediumItems, hardItems);
 
     currentItem = pool[Math.floor(Math.random() * pool.length)];
 
-    document.getElementById("itemImage").src = currentItem.img;
-    document.getElementById("itemName").innerText = "Item: " + currentItem.name;
+    itemName.innerText = "Item: " + currentItem.name;
+    itemImage.src = currentItem.img;
 
-    if (settings[level].skip) {
-        activeSkip = setTimeout(() => {
+    if (settings[currentLevel].skip) {
+        skipTimer = setTimeout(() => {
             score--;
-            document.getElementById("scoreDisplay").innerText = score;
+            scoreDisplay.innerText = score;
             showToast("⏱ Auto-skip! -1");
-            loadNextItem(level);
-        }, settings[level].skip);
+            loadNextItem();
+        }, settings[currentLevel].skip);
     }
 }
 
@@ -266,7 +255,7 @@ function loadNextItem(level) {
    CHECK ANSWER
 ------------------------------ */
 function checkAnswer(bin) {
-    clearTimeout(activeSkip);
+    clearTimeout(skipTimer);
 
     if (bin === currentItem.bin) {
         score++;
@@ -276,60 +265,52 @@ function checkAnswer(bin) {
         showToast("❌ Wrong! Correct bin: " + currentItem.bin.toUpperCase());
     }
 
-    document.getElementById("scoreDisplay").innerText = score;
-
-    if (timer > 0) loadNextItem(currentSettings);
+    scoreDisplay.innerText = score;
+    if (timeLeft > 0) loadNextItem();
 }
 
 /* ------------------------------
-   GAME OVER + CONFETTI
+   END GAME + CONFETTI
 ------------------------------ */
 function endGame() {
 
     clearInterval(timerInterval);
-    clearTimeout(activeSkip);
+    clearTimeout(skipTimer);
 
-    document.getElementById("finalScore").innerText = score;
-    document.getElementById("finalDifficultyText").innerText = settings[level].label;
+    gameScreen.style.display = "none";
+    resultScreen.style.display = "block";
 
-    showScreen("resultScreen");
+    finalScore.innerText = score;
+    difficultyResult.innerText = settings[currentLevel].label;
 
-    // Minimal confetti
+    // CONFETTI (C1 minimal)
     confetti({
-        particleCount: 100,
+        particleCount: 120,
         spread: 50,
         origin: { y: 0.2 }
     });
 }
 
 /* ------------------------------
-   WHATSAPP SHARE (W2 FORMAT)
+   WHATSAPP SHARE (W2)
 ------------------------------ */
 function shareOnWhatsApp() {
-
-    const difficulty = document.getElementById("finalDifficultyText").innerText;
-    const finalScore = document.getElementById("finalScore").innerText;
-
     const msg =
-        "I scored " + finalScore + " points on " + difficulty +
+        "I scored " + score +
+        " points on " + settings[currentLevel].label +
         " in the Biomedical Waste Training Game!\nTry it here: https://creator619-python.github.io/Biomedical-Waste-Game/";
 
     window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
 }
 
 /* ------------------------------
-   TOAST FEEDBACK
+   TOAST
 ------------------------------ */
-function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.style.display = "block";
-    t.innerText = msg;
-    setTimeout(() => t.style.display = "none", 1300);
+function showToast(text) {
+    toast.innerText = text;
+    toast.style.display = "block";
+    setTimeout(() => toast.style.display = "none", 1300);
 }
-</script>
-
-<script>
-window.onload = () => showScreen("welcomeScreen");
 </script>
 
 </body>
