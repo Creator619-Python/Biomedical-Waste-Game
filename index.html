@@ -4,416 +4,222 @@
     <meta charset="UTF-8">
     <title>Biomedical Waste Sorting Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="style.css">
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-4DQYGRYMM7');
-    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 25px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
 
-    <!-- QR Code Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+        .start-card {
+            width: 95%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 30px;
+            padding: 35px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #805ad5, #ed64a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #4a5568;
+            margin-bottom: 25px;
+        }
+
+        /* Feature Cards */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transition: 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+        }
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        /* Section Headers */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg,#3182ce,#805ad5);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+            margin: 20px 0 10px 0;
+        }
+
+        /* Bin Guide */
+        .bin-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .bin-card {
+            border-radius: 18px;
+            padding: 15px;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+        }
+        .yellow { background: #ecc94b; }
+        .red { background: #f56565; }
+        .white { background: #e2e8f0; color:#2d3748; }
+        .blue { background: #4299e1; }
+        .green { background: #48bb78; }
+
+        /* Difficulty Cards */
+        .difficulty-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .difficulty-card {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            text-align: center;
+            padding: 25px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.09);
+            transition: 0.3s;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .difficulty-card:hover {
+            transform: scale(1.03);
+        }
+        .difficulty-card.selected {
+            border-color: #805ad5;
+            box-shadow: 0 20px 35px rgba(128,90,213,0.4);
+        }
+
+        .start-btn {
+            width: 100%;
+            margin-top: 30px;
+            padding: 18px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            background: linear-gradient(135deg,#805ad5,#ed64a6);
+            transition: 0.3s;
+        }
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
+
 <body>
+<div class="start-card">
 
-<!-- ============================
-     WELCOME SCREEN
-=============================== -->
-<div id="welcomeScreen" class="welcome-screen">
-    <div class="welcome-card">
-        <h1 class="welcome-title">🏥 Biomedical Waste Sorting Game</h1>
-        <p class="welcome-subtitle">Interactive Training for Healthcare Professionals</p>
-        
-        <div class="welcome-features">
-            <div class="feature-item">✅ Learn proper waste segregation</div>
-            <div class="feature-item">✅ Color-coded bin system</div>
-            <div class="feature-item">✅ Timed challenges</div>
-            <div class="feature-item">✅ Personalized certificate</div>
-            <div class="feature-item">✅ Real-time feedback</div>
-        </div>
-        
-        <button id="welcomeContinueBtn" class="primary-btn">Get Started →</button>
-        
-        <p class="privacy-note">
-            This training game collects anonymous gameplay statistics only.<br>
-            No personal data is stored.
-        </p>
+    <h1 class="title">🏥 Biomedical Waste Sorting Game</h1>
+    <p class="subtitle">A fun, interactive training module for healthcare staff</p>
+
+    <!-- Feature Grid -->
+    <div class="feature-grid">
+        <div class="feature-card"><div class="feature-icon">🎯</div>Learn Segregation</div>
+        <div class="feature-card"><div class="feature-icon">⏱️</div>Timed Challenges</div>
+        <div class="feature-card"><div class="feature-icon">📜</div>Get Certificate</div>
+        <div class="feature-card"><div class="feature-icon">🏆</div>Gamified Learning</div>
     </div>
-</div>
 
-<!-- ============================
-     START SCREEN
-=============================== -->
-<div id="startScreen" class="start-screen hidden">
-    <h1 class="start-title">Biomedical Waste Sorting Game</h1>
-    <p class="start-subtitle">Select a difficulty level to begin</p>
+    <!-- Instructions -->
+    <h2 class="section-title">📚 How to Play</h2>
+    <p>
+        • Sort each item into the correct bin<br>
+        • +1 for correct, -1 for wrong<br>
+        • Beat the timer according to difficulty<br>
+        • Fast, fun & accurate learning
+    </p>
 
+    <!-- Bin Guide -->
+    <h2 class="section-title">🗑️ Color Bin Guide</h2>
+    <div class="bin-guide">
+        <div class="bin-card yellow">Yellow – Infectious Waste</div>
+        <div class="bin-card red">Red – Contaminated Plastics</div>
+        <div class="bin-card white">White – Sharps</div>
+        <div class="bin-card blue">Blue – Glassware</div>
+        <div class="bin-card green">Green – General Waste</div>
+    </div>
+
+    <!-- Difficulty -->
+    <h2 class="section-title">⚡ Select Difficulty</h2>
     <div class="difficulty-container">
-        <div class="difficulty-card" data-level="easy">
-            <h3>Easy</h3>
-            <p>🟢 90 seconds</p>
-            <small>For beginners</small>
-        </div>
-        <div class="difficulty-card" data-level="medium">
-            <h3>Medium</h3>
-            <p>🟡 60 seconds</p>
-            <small>Standard training</small>
-        </div>
-        <div class="difficulty-card" data-level="hard">
-            <h3>Hard</h3>
-            <p>🔴 30 seconds</p>
-            <small>Expert challenge</small>
-        </div>
+        <div class="difficulty-card" data-level="easy">😊 Easy (90s)</div>
+        <div class="difficulty-card" data-level="medium">😐 Medium (60s)</div>
+        <div class="difficulty-card" data-level="hard">😎 Hard (30s)</div>
     </div>
 
-    <button id="startGameBtn" class="primary-btn disabled" disabled>
-        Continue to Game
-    </button>
+    <button id="startGameBtn" class="start-btn" disabled>Start Game</button>
 
-    <div class="footer-credit">
-        Designed & Developed by <strong>Gokul T.B</strong>
-    </div>
+    <div class="footer">Designed & Developed by <strong>Gokul T.B</strong></div>
+
 </div>
 
-<!-- ============================
-     PLAYER INFO SCREEN
-=============================== -->
-<div id="playerInfoScreen" class="player-info-screen hidden">
-    <div class="player-info-card">
-        <h2>📝 Certificate Details</h2>
-        <p class="subtitle">Enter your details for a personalized certificate</p>
-        
-        <form id="playerInfoForm">
-            <div class="form-group">
-                <label for="playerName">Your Full Name</label>
-                <input 
-                    type="text" 
-                    id="playerName" 
-                    placeholder="e.g. Dr. Sarah Johnson"
-                    required
-                >
-                <small class="helper-text">This will appear on your certificate</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="playerOrganization">Organization / Institution</label>
-                <input 
-                    type="text" 
-                    id="playerOrganization" 
-                    placeholder="e.g. General Hospital, Medical College"
-                >
-                <small class="helper-text">Optional, but recommended for training records</small>
-            </div>
-            
-            <div class="button-group">
-                <button type="button" id="skipInfoBtn" class="secondary-btn">
-                    Skip & Play Anonymously
-                </button>
-                <button type="submit" id="submitInfoBtn" class="primary-btn">
-                    Start Game with Certificate
-                </button>
-            </div>
-            
-            <p class="privacy-note">
-                <small>✅ Your information is used only for certificate generation and is not stored on our servers.</small>
-            </p>
-        </form>
-    </div>
-</div>
+<script>
+    let selectedDifficulty = null;
 
-<!-- ============================
-     MAIN GAME CONTAINER
-=============================== -->
-<div id="gameContainer" class="container hidden">
-    <h1 class="title">Biomedical Waste Sorting Game</h1>
-    <p class="subtitle">Click the correct bin for each biomedical waste item.</p>
+    document.querySelectorAll('.difficulty-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.difficulty-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedDifficulty = card.dataset.level;
+            document.getElementById('startGameBtn').disabled = false;
+        });
+    });
 
-    <!-- Timer + Progress -->
-    <div class="status-bar">
-        <div class="timer-box">
-            <span class="timer-label">Time Left</span>
-            <span id="timerValue" class="timer-value">01:00</span>
-        </div>
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+        localStorage.setItem('difficulty', selectedDifficulty);
+        window.location.href = "game.html";
+    });
+</script>
 
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div id="progressFill"></div>
-            </div>
-            <div class="progress-text">Game Time</div>
-        </div>
-    </div>
-
-    <!-- Item + Score Panels -->
-    <div class="cards-container">
-        <div class="card item-card">
-            <h2>Current Item</h2>
-            <img id="itemImage" class="item-image fade-target" alt="Item">
-            <p id="itemName" class="item-name fade-target"></p>
-        </div>
-
-        <div class="card score-card">
-            <h2>Score</h2>
-            <p id="score" class="score-value">0</p>
-            <div id="gameStats" class="game-stats">
-                Correct: 0 | Wrong: 0 | Accuracy: 0%
-            </div>
-        </div>
-    </div>
-
-    <!-- Feedback -->
-    <div id="feedback" class="feedback fade-target"></div>
-
-    <!-- Bin Buttons -->
-    <div class="bin-container">
-        <button class="bin-btn" data-bin="Yellow">
-            <img src="images/yellowbin.jpg" class="bin-icon">
-            <div>Yellow</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Red">
-            <img src="images/redbin.jpg" class="bin-icon">
-            <div>Red</div>
-        </button>
-
-        <button class="bin-btn" data-bin="White">
-            <img src="images/translucentbin.png" class="bin-icon">
-            <div>White</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Blue">
-            <img src="images/bluebin.png" class="bin-icon">
-            <div>Blue</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Green">
-            <img src="images/greenbin.png" class="bin-icon">
-            <div>Green</div>
-        </button>
-    </div>
-
-    <!-- Instructions Collapse -->
-    <button id="toggleInstructions" class="secondary-btn">▼ Show Instructions</button>
-
-    <div id="instructionsPanel" class="instructions hidden fade">
-        <h3>How to Play & Bin Guide</h3>
-        
-        <div class="instructions-grid">
-            <div class="instruction-step">
-                <div class="step-number">1</div>
-                <p>Click the correct bin for each waste item</p>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">2</div>
-                <p>Watch your time - you have <span id="timeLimitDisplay">60</span> seconds</p>
-            </div>
-            <div class="instruction-step">
-                <div class="step-number">3</div>
-                <p>Aim for high accuracy to earn a certificate</p>
-            </div>
-        </div>
-        
-        <h4>Bin Color Guide</h4>
-        <div class="bin-guide">
-            <div class="bin-guide-item yellow">
-                <div class="bin-color-sample"></div>
-                <div class="bin-guide-content">
-                    <strong>Yellow Bin</strong>
-                    <p>Infectious waste, anatomical waste, expired medicines</p>
-                    <small>Example: Blood bags, amputated body parts</small>
-                </div>
-            </div>
-            <div class="bin-guide-item red">
-                <div class="bin-color-sample"></div>
-                <div class="bin-guide-content">
-                    <strong>Red Bin</strong>
-                    <p>Contaminated plastics & tubing</p>
-                    <small>Example: IV tubes, syringes without needles</small>
-                </div>
-            </div>
-            <div class="bin-guide-item white">
-                <div class="bin-color-sample"></div>
-                <div class="bin-guide-content">
-                    <strong>White Bin</strong>
-                    <p>Sharps and needles</p>
-                    <small>Example: Needles, scalpels, blades</small>
-                </div>
-            </div>
-            <div class="bin-guide-item blue">
-                <div class="bin-color-sample"></div>
-                <div class="bin-guide-content">
-                    <strong>Blue Bin</strong>
-                    <p>Glassware and metallic implants</p>
-                    <small>Example: Ampoules, vials, slides</small>
-                </div>
-            </div>
-            <div class="bin-guide-item green">
-                <div class="bin-color-sample"></div>
-                <div class="bin-guide-content">
-                    <strong>Green Bin</strong>
-                    <p>General non-hazardous waste</p>
-                    <small>Example: Paper, food waste, wrappers</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer-credit">
-        Designed & Developed by <strong>Gokul T.B</strong>
-    </div>
-</div>
-
-<!-- ============================
-     GAME OVER MODAL
-=============================== -->
-<div id="gameOverModal" class="modal hidden">
-    <div class="modal-content">
-        <div style="text-align:center; margin-bottom: 20px;">
-            <div id="trophyIcon" style="font-size: 60px; display: none;">🏆</div>
-        </div>
-        
-        <h2>🎯 Training Complete!</h2>
-        
-        <!-- Performance Summary -->
-        <div class="performance-summary">
-            <div class="stat-box">
-                <div class="stat-label">Final Score</div>
-                <div id="finalScore" class="stat-value">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Accuracy</div>
-                <div id="finalAccuracy" class="stat-value">0%</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Difficulty</div>
-                <div id="finalDifficulty" class="stat-value">Medium</div>
-            </div>
-        </div>
-        
-        <!-- Performance Message -->
-        <p id="performanceMessage" style="text-align:center; font-style: italic; color: #4a5568; margin: 20px 0;">
-            Great effort! Ready for your certificate?
-        </p>
-        
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <button id="downloadCertBtn" class="primary-btn">
-                📄 Download Certificate
-            </button>
-            
-            <div class="share-buttons">
-                <button id="shareWhatsAppBtn" class="share-btn whatsapp">
-                    <span>📱 Share on WhatsApp</span>
-                </button>
-                <button id="shareImageBtn" class="share-btn image">
-                    <span>🖼️ Share as Image</span>
-                </button>
-            </div>
-            
-            <button id="playAgainBtn" class="secondary-btn">
-                🎮 Play Again
-            </button>
-        </div>
-        
-        <!-- Quick Play Options -->
-        <div class="quick-play">
-            <p style="margin: 20px 0 10px 0; color: #718096; font-size: 14px;">
-                Try a different difficulty:
-            </p>
-            <div class="difficulty-chips">
-                <button class="difficulty-chip" data-level="easy">Easy (90s)</button>
-                <button class="difficulty-chip" data-level="medium">Medium (60s)</button>
-                <button class="difficulty-chip" data-level="hard">Hard (30s)</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- HIDDEN CERTIFICATE TEMPLATE -->
-<div id="certificateContainer" style="display:none; width:900px; background:white; padding:40px;">
-    <div style="border: 8px solid #2b6cb0; padding: 40px; border-radius: 12px; font-family: Arial, sans-serif;">
-        <h1 style="color:#2b6cb0; text-align:center; margin-bottom: 10px;">Certificate of Completion</h1>
-        <h3 style="text-align:center; color:#555; margin-bottom: 30px; font-weight: normal;">
-            Biomedical Waste Segregation Training
-        </h3>
-        
-        <div style="text-align:center; margin: 30px 0;">
-            <p style="font-size: 18px; margin-bottom: 10px;">This is to certify that</p>
-            <h2 id="certName" style="font-size: 32px; margin: 15px 0; color: #333;">
-                [Participant Name]
-            </h2>
-            <h3 id="certOrg" style="font-size: 22px; margin: 10px 0 30px 0; color: #555; font-weight: normal;">
-                [Organization/Institution]
-            </h3>
-            
-            <p style="font-size: 18px; max-width: 600px; margin: 30px auto; line-height: 1.6;">
-                has successfully completed the Biomedical Waste Sorting Training Game with a score of 
-                <span style="font-weight: bold; color: #2b6cb0;" id="certScore">0</span> points and 
-                <span style="font-weight: bold; color: #2b6cb0;" id="certAccuracy">0</span>% accuracy on 
-                <span id="certDifficulty">Medium</span> difficulty.
-            </p>
-        </div>
-        
-        <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin: 30px 0;">
-            <h4 style="text-align:center; margin-bottom: 15px; color: #4a5568;">Performance Summary</h4>
-            <div style="display: flex; justify-content: space-around; text-align:center;">
-                <div>
-                    <div style="font-size: 24px; color: #2b6cb0; font-weight: bold;" id="certCorrect">0</div>
-                    <div style="font-size: 14px;">Correct Answers</div>
-                </div>
-                <div>
-                    <div style="font-size: 24px; color: #2b6cb0; font-weight: bold;" id="certWrong">0</div>
-                    <div style="font-size: 14px;">Wrong Answers</div>
-                </div>
-                <div>
-                    <div style="font-size: 24px; color: #2b6cb0; font-weight: bold;" id="certTotal">0</div>
-                    <div style="font-size: 14px;">Total Items</div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px;">
-            <div>
-                <div style="margin-bottom: 10px;">
-                    <div style="font-weight: bold; font-size: 14px;">Certificate ID:</div>
-                    <div id="certID" style="font-family: monospace; color: #718096; font-size: 14px;">BW-XXXX-XXXX-XXXX</div>
-                </div>
-                <div>
-                    <div style="font-weight: bold; font-size: 14px;">Date of Issue:</div>
-                    <div id="certDate" style="color: #718096; font-size: 14px;">[Date]</div>
-                </div>
-            </div>
-            
-            <div id="certQR" style="text-align:center;">
-                <!-- QR will be generated here -->
-                <div style="font-size: 12px; margin-top: 10px; color: #718096;">
-                    Scan to verify
-                </div>
-            </div>
-            
-            <div style="text-align: right;">
-                <div style="border-top: 2px solid #4a5568; padding-top: 10px; display: inline-block;">
-                    <div style="font-weight: bold;">Gokul T.B</div>
-                    <div style="font-size: 14px;">Game Developer & Trainer</div>
-                    <div style="font-size: 12px; color: #718096;">creator619-python.github.io</div>
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align:center; margin-top: 25px; font-size: 12px; color: #a0aec0;">
-            This certificate verifies completion of the Biomedical Waste Sorting Training Game.<br>
-            Valid for training and awareness purposes only.
-        </div>
-    </div>
-</div>
-
-<!-- PDF libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<script src="script.js"></script>
 </body>
 </html>
