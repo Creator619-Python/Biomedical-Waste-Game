@@ -46,14 +46,12 @@
             cursor: pointer;
         }
 
-        ul {
-            padding-left: 0;
-        }
-
         ul li {
-            list-style-type: disc;
-            margin-left: 20px;
+            list-style: disc;
             text-align: left;
+            margin-left: 20px;
+            font-size: 17px;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -63,21 +61,22 @@
 <!-- ⭐ WELCOME SCREEN ⭐ -->
 <div id="welcomeScreen">
     <h1>Biomedical Waste Segregation Game</h1>
+
     <p style="font-size:18px; max-width:650px; margin:auto;">
-        Learn correct biomedical waste disposal by selecting the right bin for each item.
-        Choose a difficulty level based on your role and experience.
+        Test your biomedical waste knowledge by selecting the correct bin for each item.
+        Suitable for all hospital staff — from beginners to experienced professionals.
     </p>
 
-    <h3>How to Play</h3>
-    <ul style="display:inline-block; font-size:17px; line-height:1.6; max-width:650px;">
-        <li>An item appears on the screen.</li>
-        <li>Click the correct bin to dispose of it.</li>
-        <li>Correct answers = <b>+1 point</b>.</li>
-        <li>Wrong answers or no answer in time (Medium/Hard) = <b>-1 point</b>.</li>
-        <li>You have limited time to score maximum points.</li>
+    <h3 style="margin-top: 30px;">How to Play</h3>
+    <ul style="display:inline-block; max-width:650px;">
+        <li>An image of a biomedical waste item will appear.</li>
+        <li>Select the correct bin based on hospital waste protocols.</li>
+        <li>Correct = <b>+1 point</b>, Wrong or no answer (Medium/Hard) = <b>-1 point</b>.</li>
+        <li>Each difficulty has different time limits.</li>
+        <li>Try to score as high as you can before time runs out!</li>
     </ul>
 
-    <h3>Select Difficulty</h3>
+    <h3 style="margin-top: 25px;">Choose Difficulty</h3>
     <div class="difficulty-buttons">
         <button onclick="startGame('easy')">Easy</button>
         <button onclick="startGame('medium')">Medium</button>
@@ -85,10 +84,10 @@
     </div>
 
     <p style="margin-top:20px; font-size:14px;">
-        Easy: Beginners / Housekeeping • Medium: Regular Staff • Hard: Experienced Staff / Competition<br>
-        (Certificate download will be added soon.)
+        (Certificate coming soon — currently showing final score only.)
     </p>
 </div>
+
 
 
 <!-- ⭐ GAME SCREEN ⭐ -->
@@ -101,247 +100,226 @@
 
     <img id="itemImage" src="" alt="Item">
 
-    <div id="binsContainer">
-        <!-- bin images from /images folder -->
-        <img src="images/redbin.jpg"          class="bin" onclick="checkAnswer('red')"          alt="Red Bin">
-        <img src="images/yellowbin.jpg"       class="bin" onclick="checkAnswer('yellow')"       alt="Yellow Bin">
-        <img src="images/bluebin.png"         class="bin" onclick="checkAnswer('blue')"         alt="Blue Bin">
-        <img src="images/greenbin.png"        class="bin" onclick="checkAnswer('green')"        alt="Green Bin">
-        <img src="images/translucentbin.png"  class="bin" onclick="checkAnswer('translucent')"  alt="Translucent (Sharps) Bin">
+    <div>
+        <img src="images/redbin.jpg"         class="bin" onclick="checkAnswer('red')"          alt="Red Bin">
+        <img src="images/yellowbin.jpg"      class="bin" onclick="checkAnswer('yellow')"       alt="Yellow Bin">
+        <img src="images/bluebin.png"        class="bin" onclick="checkAnswer('blue')"         alt="Blue Bin">
+        <img src="images/greenbin.png"       class="bin" onclick="checkAnswer('green')"        alt="Green Bin">
+        <img src="images/translucentbin.png" class="bin" onclick="checkAnswer('translucent')"  alt="Translucent Bin">
     </div>
 </div>
 
 
+
 <!-- ⭐ GAME OVER SCREEN ⭐ -->
 <div id="gameOverScreen">
-    <h1>Game Over!</h1>
-    <h2>Your Score: <span id="finalScore"></span></h2>
-    <p id="finalDifficultyText"></p>
+    <h1>Congratulations!</h1>
+    <h2>You scored: <span id="finalScore"></span> points</h2>
+
+    <p id="finalDifficultyText" style="font-size:18px; margin-top:10px;"></p>
 
     <button onclick="backToWelcome()"
-            style="padding:15px 30px; font-size:20px; margin-top:20px; cursor:pointer;">
-        Play Again (Choose Level)
+        style="padding:15px 30px; font-size:20px; margin-top:20px; cursor:pointer;">
+        Play Again / Choose Difficulty
     </button>
 
-    <p style="margin-top:30px;">Certificate feature will be added soon.</p>
+    <p style="margin-top:30px;">Certificates will be added soon.</p>
 </div>
 
 
+
 <script>
-    // ⭐ DIFFICULTY SETTINGS ⭐
-    const difficultySettings = {
-        easy: {
-            label: "Easy (90s, no penalty for slow response)",
-            totalTime: 90,          // seconds
-            autoSkipMs: null,       // no forced skip
-            itemPool: "easy"
-        },
-        medium: {
-            label: "Medium (60s, 5s per item)",
-            totalTime: 60,
-            autoSkipMs: 5000,       // 5 seconds per item
-            itemPool: "all"
-        },
-        hard: {
-            label: "Hard (30s, 3s per item, trickier items included)",
-            totalTime: 30,
-            autoSkipMs: 3000,       // 3 seconds per item
-            itemPool: "allPlusTricky"
-        }
-    };
+/* ⭐ DIFFICULTY SETTINGS ⭐ */
+const difficultySettings = {
+    easy: {
+        label: "Easy (90s, no auto-skip)",
+        totalTime: 90,
+        autoSkipMs: null,
+        itemPool: "easy"
+    },
+    medium: {
+        label: "Medium (60s, 5s auto-skip)",
+        totalTime: 60,
+        autoSkipMs: 5000,
+        itemPool: "all"
+    },
+    hard: {
+        label: "Hard (30s, 3s auto-skip + tricky items)",
+        totalTime: 30,
+        autoSkipMs: 3000,
+        itemPool: "allPlusTricky"
+    }
+};
 
-    // ⭐ ITEM POOLS (filenames from your /images folder) ⭐
-    // Bins used:
-    // red         = contaminated plastics
-    // yellow      = anatomical / soiled / blood bags
-    // blue        = glass & implants
-    // green       = general / medicines (for game purposes)
-    // translucent = sharps (white bin equivalent)
+/* ⭐ ITEM POOLS (using your GitHub images) ⭐ */
+const easyItems = [
+    { name:"Mask", bin:"red", img:"images/Mask.webp" },
+    { name:"Syringe (no needle)", bin:"red", img:"images/Syringe.webp" },
+    { name:"Blood Bag", bin:"yellow", img:"images/Blood Bag.avif" },
+    { name:"Cotton/Swabs", bin:"yellow", img:"images/Contaminated-Cotton-Swabs.webp" },
+    { name:"Vial", bin:"blue", img:"images/Vial.jpg" },
+    { name:"Ampoules", bin:"blue", img:"images/Ampoules.webp" },
+    { name:"Expired Medicines", bin:"green", img:"images/Expired Medicines.webp" }
+];
 
-    const easyItems = [
-        { name: "Mask",                   bin: "red",         img: "images/Mask.webp" },
-        { name: "Syringe (no needle)",    bin: "red",         img: "images/Syringe.webp" },
-        { name: "Blood Bag",              bin: "yellow",      img: "images/Blood Bag.avif" },
-        { name: "Cotton / Swabs",         bin: "yellow",      img: "images/Contaminated-Cotton-Swabs.webp" },
-        { name: "Vial",                   bin: "blue",        img: "images/Vial.jpg" },
-        { name: "Ampoules",               bin: "blue",        img: "images/Ampoules.webp" },
-        { name: "Expired Medicines",      bin: "green",       img: "images/Expired Medicines.webp" }
-    ];
+const mediumExtraItems = [
+    { name:"IV Set", bin:"red", img:"images/IV SET.png" },
+    { name:"Catheter", bin:"red", img:"images/Catheter.jpg" },
+    { name:"Dialysis Kit", bin:"red", img:"images/Dialysis Kit.webp" },
+    { name:"Urine Bag", bin:"red", img:"images/Urine Bag.webp" },
+    { name:"Vacutainers", bin:"red", img:"images/Vacutainers.webp" },
+    { name:"Human Anatomical Waste", bin:"yellow", img:"images/Human anatomical waste.webp" },
+    { name:"Placenta", bin:"yellow", img:"images/Placenta.webp" },
+    { name:"Plaster Cast", bin:"yellow", img:"images/Plaster cast.jpg" },
+    { name:"IV Bottles", bin:"blue", img:"images/IV bottles.jpg" },
+    { name:"Metallic Body Implants", bin:"blue", img:"images/Metallic body implants.png" },
+    { name:"Lab Slides", bin:"blue", img:"images/Lab Slides.jpg" }
+];
 
-    const mediumExtraItems = [
-        { name: "IV Set",                 bin: "red",         img: "images/IV SET.png" },
-        { name: "Catheter",               bin: "red",         img: "images/Catheter.jpg" },
-        { name: "Dialysis Kit",           bin: "red",         img: "images/Dialysis Kit.webp" },
-        { name: "Urine Bag",              bin: "red",         img: "images/Urine Bag.webp" },
-        { name: "Vacutainers",            bin: "red",         img: "images/Vacutainers.webp" },
-        { name: "Human Anatomical Waste", bin: "yellow",      img: "images/Human anatomical waste.webp" },
-        { name: "Placenta",               bin: "yellow",      img: "images/Placenta.webp" },
-        { name: "Plaster Cast",           bin: "yellow",      img: "images/Plaster cast.jpg" },
-        { name: "IV Bottles",             bin: "blue",        img: "images/IV bottles.jpg" },
-        { name: "Metallic Body Implants", bin: "blue",        img: "images/Metallic body implants.png" },
-        { name: "Lab Slides",             bin: "blue",        img: "images/Lab Slides.jpg" }
-    ];
+const trickyItems = [
+    { name:"Needles", bin:"translucent", img:"images/Needles.webp" },
+    { name:"Syringe with Needle", bin:"translucent", img:"images/Syringes with needles.png" },
+    { name:"Blade", bin:"translucent", img:"images/Blade.webp" },
+    { name:"Scalpel", bin:"translucent", img:"images/Scalpel.webp" },
+    { name:"Wound Dressing", bin:"yellow", img:"images/Wound dressing.webp" },
+    { name:"Scissors", bin:"red", img:"images/Scissors.webp" }
+];
 
-    const trickyItems = [
-        { name: "Needles",                bin: "translucent", img: "images/Needles.webp" },
-        { name: "Syringe with Needle",    bin: "translucent", img: "images/Syringes with needles.png" },
-        { name: "Blade",                  bin: "translucent", img: "images/Blade.webp" },
-        { name: "Scalpel",                bin: "translucent", img: "images/Scalpel.webp" },
-        { name: "Wound Dressing",         bin: "yellow",      img: "images/Wound dressing.webp" },
-        { name: "Scissors",               bin: "red",         img: "images/Scissors.webp" }
-    ];
+const allItems      = easyItems.concat(mediumExtraItems);
+const allPlusTricky = allItems.concat(trickyItems);
 
-    const allItems      = easyItems.concat(mediumExtraItems);
-    const allPlusTricky = allItems.concat(trickyItems);
 
-    // ⭐ GAME STATE ⭐
-    let score = 0;
-    let currentItem = null;
-    let timer = 0;
-    let timerInterval = null;
-    let itemTimeout = null;
-    let currentDifficultyKey = null;
-    let currentSettings = null;
+/* ⭐ GAME STATE ⭐ */
+let score = 0;
+let currentItem = null;
+let timer = 0;
+let timerInterval = null;
+let itemTimeout = null;
+let currentDifficultyKey = null;
+let currentSettings = null;
 
-    // ⭐ START GAME WITH SELECTED DIFFICULTY ⭐
-    function startGame(difficultyKey) {
-        currentDifficultyKey = difficultyKey;
-        currentSettings = difficultySettings[difficultyKey];
 
-        // Reset state
-        score = 0;
-        timer = currentSettings.totalTime;
+/* ⭐ START GAME ⭐ */
+function startGame(difficultyKey) {
+    currentDifficultyKey = difficultyKey;
+    currentSettings = difficultySettings[difficultyKey];
 
-        // UI changes
-        document.getElementById("welcomeScreen").style.display = "none";
-        document.getElementById("gameOverScreen").style.display = "none";
-        document.getElementById("gameScreen").style.display = "block";
+    score = 0;
+    timer = currentSettings.totalTime;
 
-        document.getElementById("scoreDisplay").innerText = "Score: 0";
+    document.getElementById("welcomeScreen").style.display = "none";
+    document.getElementById("gameOverScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+
+    document.getElementById("scoreDisplay").innerText = "Score: 0";
+    document.getElementById("timerDisplay").innerText = "Time Left: " + timer + "s";
+    document.getElementById("difficultyDisplay").innerText = currentSettings.label;
+
+    startTimer();
+    loadNextItem();
+}
+
+
+/* ⭐ TIMER ⭐ */
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
         document.getElementById("timerDisplay").innerText = "Time Left: " + timer + "s";
-        document.getElementById("difficultyDisplay").innerText = currentSettings.label;
 
-        // Start timer and game
-        startTimer();
-        loadNextItem();
-    }
-
-    // ⭐ TIMER LOGIC ⭐
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timer--;
-            document.getElementById("timerDisplay").innerText = "Time Left: " + timer + "s";
-
-            if (timer <= 0) {
-                clearInterval(timerInterval);
-                clearTimeout(itemTimeout);
-                endGame();
-            }
-        }, 1000);
-    }
-
-    // ⭐ DETERMINE ITEM POOL BASED ON DIFFICULTY ⭐
-    function getCurrentItemPool() {
-        if (currentSettings.itemPool === "easy") {
-            return easyItems;
-        } else if (currentSettings.itemPool === "all") {
-            return allItems;
-        } else if (currentSettings.itemPool === "allPlusTricky") {
-            return allPlusTricky;
-        } else {
-            return allItems; // fallback
+        if (timer <= 0) {
+            clearInterval(timerInterval);
+            clearTimeout(itemTimeout);
+            endGame();
         }
+    }, 1000);
+}
+
+
+/* ⭐ ITEM POOL ⭐ */
+function getCurrentItemPool() {
+    if (currentSettings.itemPool === "easy") return easyItems;
+    if (currentSettings.itemPool === "all") return allItems;
+    if (currentSettings.itemPool === "allPlusTricky") return allPlusTricky;
+    return allItems;
+}
+
+
+/* ⭐ LOAD NEXT ITEM ⭐ */
+function loadNextItem() {
+    clearTimeout(itemTimeout);
+
+    const pool = getCurrentItemPool();
+    currentItem = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById("itemImage").src = currentItem.img;
+
+    if (currentSettings.autoSkipMs) {
+        itemTimeout = setTimeout(() => handleNoResponse(), currentSettings.autoSkipMs);
     }
+}
 
-    // ⭐ LOAD A RANDOM ITEM ⭐
-    function loadNextItem() {
-        clearTimeout(itemTimeout);
 
-        const pool = getCurrentItemPool();
-        currentItem = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById("itemImage").src = currentItem.img;
-        document.getElementById("itemImage").alt = currentItem.name;
+/* ⭐ NO RESPONSE HANDLING ⭐ */
+function handleNoResponse() {
+    score--;
+    document.getElementById("scoreDisplay").innerText = "Score: " + score;
+    sendAnalyticsEvent(currentItem.name, "no_response", currentItem.bin, score);
 
-        // Auto-skip logic for Medium / Hard
-        if (currentSettings.autoSkipMs) {
-            itemTimeout = setTimeout(() => {
-                handleNoResponse();
-            }, currentSettings.autoSkipMs);
-        }
-    }
+    if (timer > 0) loadNextItem();
+}
 
-    // ⭐ HANDLE NO RESPONSE IN TIME (FOR MEDIUM & HARD) ⭐
-    function handleNoResponse() {
-        // Count as wrong attempt
-        score--;
-        document.getElementById("scoreDisplay").innerText = "Score: " + score;
 
-        sendAnalyticsEvent(currentItem.name, "no_response", currentItem.bin, score);
+/* ⭐ CHECK ANSWER ⭐ */
+function checkAnswer(selectedBin) {
+    clearTimeout(itemTimeout);
 
-        // Load next item only if game not over
-        if (timer > 0) {
-            loadNextItem();
-        }
-    }
+    if (selectedBin === currentItem.bin) score++;
+    else score--;
 
-    // ⭐ CHECK ANSWER ⭐
-    function checkAnswer(selectedBin) {
-        if (!currentItem) return;
+    document.getElementById("scoreDisplay").innerText = "Score: " + score;
 
-        clearTimeout(itemTimeout);
+    sendAnalyticsEvent(currentItem.name, selectedBin, currentItem.bin, score);
 
-        if (selectedBin === currentItem.bin) {
-            score++;
-        } else {
-            score--;
-        }
+    if (timer > 0) loadNextItem();
+}
 
-        document.getElementById("scoreDisplay").innerText = "Score: " + score;
 
-        sendAnalyticsEvent(currentItem.name, selectedBin, currentItem.bin, score);
+/* ⭐ END GAME ⭐ */
+function endGame() {
+    clearInterval(timerInterval);
+    clearTimeout(itemTimeout);
 
-        if (timer > 0) {
-            loadNextItem();
-        }
-    }
+    document.getElementById("gameScreen").style.display = "none";
+    document.getElementById("gameOverScreen").style.display = "block";
 
-    // ⭐ END GAME ⭐
-    function endGame() {
-        clearInterval(timerInterval);
-        clearTimeout(itemTimeout);
+    document.getElementById("finalScore").innerText = score;
+    document.getElementById("finalDifficultyText").innerText =
+        "Difficulty played: " + currentSettings.label;
 
-        document.getElementById("gameScreen").style.display = "none";
-        document.getElementById("gameOverScreen").style.display = "block";
+    sendAnalyticsEvent("GAME_OVER", null, null, score);
+}
 
-        document.getElementById("finalScore").innerText = score;
-        document.getElementById("finalDifficultyText").innerText =
-            "Difficulty played: " + (currentSettings ? currentSettings.label : "");
 
-        // Final analytics (game over)
-        sendAnalyticsEvent("GAME_OVER", null, null, score);
-    }
+/* ⭐ BACK TO WELCOME ⭐ */
+function backToWelcome() {
+    document.getElementById("gameOverScreen").style.display = "none";
+    document.getElementById("welcomeScreen").style.display = "block";
+}
 
-    // ⭐ BACK TO WELCOME (CHOOSE LEVEL AGAIN) ⭐
-    function backToWelcome() {
-        document.getElementById("gameOverScreen").style.display = "none";
-        document.getElementById("welcomeScreen").style.display = "block";
-    }
 
-    // ⭐ ANALYTICS PLACEHOLDER ⭐
-    function sendAnalyticsEvent(itemName, chosenBin, correctBin, currentScore) {
-        console.log("Analytics event:", {
-            difficulty: currentDifficultyKey,
-            difficultyLabel: currentSettings ? currentSettings.label : null,
-            item: itemName,
-            chosen: chosenBin,
-            correct: correctBin,
-            score: currentScore,
-            timestamp: new Date().toISOString()
-        });
+/* ⭐ ANALYTICS ⭐ */
+function sendAnalyticsEvent(itemName, chosenBin, correctBin, currentScore) {
+    console.log("Analytics event:", {
+        difficulty: currentDifficultyKey,
+        item: itemName,
+        chosen: chosenBin,
+        correct: correctBin,
+        score: currentScore,
+        time: new Date().toISOString()
+    });
 
-        // 👉 Here you plug in your GA4 / Sheets / API call
-    }
+    // 👉 Add GA4 event push here later
+}
 </script>
 
 </body>
