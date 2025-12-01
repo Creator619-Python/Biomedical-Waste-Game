@@ -18,6 +18,22 @@
         padding: 20px;
     }
 
+    /* Pastel Cards */
+    .card {
+        width: 90%;
+        margin: 12px auto;
+        padding: 15px;
+        border-radius: 14px;
+        text-align: left;
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .card-blue  { background: #e7f0ff; border-left: 5px solid #4a8dff; }
+    .card-yellow{ background: #fff7d9; border-left: 5px solid #ffcc40; }
+    .card-green { background: #e9f9e8; border-left: 5px solid #4cc06b; }
+    .card-orange{ background: #ffe9d6; border-left: 5px solid #ff9f40; }
+
     /* Buttons */
     .btn {
         width: 80%;
@@ -37,7 +53,6 @@
         background: #25D366;
     }
 
-    /* Bins */
     .bin {
         width: 120px;
         margin: 10px;
@@ -55,7 +70,7 @@
         margin-top: 10px;
     }
 
-    /* Timer bar */
+    /* Timer Bar */
     #timerBarContainer {
         width: 85%;
         height: 12px;
@@ -71,22 +86,20 @@
         border-radius: 10px;
     }
 
-    /* Footer credit */
     .footer-credit {
         margin-top: 20px;
         color: #777;
         font-size: 14px;
     }
 
-    /* Toast */
     #toast {
         position: fixed;
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
         background: #ff4444;
-        color: white;
         padding: 10px 20px;
+        color: white;
         border-radius: 10px;
         display: none;
         font-weight: bold;
@@ -101,16 +114,30 @@
 
 <div id="toast"></div>
 
-<!-- ⭐ SINGLE PAGE: WELCOME + INSTRUCTIONS + DIFFICULTY -->
+<!-- ⭐ WELCOME + INSTRUCTIONS + DIFFICULTY (All in one page) -->
 <div id="startScreen" style="display:block;">
 
     <h1>Biomedical Waste Training Game</h1>
     <p>Quick BMW segregation training for healthcare staff.</p>
 
-    <h3>Instructions</h3>
-    <p>• An item will appear on screen.</p>
-    <p>• Tap the correct waste bin.</p>
-    <p>• Score: +1 correct / -1 wrong.</p>
+    <div class="card card-blue">
+        <b>📘 Objective</b><br>
+        Segregate each medical item into the correct waste bin.
+    </div>
+
+    <div class="card card-yellow">
+        <b>🧪 How to Play</b><br>
+        • An item will appear.<br>
+        • Tap the correct waste bin.<br>
+        • Correct = +1 | Wrong = -1<br>
+    </div>
+
+    <div class="card card-green">
+        <b>⏱ Timing & Modes</b><br>
+        • Easy: 90 sec, no auto-skip<br>
+        • Medium: 60 sec, auto-skip (5s)<br>
+        • Hard: 30 sec, auto-skip (3s)
+    </div>
 
     <h3>Select Difficulty</h3>
 
@@ -122,7 +149,7 @@
 </div>
 
 
-<!-- ⭐ GAME SCREEN (old UI preserved) -->
+<!-- ⭐ GAME SCREEN (Original gameplay preserved) -->
 <div id="gameScreen">
     <h2 id="difficultyText"></h2>
 
@@ -283,7 +310,7 @@ function endGame() {
     finalScore.innerText = score;
     difficultyResult.innerText = settings[currentLevel].label;
 
-    // CONFETTI (C1 minimal)
+    // CONFETTI (C1 Minimal)
     confetti({
         particleCount: 120,
         spread: 50,
@@ -292,7 +319,7 @@ function endGame() {
 }
 
 /* ------------------------------
-   WHATSAPP SHARE (W2)
+   WHATSAPP SHARE
 ------------------------------ */
 function shareOnWhatsApp() {
     const msg =
