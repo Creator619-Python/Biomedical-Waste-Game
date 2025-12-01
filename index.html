@@ -4,251 +4,392 @@
 <title>Biomedical Waste Segregation Game</title>
 
 <style>
+/* ----------------------------------------------
+   GLOBAL APP BACKGROUND
+---------------------------------------------- */
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #3c7df0, #dbe7ff);
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
 
-    /* GLOBAL APP BACKGROUND */
-    body {
-        margin: 0;
-        padding: 0;
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: linear-gradient(to bottom, #3c7df0, #dbe7ff);
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-    }
+/* ----------------------------------------------
+   SCREEN CONTAINER (shows one at a time)
+---------------------------------------------- */
+.screen {
+    width: 92%;
+    max-width: 460px;
+    background: white;
+    margin-top: 35px;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
 
-    /* APP CONTAINER */
-    .screen {
-        width: 92%;
-        max-width: 450px;
-        background: #ffffff;
-        margin-top: 35px;
-        border-radius: 22px;
-        padding: 28px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.18);
-        display: none;
-        animation: fadeIn 0.5s;
-    }
+/* FADE ANIMATION */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(14px);}
+    to   {opacity: 1; transform: translateY(0);}
+}
 
-    /* ANIMATION */
-    @keyframes fadeIn {
-        from {opacity: 0; transform: translateY(10px);}
-        to   {opacity: 1; transform: translateY(0);}
-    }
+/* HEADERS */
+h1, h2, h3 {
+    margin-top: 0;
+    color: #1b3b82;
+    font-weight: 700;
+}
 
-    h1, h2, h3 {
-        margin-top: 0;
-        color: #1a3f8b;
-        font-weight: 700;
-    }
+/* PARAGRAPHS */
+p {
+    color: #444;
+    font-size: 16px;
+    line-height: 1.5;
+}
 
-    p, li {
-        color: #444;
-        font-size: 16px;
-        line-height: 1.5;
-    }
+/* ----------------------------------------------
+   BUTTONS
+---------------------------------------------- */
+.btn {
+    width: 100%;
+    background: #1e5aff;
+    color: white;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 18px;
+    margin: 10px 0;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.25s;
+}
 
-    /* BUTTONS */
-    .btn {
-        width: 100%;
-        background: #1e5aff;
-        color: white;
-        padding: 14px;
-        border-radius: 14px;
-        font-size: 18px;
-        margin: 10px 0;
-        border: none;
-        cursor: pointer;
-        transition: 0.25s;
-        font-weight: 600;
-    }
+.btn:hover {
+    background: #0c3ecc;
+    transform: scale(1.03);
+}
 
-    .btn:hover {
-        background: #0c3fcb;
-        transform: scale(1.03);
-    }
+.difficulty-btn {
+    background: #ffffff;
+    color: #1e5aff;
+    border: 2px solid #1e5aff;
+}
 
-    .difficulty-btn {
-        background: #ffffff;
-        color: #1e5aff;
-        border: 2px solid #1e5aff;
-    }
+.difficulty-btn:hover {
+    background: #1e5aff;
+    color: white;
+}
 
-    .difficulty-btn:hover {
-        background: #1e5aff;
-        color: white;
-    }
+/* ----------------------------------------------
+   MICRO-CARDS (Icon Cards)
+---------------------------------------------- */
+.card-box {
+    background: #f3f6ff;
+    border-left: 5px solid #1e5aff;
+    border-radius: 14px;
+    padding: 15px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+}
 
-    /* ITEM IMAGE CARD */
-    #itemImage {
-        width: 230px;
-        height: 230px;
-        object-fit: contain;
-        background: #f3f6ff;
-        border-radius: 16px;
-        padding: 12px;
-        border: 2px solid #bfd2ff;
-        margin: 20px auto;
-        display: block;
-    }
+.card-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
 
-    /* BINS GRID */
-    .bins-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        margin-top: 15px;
-    }
+.card-content-title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #1b3b82;
+    margin-bottom: 4px;
+}
 
-    .bin {
-        width: 135px;
-        border-radius: 14px;
-        background: #f8faff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        padding: 10px;
-        cursor: pointer;
-    }
+/* ----------------------------------------------
+   PROGRESS BAR TIMER
+---------------------------------------------- */
+#timerBarContainer {
+    width: 100%;
+    background: #d0ddff;
+    height: 10px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+#timerBar {
+    height: 10px;
+    background: #1e5aff;
+    width: 100%;
+    border-radius: 10px;
+    transition: width 1s linear;
+}
+
+/* ----------------------------------------------
+   ITEM DISPLAY
+---------------------------------------------- */
+#itemImage {
+    width: 240px;
+    height: 240px;
+    object-fit: contain;
+    background: #f3f6ff;
+    border-radius: 18px;
+    padding: 12px;
+    border: 2px solid #bfd2ff;
+    display: block;
+    margin: 18px auto;
+}
+
+#itemName {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1b3b82;
+    margin-bottom: 15px;
+}
+
+/* ----------------------------------------------
+   BINS GRID
+---------------------------------------------- */
+.bins-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.bin {
+    width: 140px;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    padding: 12px;
+    cursor: pointer;
+}
+
+/* ----------------------------------------------
+   FEEDBACK POPUP (toast)
+---------------------------------------------- */
+#toast {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff4141;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    display: none;
+    z-index: 999;
+    animation: fadeIn 0.3s;
+}
 
 </style>
 </head>
 
 <body>
 
+<div id="toast"></div>
 
-<!-- ⭐ SCREEN 1 — WELCOME SCREEN -->
+<!-- ⭐ SCREEN: WELCOME -->
 <div id="welcomeScreen" class="screen" style="display:block;">
-    <h1>Biomedical Waste Game</h1>
+    <h1>Biomedical Waste Training Game</h1>
+    <p>Learn correct biomedical waste segregation with this fast, interactive training tool.</p>
 
-    <p>
-        A fast and interactive way to learn biomedical waste segregation.
-        Choose the correct bin for each item and test your accuracy!
-    </p>
+    <!-- MICRO CARD 1 -->
+    <div class="card-box">
+        <div class="card-icon">📘</div>
+        <div>
+            <div class="card-content-title">Objective</div>
+            Segregate each medical item into the correct waste bin.
+        </div>
+    </div>
 
-    <button class="btn" onclick="goToDifficulty()">Start</button>
+    <!-- MICRO CARD 2 -->
+    <div class="card-box">
+        <div class="card-icon">🧪</div>
+        <div>
+            <div class="card-content-title">How to Play</div>
+            An item appears → tap the correct bin → earn points.
+        </div>
+    </div>
+
+    <!-- MICRO CARD 3 -->
+    <div class="card-box">
+        <div class="card-icon">⏱️</div>
+        <div>
+            <div class="card-content-title">Timing & Scoring</div>
+            Easy = no penalty, Medium/Hard = auto-skip & penalties.
+        </div>
+    </div>
+
+    <button class="btn" onclick="showScreen('difficultyScreen')">Start</button>
 </div>
 
 
 
-<!-- ⭐ SCREEN 2 — DIFFICULTY SELECT -->
+<!-- ⭐ SCREEN: DIFFICULTY -->
 <div id="difficultyScreen" class="screen">
     <h2>Select Difficulty</h2>
 
+    <div class="card-box">
+        <div class="card-icon">😊</div>
+        <div>
+            <div class="card-content-title">Easy</div>
+            90 sec, no penalty, slow pace.
+        </div>
+    </div>
+
     <button class="btn difficulty-btn" onclick="startGame('easy')">Easy</button>
+
+    <div class="card-box">
+        <div class="card-icon">⚡</div>
+        <div>
+            <div class="card-content-title">Medium</div>
+            60 sec, 5 sec auto-skip, penalties.
+        </div>
+    </div>
+
     <button class="btn difficulty-btn" onclick="startGame('medium')">Medium</button>
+
+    <div class="card-box">
+        <div class="card-icon">🔥</div>
+        <div>
+            <div class="card-content-title">Hard</div>
+            30 sec, 3 sec auto-skip, tricky items.
+        </div>
+    </div>
+
     <button class="btn difficulty-btn" onclick="startGame('hard')">Hard</button>
 </div>
 
 
 
-<!-- ⭐ SCREEN 3 — GAME SCREEN -->
+<!-- ⭐ SCREEN: GAME -->
 <div id="gameScreen" class="screen">
-    <h2>Segregate the Waste</h2>
 
-    <p id="difficultyDisplay" style="font-weight:600; color:#173a80;"></p>
-    <p id="timerDisplay"><b>Time Left:</b> 60s</p>
-    <p id="scoreDisplay"><b>Score:</b> 0</p>
+    <!-- TIMER BAR -->
+    <div id="timerBarContainer">
+        <div id="timerBar"></div>
+    </div>
 
+    <h2>Choose the Correct Bin</h2>
+    <p id="difficultyDisplay"></p>
+
+    <p><b>Score:</b> <span id="scoreDisplay">0</span></p>
+
+    <p id="itemName"></p>
     <img id="itemImage" src="" alt="Item">
 
     <div class="bins-grid">
-        <img src="images/redbin.jpg"         class="bin" onclick="checkAnswer('red')">
-        <img src="images/yellowbin.jpg"      class="bin" onclick="checkAnswer('yellow')">
-        <img src="images/bluebin.png"        class="bin" onclick="checkAnswer('blue')">
-        <img src="images/greenbin.png"       class="bin" onclick="checkAnswer('green')">
+        <img src="images/redbin.jpg" class="bin" onclick="checkAnswer('red')">
+        <img src="images/yellowbin.jpg" class="bin" onclick="checkAnswer('yellow')">
+        <img src="images/bluebin.png" class="bin" onclick="checkAnswer('blue')">
+        <img src="images/greenbin.png" class="bin" onclick="checkAnswer('green')">
         <img src="images/translucentbin.png" class="bin" onclick="checkAnswer('translucent')">
     </div>
+
 </div>
 
 
 
-<!-- ⭐ SCREEN 4 — RESULT SCREEN -->
+<!-- ⭐ SCREEN: RESULT -->
 <div id="resultScreen" class="screen">
     <h1>🎉 Great Job!</h1>
     <h2>Your Score: <span id="finalScore"></span></h2>
+    <p id="finalDifficultyText"></p>
 
-    <p id="finalDifficultyText" style="font-size:17px;"></p>
-
-    <button class="btn" onclick="goHome()">Play Again</button>
+    <button class="btn" onclick="showScreen('welcomeScreen')">Play Again</button>
 </div>
 
 
 
 <script>
-
-/* ⭐ SCREEN NAVIGATION */
-function goToDifficulty() {
-    showScreen("difficultyScreen");
-}
-
-function goHome() {
-    showScreen("welcomeScreen");
-}
-
+/* ---------------------------------------------------
+   SCREEN NAVIGATION
+--------------------------------------------------- */
 function showScreen(id) {
-    document.getElementById("welcomeScreen").style.display = "none";
-    document.getElementById("difficultyScreen").style.display = "none";
-    document.getElementById("gameScreen").style.display = "none";
-    document.getElementById("resultScreen").style.display = "none";
+    ["welcomeScreen", "difficultyScreen", "gameScreen", "resultScreen"].forEach(s => {
+        document.getElementById(s).style.display = "none";
+    });
     document.getElementById(id).style.display = "block";
 }
 
+/* ---------------------------------------------------
+   SHOW TOAST FEEDBACK
+--------------------------------------------------- */
+function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.innerText = msg;
+    t.style.display = "block";
+    setTimeout(() => t.style.display = "none", 1400);
+}
 
-
-/* ⭐ DIFFICULTY SETTINGS */
+/* ---------------------------------------------------
+   DIFFICULTY SETTINGS
+--------------------------------------------------- */
 const difficultySettings = {
     easy: { label:"Easy (90s)", totalTime:90, autoSkipMs:null, itemPool:"easy" },
     medium:{ label:"Medium (60s, 5s auto-skip)", totalTime:60, autoSkipMs:5000, itemPool:"all" },
     hard:{ label:"Hard (30s, 3s auto-skip)", totalTime:30, autoSkipMs:3000, itemPool:"allPlusTricky" }
 };
 
-
-/* ⭐ ITEMS (YOUR REAL IMAGES) */
+/* ---------------------------------------------------
+   ITEM POOLS (Your Images)
+--------------------------------------------------- */
 const easyItems = [
-    { name:"Mask", img:"images/Mask.webp", bin:"red" },
-    { name:"Syringe (no needle)", img:"images/Syringe.webp", bin:"red" },
-    { name:"Blood Bag", img:"images/Blood Bag.avif", bin:"yellow" },
-    { name:"Cotton Swabs", img:"images/Contaminated-Cotton-Swabs.webp", bin:"yellow" },
-    { name:"Vial", img:"images/Vial.jpg", bin:"blue" },
-    { name:"Ampoules", img:"images/Ampoules.webp", bin:"blue" },
-    { name:"Expired Medicines", img:"images/Expired Medicines.webp", bin:"green" }
+    {name:"Mask", img:"images/Mask.webp", bin:"red"},
+    {name:"Syringe (No Needle)", img:"images/Syringe.webp", bin:"red"},
+    {name:"Blood Bag", img:"images/Blood Bag.avif", bin:"yellow"},
+    {name:"Cotton Swabs", img:"images/Contaminated-Cotton-Swabs.webp", bin:"yellow"},
+    {name:"Vial", img:"images/Vial.jpg", bin:"blue"},
+    {name:"Ampoules", img:"images/Ampoules.webp", bin:"blue"},
+    {name:"Expired Medicines", img:"images/Expired Medicines.webp", bin:"green"}
 ];
 
 const mediumExtraItems = [
-    { name:"IV Set", img:"images/IV SET.png", bin:"red" },
-    { name:"Catheter", img:"images/Catheter.jpg", bin:"red" },
-    { name:"Dialysis Kit", img:"images/Dialysis Kit.webp", bin:"red" },
-    { name:"Urine Bag", img:"images/Urine Bag.webp", bin:"red" },
-    { name:"Vacutainers", img:"images/Vacutainers.webp", bin:"red" },
-    { name:"Human Anatomical Waste", img:"images/Human anatomical waste.webp", bin:"yellow" },
-    { name:"Placenta", img:"images/Placenta.webp", bin:"yellow" },
-    { name:"Plaster Cast", img:"images/Plaster cast.jpg", bin:"yellow" },
-    { name:"IV Bottles", img:"images/IV bottles.jpg", bin:"blue" },
-    { name:"Metallic Body Implants", img:"images/Metallic body implants.png", bin:"blue" },
-    { name:"Lab Slides", img:"images/Lab Slides.jpg", bin:"blue" }
+    {name:"IV Set", img:"images/IV SET.png", bin:"red"},
+    {name:"Catheter", img:"images/Catheter.jpg", bin:"red"},
+    {name:"Dialysis Kit", img:"images/Dialysis Kit.webp", bin:"red"},
+    {name:"Urine Bag", img:"images/Urine Bag.webp", bin:"red"},
+    {name:"Vacutainers", img:"images/Vacutainers.webp", bin:"red"},
+    {name:"Human Anatomical Waste", img:"images/Human anatomical waste.webp", bin:"yellow"},
+    {name:"Placenta", img:"images/Placenta.webp", bin:"yellow"},
+    {name:"Plaster Cast", img:"images/Plaster cast.jpg", bin:"yellow"},
+    {name:"IV Bottles", img:"images/IV bottles.jpg", bin:"blue"},
+    {name:"Metallic Body Implants", img:"images/Metallic body implants.png", bin:"blue"},
+    {name:"Lab Slides", img:"images/Lab Slides.jpg", bin:"blue"}
 ];
 
 const trickyItems = [
-    { name:"Needles", img:"images/Needles.webp", bin:"translucent" },
-    { name:"Syringe with Needle", img:"images/Syringes with needles.png", bin:"translucent" },
-    { name:"Blade", img:"images/Blade.webp", bin:"translucent" },
-    { name:"Scalpel", img:"images/Scalpel.webp", bin:"translucent" },
-    { name:"Wound Dressing", img:"images/Wound dressing.webp", bin:"yellow" },
-    { name:"Scissors", img:"images/Scissors.webp", bin:"red" }
+    {name:"Needles", img:"images/Needles.webp", bin:"translucent"},
+    {name:"Syringe with Needle", img:"images/Syringes with needles.png", bin:"translucent"},
+    {name:"Blade", img:"images/Blade.webp", bin:"translucent"},
+    {name:"Scalpel", img:"images/Scalpel.webp", bin:"translucent"},
+    {name:"Wound Dressing", img:"images/Wound dressing.webp", bin:"yellow"},
+    {name:"Scissors", img:"images/Scissors.webp", bin:"red"}
 ];
 
 const allItems = easyItems.concat(mediumExtraItems);
 const allPlusTricky = allItems.concat(trickyItems);
 
-
-/* ⭐ GAME STATE */
+/* ---------------------------------------------------
+   GAME STATE
+--------------------------------------------------- */
 let score = 0;
 let timer = 0;
+let currentItem = null;
 let timerInterval = null;
 let itemTimeout = null;
 let currentSettings = null;
-let currentItem = null;
 
-
+/* ---------------------------------------------------
+   START GAME
+--------------------------------------------------- */
 function startGame(level) {
     showScreen("gameScreen");
 
@@ -257,75 +398,91 @@ function startGame(level) {
     timer = currentSettings.totalTime;
 
     document.getElementById("difficultyDisplay").innerText = currentSettings.label;
-    document.getElementById("timerDisplay").innerText = "Time Left: " + timer + "s";
-    document.getElementById("scoreDisplay").innerText = "Score: " + score;
+    document.getElementById("scoreDisplay").innerText = score;
 
     startTimer();
     loadNextItem();
 }
 
-
-/* TIMER */
+/* ---------------------------------------------------
+   TIMER (with progress bar)
+--------------------------------------------------- */
 function startTimer() {
     clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         timer--;
-        document.getElementById("timerDisplay").innerText = "Time Left: " + timer + "s";
+        const percent = (timer / currentSettings.totalTime) * 100;
+        document.getElementById("timerBar").style.width = percent + "%";
+
+        if (percent < 35) document.getElementById("timerBar").style.background = "#ff4141";
+        else if (percent < 60) document.getElementById("timerBar").style.background = "#ffb20f";
+        else document.getElementById("timerBar").style.background = "#1e5aff";
 
         if (timer <= 0) endGame();
     }, 1000);
 }
 
-
-/* ITEM POOL */
-function getItemPool() {
+/* ---------------------------------------------------
+   ITEM POOL SELECTION
+--------------------------------------------------- */
+function getPool() {
     if (currentSettings.itemPool === "easy") return easyItems;
     if (currentSettings.itemPool === "all") return allItems;
     return allPlusTricky;
 }
 
-
-/* LOAD NEXT ITEM */
+/* ---------------------------------------------------
+   LOAD ITEM
+--------------------------------------------------- */
 function loadNextItem() {
     clearTimeout(itemTimeout);
 
-    const pool = getItemPool();
+    const pool = getPool();
     currentItem = pool[Math.floor(Math.random() * pool.length)];
 
     document.getElementById("itemImage").src = currentItem.img;
+    document.getElementById("itemName").innerText = "Item: " + currentItem.name;
 
     if (currentSettings.autoSkipMs) {
         itemTimeout = setTimeout(() => {
             score--;
-            document.getElementById("scoreDisplay").innerText = "Score: " + score;
+            document.getElementById("scoreDisplay").innerText = score;
+            showToast("⏱ Auto-skip! -" + 1);
             loadNextItem();
         }, currentSettings.autoSkipMs);
     }
 }
 
-
-/* CHECK ANSWER */
+/* ---------------------------------------------------
+   CHECK ANSWER
+--------------------------------------------------- */
 function checkAnswer(selectedBin) {
     clearTimeout(itemTimeout);
 
-    if (selectedBin === currentItem.bin) score++;
-    else score--;
-
-    document.getElementById("scoreDisplay").innerText = "Score: " + score;
+    if (selectedBin === currentItem.bin) {
+        score++;
+        document.getElementById("scoreDisplay").innerText = score;
+        showToast("✔ Correct! +1");
+    } else {
+        score--;
+        document.getElementById("scoreDisplay").innerText = score;
+        showToast("❌ Wrong! Correct bin: " + currentItem.bin.toUpperCase());
+    }
 
     if (timer > 0) loadNextItem();
 }
 
-
-/* END GAME */
+/* ---------------------------------------------------
+   END GAME
+--------------------------------------------------- */
 function endGame() {
     clearInterval(timerInterval);
     clearTimeout(itemTimeout);
 
     document.getElementById("finalScore").innerText = score;
     document.getElementById("finalDifficultyText").innerText =
-        "Difficulty: " + currentSettings.label;
+        "Difficulty Played: " + currentSettings.label;
 
     showScreen("resultScreen");
 }
