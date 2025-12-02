@@ -18,19 +18,19 @@ const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
 
 // =======================================================
-// LOAD ITEMS (IMPORTANT: CACHE BYPASS)
+// LOAD ITEMS (IMPORTANT: ADD CACHE-BYPASS)
 // =======================================================
 async function loadItems() {
-    const response = await fetch("items.json?v=" + Date.now());   // <-- FIXED
+    const response = await fetch("items.json?v=" + Date.now()); // STOP GITHUB CACHE
     items = await response.json();
 }
 
 
 // =======================================================
-// INITIALISE GAME
+// INIT GAME
 // =======================================================
 async function initGame() {
-    await loadItems(); // <-- Items load properly now
+    await loadItems();
 
     const diffCards = document.querySelectorAll(".difficulty-card");
     const startBtn = document.getElementById("startGameBtn");
@@ -40,7 +40,6 @@ async function initGame() {
             card.addEventListener("click", () => {
                 diffCards.forEach(c => c.classList.remove("selected"));
                 card.classList.add("selected");
-
                 selectedDifficulty = card.getAttribute("data-level");
 
                 startBtn.disabled = false;
@@ -57,7 +56,7 @@ async function initGame() {
 
 
 // =======================================================
-// DIFFICULTY LOGIC
+// APPLY DIFFICULTY
 // =======================================================
 function applyDifficulty(level) {
     if (level === "easy") totalTime = 90;
@@ -107,15 +106,12 @@ function loadNextItem() {
     if (!items.length) return;
 
     currentItem = items[Math.floor(Math.random() * items.length)];
-
     fadeSwap("itemImage", currentItem.image);
     fadeSwap("itemName", currentItem.name);
 }
 
 
-// =======================================================
 // FADE EFFECT
-// =======================================================
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -142,7 +138,7 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
         if (!currentItem) return;
 
         let chosen = btn.dataset.bin.trim().toLowerCase();
-        let correct = currentItem.bin.trim().toLowerCase();   // <-- FIXED
+        let correct = currentItem.bin.trim().toLowerCase(); // FIXED
 
         if (chosen === correct) {
             score++;
@@ -161,23 +157,19 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 
 
 // =======================================================
-// TIMER
+// UPDATE TIMER
 // =======================================================
 function updateTimerUI() {
     const tv = document.getElementById("timerValue");
-    if (!tv) return;
-
-    tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
+    if (tv) tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
 
     const pf = document.getElementById("progressFill");
-    if (pf) {
-        pf.style.width = (timeLeft / totalTime * 100) + "%";
-    }
+    if (pf) pf.style.width = (timeLeft / totalTime * 100) + "%";
 }
 
 
 // =======================================================
-// UPDATE SCORE
+// UPDATE SCORE + ACCURACY
 // =======================================================
 function updateStats() {
     let accuracy =
@@ -188,15 +180,14 @@ function updateStats() {
     document.getElementById("score").textContent = score;
 
     const statsElem = document.getElementById("gameStats");
-    if (statsElem) {
+    if (statsElem)
         statsElem.textContent =
             `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-    }
 }
 
 
 // =======================================================
-// FEEDBACK
+// FEEDBACK MESSAGE
 // =======================================================
 function showFeedback(text, good) {
     const fb = document.getElementById("feedback");
@@ -215,8 +206,6 @@ function showFeedback(text, good) {
 function endGame() {
     clearInterval(timerInterval);
 
-    const modal = document.getElementById("gameOverModal");
-
     const accuracy =
         correctCount + wrongCount === 0
             ? 0
@@ -226,7 +215,7 @@ function endGame() {
     document.getElementById("finalStatsText").textContent =
         `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 
-    modal.classList.remove("hidden");
+    document.getElementById("gameOverModal").classList.remove("hidden");
 }
 
 
@@ -240,16 +229,10 @@ document.getElementById("playAgainBtn").addEventListener("click", () => {
 
 
 // =======================================================
-// CERTIFICATE
+// CERTIFICATE (temporary placeholder)
 // =======================================================
 document.getElementById("downloadCertBtn").addEventListener("click", () => {
-    let name = prompt("Enter your Name:");
-    if (!name) name = "Anonymous";
-
-    let org = prompt("Enter your Organization:");
-    if (!org) org = "Not Specified";
-
-    alert("Certificate feature will be upgraded soon.\n\nFor now, training record saved!");
+    alert("Certificate will be added after testing is complete!");
 });
 
 
@@ -257,6 +240,7 @@ document.getElementById("downloadCertBtn").addEventListener("click", () => {
 // INIT
 // =======================================================
 initGame();
+
 
 
 
