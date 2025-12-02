@@ -12,16 +12,16 @@ let timeLeft = 60;
 let totalTime = 60;
 let timerInterval = null;
 
-let selectedDifficulty = "medium"; // default if no start screen exists
+let selectedDifficulty = "medium";
 
 const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
 
 // =======================================================
-// LOAD ITEMS
+// LOAD ITEMS (CACHE BYPASS ADDED)
 // =======================================================
 async function loadItems() {
-    const response = await fetch("items.json");
+    const response = await fetch("items.json?v=" + Date.now()); // <-- FIXED
     items = await response.json();
 }
 
@@ -35,7 +35,6 @@ async function initGame() {
     const diffCards = document.querySelectorAll(".difficulty-card");
     const startBtn = document.getElementById("startGameBtn");
 
-    // CASE 1: Difficulty UI exists
     if (diffCards.length && startBtn) {
         diffCards.forEach(card => {
             card.addEventListener("click", () => {
@@ -50,10 +49,19 @@ async function initGame() {
         });
 
         startBtn.addEventListener("click", startGame);
-    }
-    // CASE 2: No difficulty screen → auto start
-    else {
+    } else {
         startGame();
+    }
+
+    const toggleBtn = document.getElementById("toggleInstructions");
+    const instructionsPanel = document.getElementById("instructionsPanel");
+    if (toggleBtn && instructionsPanel) {
+        toggleBtn.addEventListener("click", () => {
+            const isHidden = instructionsPanel.classList.toggle("hidden");
+            toggleBtn.textContent = isHidden
+                ? "▼ Show Instructions"
+                : "▲ Hide Instructions";
+        });
     }
 }
 
@@ -111,7 +119,6 @@ function loadNextItem() {
 }
 
 
-// fade swap animation
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -135,9 +142,12 @@ function fadeSwap(id, newValue) {
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-        let chosen = btn.dataset.bin;
+        if (!currentItem) return;
 
-        if (chosen === currentItem.bin) {
+        const chosen = btn.dataset.bin.trim().toLowerCase();
+        const correct = currentItem.bin.trim().toLowerCase();
+
+        if (chosen === correct) {
             score++;
             correctCount++;
             showFeedback("Correct segregation!", true);
@@ -158,10 +168,14 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
 // =======================================================
 function updateTimerUI() {
     const tv = document.getElementById("timerValue");
-    tv.textContent = `00:${timeLeft < 10 ? "0" + timeLeft : timeLeft}`;
+    if (tv) {
+        tv.textContent = `00:${timeLeft < 10 ? "0" + timeLeft : timeLeft}`;
+    }
 
-    document.getElementById("progressFill").style.width =
-        (timeLeft / totalTime * 100) + "%";
+    const progress = document.getElementById("progressFill");
+    if (progress) {
+        progress.style.width = (timeLeft / totalTime * 100) + "%";
+    }
 }
 
 
@@ -186,8 +200,9 @@ function updateStats() {
 // =======================================================
 function showFeedback(text, good) {
     const fb = document.getElementById("feedback");
-    fb.textContent = text;
+    if (!fb) return;
 
+    fb.textContent = text;
     fb.className = "feedback " + (good ? "correct" : "wrong");
 
     setTimeout(() => fb.className = "feedback", 1500);
@@ -225,12 +240,11 @@ document.getElementById("playAgainBtn").addEventListener("click", () => {
 
 
 // =======================================================
-// AUTO PDF CERTIFICATE
+// CERTIFICATE DOWNLOAD
 // =======================================================
 document.getElementById("downloadCertBtn").addEventListener("click", generateCertificate);
 
 async function generateCertificate() {
-
     let playerName = prompt("Enter your Name:");
     if (!playerName) playerName = "Anonymous";
 
@@ -245,34 +259,24 @@ async function generateCertificate() {
     const certID = "BMW-" + Math.floor(100000 + Math.random() * 900000);
     const certDate = new Date().toLocaleDateString();
 
-    // Load jsPDF + html2canvas
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
     await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
 
-    // Create certificate HTML
     const certDiv = document.createElement("div");
-    certDiv.style.width = "800px";
+    certDiv.style.width = "900px";
     certDiv.style.padding = "40px";
-    certDiv.style.textAlign = "center";
+    certDiv.style.background = "white";
     certDiv.style.fontFamily = "Arial";
+    certDiv.style.textAlign = "center";
 
     certDiv.innerHTML = `
-        <div style="
-            border: 8px solid #2b6cb0;
-            padding: 30px;
-            border-radius: 12px;
-        ">
+        <div style="border: 8px solid #2b6cb0; padding: 40px; border-radius: 12px;">
             <h1 style="color:#2b6cb0;">Certificate of Completion</h1>
-
-            <p>This is to certify that</p>
+            <p>This certifies that</p>
             <h2><strong>${playerName}</strong></h2>
-
             <p>from <strong>${org}</strong></p>
-
             <p>has successfully completed the</p>
-
             <h3><strong>Biomedical Waste Segregation Training Game</strong></h3>
-
             <br>
             <p><strong>Score:</strong> ${score}</p>
             <p><strong>Accuracy:</strong> ${accuracy}%</p>
@@ -282,49 +286,52 @@ async function generateCertificate() {
 
             <div id="qr-area"></div>
 
-            <p style="margin-top:12px;font-size:0.9rem;">
-                Scan to Play Again: ${GAME_URL}
-            </p>
+            <p style="margin-top: 12px; font-size: 0.9rem;">Scan to Play Again: ${GAME_URL}</p>
 
-            <p style="margin-top:16px;font-size:0.8rem;color:#444;">
+            <p style="margin-top:16px; font-size:0.8rem; color:#444;">
                 Designed & Developed by <strong>Gokul T.B</strong>
             </p>
         </div>
     `;
 
-    // Add QR code
     const qrDiv = certDiv.querySelector("#qr-area");
-    new QRCode(qrDiv, GAME_URL);
+    if (qrDiv && typeof QRCode !== "undefined") {
+        new QRCode(qrDiv, GAME_URL);
+    }
 
-    // Render image
-    const canvas = await html2canvas(certDiv);
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const canvas = await html2canvas(certDiv, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+    });
+
     const img = canvas.toDataURL("image/png");
 
-    // Create PDF
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF("landscape", "pt", "a4");
 
-    const width = pdf.internal.pageSize.getWidth();
-    const height = pdf.internal.pageSize.getHeight();
-
-    pdf.addImage(img, "PNG", 0, 0, width, height);
-
+    pdf.addImage(img, "PNG", 0, 0, pdf.internal.pageSize.width, pdf.internal.pageSize.height);
     pdf.save("certificate.pdf");
 }
 
 
-// helper to load external libraries
+// =======================================================
+// HELPER: Load external scripts
+// =======================================================
 function loadScript(url) {
     return new Promise(resolve => {
-        const script = document.createElement("script");
-        script.src = url;
-        script.onload = resolve;
-        document.body.appendChild(script);
+        const s = document.createElement("script");
+        s.src = url;
+        s.onload = resolve;
+        document.body.appendChild(s);
     });
 }
 
 
 // =======================================================
-// INIT
+// INIT GAME
 // =======================================================
 initGame();
+
