@@ -12,8 +12,11 @@ let timeLeft = 60;
 let totalTime = 60;
 let timerInterval = null;
 
-let selectedDifficulty = null;
+let selectedDifficulty = "medium";
 
+// =======================================================
+// LOAD ITEMS (cache-bypass)
+// =======================================================
 async function loadItems() {
     const response = await fetch("items.json?v=" + Date.now());
     items = await response.json();
@@ -34,16 +37,27 @@ async function initGame() {
                 diffCards.forEach(c => c.classList.remove("selected"));
                 card.classList.add("selected");
                 selectedDifficulty = card.getAttribute("data-level");
-
-                startBtn.disabled = false;
-                startBtn.classList.remove("disabled");
             });
         });
 
         startBtn.addEventListener("click", startGame);
-    } else {
-        selectedDifficulty = "medium";
-        startGame();
+    }
+
+    // Instructions toggler
+    const toggleBtn = document.getElementById("toggleInstructions");
+    const instructionsPanel = document.getElementById("instructionsPanel");
+    if (toggleBtn && instructionsPanel) {
+        toggleBtn.addEventListener("click", () => {
+            const isHidden = instructionsPanel.classList.toggle("hidden");
+            toggleBtn.textContent = isHidden
+                ? "▼ Show Instructions"
+                : "▲ Hide Instructions";
+        });
+    }
+
+    const waBtn = document.getElementById("whatsappShareBtn");
+    if (waBtn) {
+        waBtn.addEventListener("click", shareOnWhatsApp);
     }
 }
 
@@ -62,12 +76,10 @@ function applyDifficulty(level) {
 // START GAME
 // =======================================================
 function startGame() {
-    if (!selectedDifficulty) selectedDifficulty = "medium";
-
     const startScreen = document.getElementById("startScreen");
-    if (startScreen) startScreen.classList.add("hidden");
-
     const gameContainer = document.getElementById("gameContainer");
+
+    if (startScreen) startScreen.classList.add("hidden");
     if (gameContainer) gameContainer.classList.remove("hidden");
 
     clearInterval(timerInterval);
@@ -110,16 +122,17 @@ function fadeSwap(id, newValue) {
     elem.classList.add("fade-out");
 
     setTimeout(() => {
-        if (id === "itemImage")
-            elem.src = encodeURI(newValue);  // ⭐ FIXED HERE ⭐
-        else
+        if (id === "itemImage") {
+            elem.src = encodeURI(newValue);
+        } else {
             elem.textContent = newValue;
+        }
 
         elem.classList.remove("fade-out");
         elem.classList.add("fade-in");
 
-        setTimeout(() => elem.classList.remove("fade-in"), 250);
-    }, 200);
+        setTimeout(() => elem.classList.remove("fade-in"), 200);
+    }, 150);
 }
 
 // =======================================================
@@ -129,8 +142,8 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
         if (!currentItem) return;
 
-        let chosen = btn.dataset.bin.trim().toLowerCase();
-        let correct = currentItem.bin.trim().toLowerCase();
+        const chosen = btn.dataset.bin.trim().toLowerCase();
+        const correct = currentItem.bin.trim().toLowerCase();
 
         if (chosen === correct) {
             score++;
@@ -155,21 +168,23 @@ function updateTimerUI() {
     if (tv) tv.textContent = "00:" + (timeLeft < 10 ? "0" + timeLeft : timeLeft);
 
     const pf = document.getElementById("progressFill");
-    if (pf) pf.style.width = (timeLeft / totalTime * 100) + "%";
+    if (pf) {
+        pf.style.width = (timeLeft / totalTime * 100) + "%";
+    }
 }
 
 function updateStats() {
-    let accuracy =
-        correctCount + wrongCount === 0
-            ? 0
-            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+    const total = correctCount + wrongCount;
+    const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
 
-    document.getElementById("score").textContent = score;
+    const scoreEl = document.getElementById("score");
+    if (scoreEl) scoreEl.textContent = score;
 
     const statsElem = document.getElementById("gameStats");
-    if (statsElem)
+    if (statsElem) {
         statsElem.textContent =
             `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+    }
 }
 
 function showFeedback(text, good) {
@@ -179,34 +194,82 @@ function showFeedback(text, good) {
     fb.textContent = text;
     fb.className = "feedback " + (good ? "correct" : "wrong");
 
-    setTimeout(() => fb.className = "feedback", 1500);
+    setTimeout(() => {
+        fb.className = "feedback";
+    }, 1500);
 }
 
 // =======================================================
-// END GAME
+// END GAME + CONFETTI
 // =======================================================
 function endGame() {
     clearInterval(timerInterval);
 
-    const accuracy =
-        correctCount + wrongCount === 0
-            ? 0
-            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+    const total = correctCount + wrongCount;
+    const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
 
     document.getElementById("finalScoreText").textContent = `Your Score: ${score}`;
     document.getElementById("finalStatsText").textContent =
         `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 
-    document.getElementById("gameOverModal").classList.remove("hidden");
+    const modal = document.getElementById("gameOverModal");
+    modal.classList.remove("hidden");
+
+    launchConfetti();
 }
 
+function launchConfetti() {
+    const container = document.getElementById("confettiContainer");
+    if (!container) return;
+
+    container.innerHTML = "";
+    const colors = ["#F97316", "#10B981", "#3B82F6", "#E11D48", "#FACC15"];
+    const pieces = 120;
+
+    for (let i = 0; i < pieces; i++) {
+        const piece = document.createElement("div");
+        piece.classList.add("confetti-piece");
+        piece.style.left = Math.random() * 100 + "%";
+        piece.style.top = "-20px";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 0.5) + "s";
+        container.appendChild(piece);
+    }
+
+    setTimeout(() => {
+        container.innerHTML = "";
+    }, 2000);
+}
+
+// =======================================================
+// PLAY AGAIN
+// =======================================================
 document.getElementById("playAgainBtn").addEventListener("click", () => {
     document.getElementById("gameOverModal").classList.add("hidden");
     startGame();
 });
 
 // =======================================================
-// INIT
+// WHATSAPP SHARE
+// =======================================================
+function shareOnWhatsApp() {
+    const total = correctCount + wrongCount;
+    const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+    const url = "https://creator619-python.github.io/Biomedical-Waste-Game/";
+
+    const text =
+        `I played the Biomedical Waste Segregation Game!\n\n` +
+        `Score: ${score}\n` +
+        `Correct: ${correctCount}\n` +
+        `Wrong: ${wrongCount}\n` +
+        `Accuracy: ${accuracy}%\n\n` +
+        `Play here: ${url}`;
+
+    const waLink = "https://wa.me/?text=" + encodeURIComponent(text);
+    window.open(waLink, "_blank");
+}
+
+// =======================================================
+// START
 // =======================================================
 initGame();
-
