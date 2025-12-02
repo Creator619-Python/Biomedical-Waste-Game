@@ -14,17 +14,10 @@ let timerInterval = null;
 
 let selectedDifficulty = null;
 
-const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
-
-
-// =======================================================
-// LOAD ITEMS (IMPORTANT: ADD CACHE-BYPASS)
-// =======================================================
 async function loadItems() {
     const response = await fetch("items.json?v=" + Date.now());
     items = await response.json();
 }
-
 
 // =======================================================
 // INIT GAME
@@ -54,7 +47,6 @@ async function initGame() {
     }
 }
 
-
 // =======================================================
 // APPLY DIFFICULTY
 // =======================================================
@@ -65,7 +57,6 @@ function applyDifficulty(level) {
 
     timeLeft = totalTime;
 }
-
 
 // =======================================================
 // START GAME
@@ -98,7 +89,6 @@ function startGame() {
     }, 1000);
 }
 
-
 // =======================================================
 // LOAD NEXT ITEM
 // =======================================================
@@ -110,8 +100,9 @@ function loadNextItem() {
     fadeSwap("itemName", currentItem.name);
 }
 
-
-// FADE EFFECT
+// =======================================================
+// FADE + FIXED IMAGE LOADING (ENCODES SPACES!)
+// =======================================================
 function fadeSwap(id, newValue) {
     const elem = document.getElementById(id);
     if (!elem) return;
@@ -119,8 +110,10 @@ function fadeSwap(id, newValue) {
     elem.classList.add("fade-out");
 
     setTimeout(() => {
-        if (id === "itemImage") elem.src = newValue;
-        else elem.textContent = newValue;
+        if (id === "itemImage")
+            elem.src = encodeURI(newValue);  // ⭐ FIXED HERE ⭐
+        else
+            elem.textContent = newValue;
 
         elem.classList.remove("fade-out");
         elem.classList.add("fade-in");
@@ -129,9 +122,8 @@ function fadeSwap(id, newValue) {
     }, 200);
 }
 
-
 // =======================================================
-// BIN CLICK — FIXED COMPARISON
+// BIN CLICK
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -155,9 +147,8 @@ document.querySelectorAll(".bin-btn").forEach(btn => {
     });
 });
 
-
 // =======================================================
-// UPDATE TIMER
+// UI UPDATE FUNCTIONS
 // =======================================================
 function updateTimerUI() {
     const tv = document.getElementById("timerValue");
@@ -167,10 +158,6 @@ function updateTimerUI() {
     if (pf) pf.style.width = (timeLeft / totalTime * 100) + "%";
 }
 
-
-// =======================================================
-// UPDATE SCORE + ACCURACY
-// =======================================================
 function updateStats() {
     let accuracy =
         correctCount + wrongCount === 0
@@ -185,10 +172,6 @@ function updateStats() {
             `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 }
 
-
-// =======================================================
-// FEEDBACK MESSAGE
-// =======================================================
 function showFeedback(text, good) {
     const fb = document.getElementById("feedback");
     if (!fb) return;
@@ -198,7 +181,6 @@ function showFeedback(text, good) {
 
     setTimeout(() => fb.className = "feedback", 1500);
 }
-
 
 // =======================================================
 // END GAME
@@ -218,25 +200,13 @@ function endGame() {
     document.getElementById("gameOverModal").classList.remove("hidden");
 }
 
-
-// =======================================================
-// PLAY AGAIN
-// =======================================================
 document.getElementById("playAgainBtn").addEventListener("click", () => {
     document.getElementById("gameOverModal").classList.add("hidden");
     startGame();
 });
 
-
-// =======================================================
-// CERTIFICATE (TEMPORARY PLACEHOLDER)
-// =======================================================
-document.getElementById("downloadCertBtn").addEventListener("click", () => {
-    alert("Certificate feature will be added after testing!");
-});
-
-
 // =======================================================
 // INIT
 // =======================================================
 initGame();
+
