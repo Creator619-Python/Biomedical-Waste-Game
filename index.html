@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Biomedical Waste Segregation Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <title>Biomedical Waste Segregation Game</title>
     <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-    <!-- Full-screen confetti layer -->
+    <!-- FULLSCREEN CONFETTI -->
     <div id="confettiContainer"></div>
 
-    <!-- MAIN WRAPPER -->
+    <!-- FULLSCREEN BUTTON -->
+    <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
+
+    <!-- APP WRAPPER -->
     <div class="app-wrapper">
-        <!-- LEFT: START / INFO PANEL -->
+
+        <!-- LEFT PANEL (Start Screen) -->
         <div class="left-panel" id="startScreen">
             <h1 class="title">Biomedical Waste Segregation Game</h1>
-            <p class="subtitle">
-                Learn correct segregation by matching each item to the correct color-coded bin.
-            </p>
+            <p class="subtitle">Match each biomedical item to the correct color-coded bin.</p>
 
             <h2 class="section-title">Select Difficulty</h2>
             <div class="difficulty-grid">
@@ -36,9 +38,7 @@
                 </div>
             </div>
 
-            <button id="startGameBtn" class="primary-btn">
-                Start Game
-            </button>
+            <button id="startGameBtn" class="primary-btn">Start Game</button>
 
             <button id="toggleInstructions" class="secondary-btn">
                 ▼ Show Instructions
@@ -46,17 +46,23 @@
 
             <div id="instructionsPanel" class="instructions hidden">
                 <ol>
-                    <li>Click <strong>Start Game</strong>.</li>
-                    <li>Look at the biomedical waste item shown.</li>
-                    <li>Choose the correct color-coded bin.</li>
-                    <li>Correct answers increase your score, wrong answers reduce it.</li>
-                    <li>Try to achieve maximum accuracy before time runs out!</li>
+                    <li>Click <strong>Start Game</strong> to begin.</li>
+                    <li>An item will appear on the right side.</li>
+                    <li>Select the correct bin according to BMW rules.</li>
+                    <li>Correct = +1, Wrong = -1</li>
+                    <li>Try to maximize accuracy before time runs out!</li>
                 </ol>
             </div>
+
+            <!-- FOOTER CREDIT -->
+            <footer class="footer-credit">
+                Made with ❤️ by <strong>Gokul T.B.</strong>
+            </footer>
         </div>
 
-        <!-- RIGHT: GAME PANEL -->
+        <!-- RIGHT PANEL (Game Area) -->
         <div class="right-panel hidden" id="gameContainer">
+
             <div class="top-bar">
                 <div class="timer-box">
                     <span class="label">Time</span>
@@ -65,6 +71,7 @@
                         <div id="progressFill" class="progress-fill"></div>
                     </div>
                 </div>
+
                 <div class="score-box">
                     <span class="label">Score</span>
                     <span id="score" class="score-value">0</span>
@@ -72,20 +79,18 @@
             </div>
 
             <div class="item-area">
-                <img id="itemImage" src="" alt="Item" class="item-image" />
-                <div id="itemName" class="item-name">Item</div>
+                <img id="itemImage" src="" class="item-image" alt="Item" />
+                <div id="itemName" class="item-name">Item Name</div>
             </div>
 
-            <div id="feedback" class="feedback">
-                Click the correct bin!
-            </div>
+            <div id="feedback" class="feedback">Choose the correct bin</div>
 
             <div class="bins-row">
-                <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow Bin</button>
-                <button class="bin-btn bin-red" data-bin="Red">Red Bin</button>
-                <button class="bin-btn bin-white" data-bin="White">White Bin</button>
-                <button class="bin-btn bin-blue" data-bin="Blue">Blue Bin</button>
-                <button class="bin-btn bin-green" data-bin="Green">Green Bin</button>
+                <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow</button>
+                <button class="bin-btn bin-red" data-bin="Red">Red</button>
+                <button class="bin-btn bin-white" data-bin="White">White</button>
+                <button class="bin-btn bin-blue" data-bin="Blue">Blue</button>
+                <button class="bin-btn bin-green" data-bin="Green">Green</button>
             </div>
 
             <div id="gameStats" class="game-stats">
@@ -101,6 +106,8 @@
             <h2>Game Over!</h2>
             <p id="finalScoreText"></p>
             <p id="finalStatsText"></p>
+
+            <p class="modal-credit">Developed by <strong>Gokul T.B.</strong></p>
 
             <div class="modal-buttons">
                 <button id="playAgainBtn" class="primary-btn">Play Again</button>
