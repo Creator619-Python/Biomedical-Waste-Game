@@ -1,172 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Biomedical Waste Sorting Game</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <title>Biomedical Waste Segregation Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-4DQYGRYMM7');
-    </script>
-
-    <!-- QR Code Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- Full-screen confetti layer -->
+    <div id="confettiContainer"></div>
 
-<!-- ============================
-     START SCREEN
-=============================== -->
-<div id="startScreen" class="start-screen">
-    <h1 class="start-title">Biomedical Waste Sorting Game</h1>
-    <p class="start-subtitle">Select a difficulty level to begin</p>
+    <!-- MAIN WRAPPER -->
+    <div class="app-wrapper">
+        <!-- LEFT: START / INFO PANEL -->
+        <div class="left-panel" id="startScreen">
+            <h1 class="title">Biomedical Waste Segregation Game</h1>
+            <p class="subtitle">
+                Learn correct segregation by matching each item to the correct color-coded bin.
+            </p>
 
-    <div class="difficulty-container">
-        <div class="difficulty-card" data-level="easy">
-            <h3>Easy</h3>
-            <p>🟢 90 seconds</p>
-        </div>
-        <div class="difficulty-card" data-level="medium">
-            <h3>Medium</h3>
-            <p>🟡 60 seconds</p>
-        </div>
-        <div class="difficulty-card" data-level="hard">
-            <h3>Hard</h3>
-            <p>🔴 30 seconds</p>
-        </div>
-    </div>
-
-    <button id="startGameBtn" class="primary-btn disabled" disabled>
-        Start Game
-    </button>
-
-    <p class="analytics-note">
-        *This training game collects anonymous gameplay statistics only. No personal data is stored.*
-    </p>
-
-    <div class="footer-credit">
-        Designed & Developed by <strong>Gokul T.B</strong>
-    </div>
-</div>
-
-
-
-<!-- ============================
-     MAIN GAME CONTAINER
-=============================== -->
-<div id="gameContainer" class="container hidden">
-
-    <h1 class="title">Biomedical Waste Sorting Game</h1>
-    <p class="subtitle">Click the correct bin for each biomedical waste item.</p>
-
-    <!-- Timer + Progress -->
-    <div class="status-bar">
-        <div class="timer-box">
-            <span class="timer-label">Time Left</span>
-            <span id="timerValue" class="timer-value">01:00</span>
-        </div>
-
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div id="progressFill"></div>
+            <h2 class="section-title">Select Difficulty</h2>
+            <div class="difficulty-grid">
+                <div class="difficulty-card" data-level="easy">
+                    <h3>Easy</h3>
+                    <p>90 seconds</p>
+                </div>
+                <div class="difficulty-card selected" data-level="medium">
+                    <h3>Medium</h3>
+                    <p>60 seconds</p>
+                </div>
+                <div class="difficulty-card" data-level="hard">
+                    <h3>Hard</h3>
+                    <p>30 seconds</p>
+                </div>
             </div>
-            <div class="progress-text">Game Time</div>
-        </div>
-    </div>
 
-    <!-- Item + Score Panels -->
-    <div class="cards-container">
-        <div class="card item-card">
-            <h2>Current Item</h2>
-            <img id="itemImage" class="item-image fade-target" alt="Item">
-            <p id="itemName" class="item-name fade-target"></p>
+            <button id="startGameBtn" class="primary-btn">
+                Start Game
+            </button>
+
+            <button id="toggleInstructions" class="secondary-btn">
+                ▼ Show Instructions
+            </button>
+
+            <div id="instructionsPanel" class="instructions hidden">
+                <ol>
+                    <li>Click <strong>Start Game</strong>.</li>
+                    <li>Look at the biomedical waste item shown.</li>
+                    <li>Choose the correct color-coded bin.</li>
+                    <li>Correct answers increase your score, wrong answers reduce it.</li>
+                    <li>Try to achieve maximum accuracy before time runs out!</li>
+                </ol>
+            </div>
         </div>
 
-        <div class="card score-card">
-            <h2>Score</h2>
-            <p id="score" class="score-value">0</p>
+        <!-- RIGHT: GAME PANEL -->
+        <div class="right-panel hidden" id="gameContainer">
+            <div class="top-bar">
+                <div class="timer-box">
+                    <span class="label">Time</span>
+                    <span id="timerValue" class="timer-value">00:60</span>
+                    <div class="timer-progress">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="score-box">
+                    <span class="label">Score</span>
+                    <span id="score" class="score-value">0</span>
+                </div>
+            </div>
+
+            <div class="item-area">
+                <img id="itemImage" src="" alt="Item" class="item-image" />
+                <div id="itemName" class="item-name">Item</div>
+            </div>
+
+            <div id="feedback" class="feedback">
+                Click the correct bin!
+            </div>
+
+            <div class="bins-row">
+                <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow Bin</button>
+                <button class="bin-btn bin-red" data-bin="Red">Red Bin</button>
+                <button class="bin-btn bin-white" data-bin="White">White Bin</button>
+                <button class="bin-btn bin-blue" data-bin="Blue">Blue Bin</button>
+                <button class="bin-btn bin-green" data-bin="Green">Green Bin</button>
+            </div>
+
             <div id="gameStats" class="game-stats">
                 Correct: 0 | Wrong: 0 | Accuracy: 0%
             </div>
         </div>
     </div>
 
-    <!-- Feedback -->
-    <div id="feedback" class="feedback fade-target"></div>
+    <!-- GAME OVER MODAL -->
+    <div id="gameOverModal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p id="finalScoreText"></p>
+            <p id="finalStatsText"></p>
 
-    <!-- Bin Buttons -->
-    <div class="bin-container">
-        <button class="bin-btn" data-bin="Yellow">
-            <img src="images/yellowbin.jpg" class="bin-icon">
-            <div>Yellow</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Red">
-            <img src="images/redbin.jpg" class="bin-icon">
-            <div>Red</div>
-        </button>
-
-        <button class="bin-btn" data-bin="White">
-            <img src="images/translucentbin.png" class="bin-icon">
-            <div>White</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Blue">
-            <img src="images/bluebin.png" class="bin-icon">
-            <div>Blue</div>
-        </button>
-
-        <button class="bin-btn" data-bin="Green">
-            <img src="images/greenbin.png" class="bin-icon">
-            <div>Green</div>
-        </button>
-    </div>
-
-    <!-- Instructions Collapse -->
-    <button id="toggleInstructions" class="secondary-btn">▼ Show Instructions</button>
-
-    <div id="instructionsPanel" class="instructions hidden fade">
-        <div class="bin-info">
-            <div class="bin-info-item yellow"><strong>Yellow:</strong> Infectious, anatomical, expired medicines</div>
-            <div class="bin-info-item red"><strong>Red:</strong> Contaminated plastics</div>
-            <div class="bin-info-item white"><strong>White:</strong> Sharps</div>
-            <div class="bin-info-item blue"><strong>Blue:</strong> Glassware</div>
-            <div class="bin-info-item green"><strong>Green:</strong> General waste</div>
+            <div class="modal-buttons">
+                <button id="playAgainBtn" class="primary-btn">Play Again</button>
+                <button id="whatsappShareBtn" class="secondary-btn">Share on WhatsApp</button>
+            </div>
         </div>
     </div>
 
-    <div class="footer-credit">
-        Designed & Developed by <strong>Gokul T.B</strong>
-    </div>
-</div>
-
-
-
-
-
-<!-- ============================
-     GAME OVER MODAL
-=============================== -->
-<div id="gameOverModal" class="modal hidden">
-    <div class="modal-content">
-        <h2>Time’s Up!</h2>
-        <p id="finalScoreText"></p>
-        <p id="finalStatsText"></p>
-
-        <button id="downloadCertBtn" class="primary-btn">Download Certificate</button>
-        <button id="playAgainBtn" class="secondary-btn">Play Again</button>
-    </div>
-</div>
-
-<script src="game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
-
-
-
