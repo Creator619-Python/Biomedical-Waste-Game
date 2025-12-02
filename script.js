@@ -18,11 +18,11 @@ const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
 
 
 // =======================================================
-// LOAD ITEMS (CACHE BYPASS ADDED)
+// LOAD ITEMS (with cache-bypass + required awaits)
 // =======================================================
 async function loadItems() {
-    const response = await fetch("items.json?v=" + Date.now()); // <-- FIXED
-    items = await response.json();
+    const response = await fetch("items.json?v=" + Date.now());   // FIXED
+    items = await response.json();                                // FIXED
 }
 
 
@@ -30,7 +30,7 @@ async function loadItems() {
 // INITIALISE GAME
 // =======================================================
 async function initGame() {
-    await loadItems();
+    await loadItems();   // Items now load correctly 🔥
 
     const diffCards = document.querySelectorAll(".difficulty-card");
     const startBtn = document.getElementById("startGameBtn");
@@ -138,7 +138,7 @@ function fadeSwap(id, newValue) {
 
 
 // =======================================================
-// BIN CLICK HANDLING
+// BIN CLICK HANDLING (with fixed comparison)
 // =======================================================
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -334,4 +334,5 @@ function loadScript(url) {
 // INIT GAME
 // =======================================================
 initGame();
+
 
