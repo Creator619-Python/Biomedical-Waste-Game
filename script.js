@@ -1,338 +1,215 @@
-// =======================================================
-// GLOBAL VARIABLES
-// =======================================================
+// --- Configuration ---
+const GAME_DURATION = 60; // seconds
+
+// --- Game State ---
 let items = [];
 let currentItem = null;
-
 let score = 0;
 let correctCount = 0;
 let wrongCount = 0;
-
-let timeLeft = 60;
-let totalTime = 60;
+let timeLeft = GAME_DURATION;
 let timerInterval = null;
+let gameActive = false;
 
-let selectedDifficulty = "medium";
+// --- DOM Elements ---
+const scoreDisplay = document.getElementById("score");
+const itemImage = document.getElementById("itemImage");
+const itemName = document.getElementById("itemName");
+const feedback = document.getElementById("feedback");
+const progressFill = document.getElementById("progressFill");
+const timerValue = document.getElementById("timerValue");
+const gameStats = document.getElementById("gameStats");
+const gameOverModal = document.getElementById("gameOverModal");
+const finalScoreText = document.getElementById("finalScoreText");
+const finalStatsText = document.getElementById("finalStatsText");
+const playAgainBtn = document.getElementById("playAgainBtn");
 
-const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
-
-
-// =======================================================
-// LOAD ITEMS (with cache-bypass + required awaits)
-// =======================================================
-async function loadItems() {
-    const response = await fetch("items.json?v=" + Date.now());   // FIXED
-    items = await response.json();                                // FIXED
+// --- Utility: format time as MM:SS ---
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
 }
 
-
-// =======================================================
-// INITIALISE GAME
-// =======================================================
-async function initGame() {
-    await loadItems();   // Items now load correctly 🔥
-
-    const diffCards = document.querySelectorAll(".difficulty-card");
-    const startBtn = document.getElementById("startGameBtn");
-
-    if (diffCards.length && startBtn) {
-        diffCards.forEach(card => {
-            card.addEventListener("click", () => {
-                diffCards.forEach(c => c.classList.remove("selected"));
-                card.classList.add("selected");
-
-                selectedDifficulty = card.getAttribute("data-level");
-
-                startBtn.disabled = false;
-                startBtn.classList.remove("disabled");
-            });
-        });
-
-        startBtn.addEventListener("click", startGame);
-    } else {
-        startGame();
-    }
-
-    const toggleBtn = document.getElementById("toggleInstructions");
-    const instructionsPanel = document.getElementById("instructionsPanel");
-    if (toggleBtn && instructionsPanel) {
-        toggleBtn.addEventListener("click", () => {
-            const isHidden = instructionsPanel.classList.toggle("hidden");
-            toggleBtn.textContent = isHidden
-                ? "▼ Show Instructions"
-                : "▲ Hide Instructions";
-        });
-    }
+// --- Update Timer UI ---
+function updateTimerUI() {
+    timerValue.textContent = formatTime(timeLeft);
+    const percent = (timeLeft / GAME_DURATION) * 100;
+    progressFill.style.width = `${percent}%`;
 }
 
-
-// =======================================================
-// APPLY DIFFICULTY
-// =======================================================
-function applyDifficulty(level) {
-    if (level === "easy") totalTime = 90;
-    else if (level === "hard") totalTime = 30;
-    else totalTime = 60;
-
-    timeLeft = totalTime;
-}
-
-
-// =======================================================
-// START GAME
-// =======================================================
-function startGame() {
-    const startScreen = document.getElementById("startScreen");
-    const gameContainer = document.getElementById("gameContainer");
-
-    if (startScreen) startScreen.classList.add("hidden");
-    if (gameContainer) gameContainer.classList.remove("hidden");
-
-    clearInterval(timerInterval);
-    applyDifficulty(selectedDifficulty);
-
-    score = 0;
-    correctCount = 0;
-    wrongCount = 0;
-
-    updateStats();
+// --- Start Timer ---
+function startTimer() {
+    timeLeft = GAME_DURATION;
     updateTimerUI();
-
-    loadNextItem();
 
     timerInterval = setInterval(() => {
         timeLeft--;
         updateTimerUI();
-        if (timeLeft <= 0) endGame();
+
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            updateTimerUI();
+            clearInterval(timerInterval);
+            endGame();
+        }
     }, 1000);
 }
 
-
-// =======================================================
-// LOAD NEXT ITEM
-// =======================================================
-function loadNextItem() {
-    currentItem = items[Math.floor(Math.random() * items.length)];
-
-    fadeSwap("itemImage", currentItem.image);
-    fadeSwap("itemName", currentItem.name);
-}
-
-
-function fadeSwap(id, newValue) {
-    const elem = document.getElementById(id);
-    if (!elem) return;
-
-    elem.classList.add("fade-out");
-
-    setTimeout(() => {
-        if (id === "itemImage") elem.src = newValue;
-        else elem.textContent = newValue;
-
-        elem.classList.remove("fade-out");
-        elem.classList.add("fade-in");
-
-        setTimeout(() => elem.classList.remove("fade-in"), 250);
-    }, 200);
-}
-
-
-// =======================================================
-// BIN CLICK HANDLING (with fixed comparison)
-// =======================================================
-document.querySelectorAll(".bin-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        if (!currentItem) return;
-
-        const chosen = btn.dataset.bin.trim().toLowerCase();
-        const correct = currentItem.bin.trim().toLowerCase();
-
-        if (chosen === correct) {
-            score++;
-            correctCount++;
-            showFeedback("Correct segregation!", true);
-        } else {
-            score--;
-            wrongCount++;
-            showFeedback(`Wrong! Correct bin: ${currentItem.bin}`, false);
-        }
-
-        updateStats();
-        loadNextItem();
-    });
-});
-
-
-// =======================================================
-// TIMER UPDATE
-// =======================================================
-function updateTimerUI() {
-    const tv = document.getElementById("timerValue");
-    if (tv) {
-        tv.textContent = `00:${timeLeft < 10 ? "0" + timeLeft : timeLeft}`;
-    }
-
-    const progress = document.getElementById("progressFill");
-    if (progress) {
-        progress.style.width = (timeLeft / totalTime * 100) + "%";
-    }
-}
-
-
-// =======================================================
-// SCORE + ACCURACY
-// =======================================================
-function updateStats() {
-    const accuracy =
-        correctCount + wrongCount === 0
-            ? 0
-            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
-
-    document.getElementById("score").textContent = score;
-
-    document.getElementById("gameStats").textContent =
-        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
-}
-
-
-// =======================================================
-// FEEDBACK
-// =======================================================
-function showFeedback(text, good) {
-    const fb = document.getElementById("feedback");
-    if (!fb) return;
-
-    fb.textContent = text;
-    fb.className = "feedback " + (good ? "correct" : "wrong");
-
-    setTimeout(() => fb.className = "feedback", 1500);
-}
-
-
-// =======================================================
-// END GAME
-// =======================================================
+// --- End Game ---
 function endGame() {
-    clearInterval(timerInterval);
+    gameActive = false;
 
-    const modal = document.getElementById("gameOverModal");
+    // Disable buttons
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = true;
+    });
 
-    const accuracy =
-        correctCount + wrongCount === 0
-            ? 0
-            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
+    const totalAttempts = correctCount + wrongCount;
+    const accuracy = totalAttempts > 0 ? Math.round((correctCount / totalAttempts) * 100) : 0;
 
-    document.getElementById("finalScoreText").textContent = `Your Score: ${score}`;
-    document.getElementById("finalStatsText").textContent =
+    feedback.textContent = "⏳ Time's up! Great effort.";
+    feedback.classList.remove("correct", "wrong");
+
+    finalScoreText.textContent = `Final Score: ${score}`;
+    finalStatsText.textContent =
         `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
 
-    modal.classList.remove("hidden");
+    gameOverModal.classList.remove("hidden");
 }
 
+// --- Update Score & Stats (score can go negative) ---
+function updateScore(isCorrect) {
+    if (isCorrect) {
+        score++;
+        correctCount++;
+    } else {
+        score--; // allow negative score
+        wrongCount++;
+    }
 
-// =======================================================
-// PLAY AGAIN
-// =======================================================
-document.getElementById("playAgainBtn").addEventListener("click", () => {
-    document.getElementById("gameOverModal").classList.add("hidden");
+    scoreDisplay.textContent = score;
+
+    const total = correctCount + wrongCount;
+    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+    gameStats.textContent =
+        `Correct: ${correctCount} | Wrong: ${wrongCount} | Accuracy: ${accuracy}%`;
+}
+
+// --- Smoothly Load Next Item ---
+function loadNextItem() {
+    if (!items.length) return;
+
+    const randomIndex = Math.floor(Math.random() * items.length);
+    const nextItem = items[randomIndex];
+    currentItem = nextItem;
+
+    // Smooth fade-out and fade-in effect
+    itemImage.classList.add("fade-out");
+    setTimeout(() => {
+        itemImage.src = currentItem.image;
+        itemName.textContent = currentItem.name;
+        itemImage.onload = () => {
+            itemImage.classList.remove("fade-out");
+            itemImage.classList.add("fade-in");
+            setTimeout(() => itemImage.classList.remove("fade-in"), 200);
+        };
+    }, 150);
+}
+
+// --- Handle Bin Click ---
+function handleBinClick(binName) {
+    if (!gameActive || timeLeft <= 0 || !currentItem) return;
+
+    const isCorrect = (binName === currentItem.bin);
+
+    // Feedback styling
+    feedback.classList.remove("correct", "wrong");
+    if (isCorrect) {
+        feedback.textContent = "✔ Correct segregation!";
+        feedback.classList.add("correct");
+    } else {
+        feedback.textContent = `✖ Wrong bin. Correct bin: ${currentItem.bin}`;
+        feedback.classList.add("wrong");
+    }
+
+    updateScore(isCorrect);
+    loadNextItem();
+}
+
+// --- Attach Event Listeners to Bins ---
+function setupBinButtons() {
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const selectedBin = btn.dataset.bin;
+            handleBinClick(selectedBin);
+        });
+    });
+}
+
+// --- Start Game ---
+function startGame() {
+    score = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    scoreDisplay.textContent = score;
+    gameStats.textContent = "Correct: 0 | Wrong: 0 | Accuracy: 0%";
+    feedback.textContent = "";
+    gameActive = true;
+
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+    });
+
+    gameOverModal.classList.add("hidden");
+
+    loadNextItem();
+    startTimer();
+}
+
+// --- Load Items (from items.json with fallback) ---
+function loadItems() {
+    fetch("items.json")
+        .then(res => res.json())
+        .then(data => {
+            items = data;
+            startGame();
+        })
+        .catch(err => {
+            console.error("Error loading items.json, using fallback items.", err);
+            // Fallback items in case JSON fails
+            items = [
+                { name: "Used syringe with needle", image: "images/syringe_needle.png", bin: "White" },
+                { name: "IV set", image: "images/iv_set.png", bin: "Red" },
+                { name: "Blood bag (used)", image: "images/blood_bag.png", bin: "Yellow" },
+                { name: "Soiled gauze with blood", image: "images/gauze_blood.png", bin: "Yellow" },
+                { name: "Broken glass vial", image: "images/broken_vial.png", bin: "Blue" },
+                { name: "Scalpel blade", image: "images/scalpel_blade.png", bin: "White" },
+                { name: "Face mask (used)", image: "images/used_mask.png", bin: "Yellow" },
+                { name: "Catheter tubing", image: "images/catheter_tube.png", bin: "Red" },
+                { name: "Food leftovers", image: "images/food_leftovers.png", bin: "Green" },
+                { name: "Paper wrapper (clean)", image: "images/paper_wrapper.png", bin: "Green" },
+                { name: "Ampoule (unbroken)", image: "images/ampoule.png", bin: "Blue" },
+                { name: "Needle cutter sharps container", image: "images/sharps_box.png", bin: "White" }
+            ];
+            startGame();
+        });
+}
+
+// --- Play Again Button ---
+playAgainBtn.addEventListener("click", () => {
+    clearInterval(timerInterval);
+    timeLeft = GAME_DURATION;
+    updateTimerUI();
     startGame();
 });
 
+// --- Initialize on DOM Ready ---
+document.addEventListener("DOMContentLoaded", () => {
+    setupBinButtons();
+    updateTimerUI();
+    loadItems();
+});
 
-// =======================================================
-// CERTIFICATE DOWNLOAD
-// =======================================================
-document.getElementById("downloadCertBtn").addEventListener("click", generateCertificate);
-
-async function generateCertificate() {
-    let playerName = prompt("Enter your Name:");
-    if (!playerName) playerName = "Anonymous";
-
-    let org = prompt("Enter your Organization:");
-    if (!org) org = "Not Specified";
-
-    const accuracy =
-        correctCount + wrongCount === 0
-            ? 0
-            : Math.round((correctCount / (correctCount + wrongCount)) * 100);
-
-    const certID = "BMW-" + Math.floor(100000 + Math.random() * 900000);
-    const certDate = new Date().toLocaleDateString();
-
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
-    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
-
-    const certDiv = document.createElement("div");
-    certDiv.style.width = "900px";
-    certDiv.style.padding = "40px";
-    certDiv.style.background = "white";
-    certDiv.style.fontFamily = "Arial";
-    certDiv.style.textAlign = "center";
-
-    certDiv.innerHTML = `
-        <div style="border: 8px solid #2b6cb0; padding: 40px; border-radius: 12px;">
-            <h1 style="color:#2b6cb0;">Certificate of Completion</h1>
-            <p>This certifies that</p>
-            <h2><strong>${playerName}</strong></h2>
-            <p>from <strong>${org}</strong></p>
-            <p>has successfully completed the</p>
-            <h3><strong>Biomedical Waste Segregation Training Game</strong></h3>
-            <br>
-            <p><strong>Score:</strong> ${score}</p>
-            <p><strong>Accuracy:</strong> ${accuracy}%</p>
-            <p><strong>Difficulty:</strong> ${selectedDifficulty.toUpperCase()}</p>
-            <p><strong>Date:</strong> ${certDate}</p>
-            <p><strong>Certificate ID:</strong> ${certID}</p>
-
-            <div id="qr-area"></div>
-
-            <p style="margin-top: 12px; font-size: 0.9rem;">Scan to Play Again: ${GAME_URL}</p>
-
-            <p style="margin-top:16px; font-size:0.8rem; color:#444;">
-                Designed & Developed by <strong>Gokul T.B</strong>
-            </p>
-        </div>
-    `;
-
-    const qrDiv = certDiv.querySelector("#qr-area");
-    if (qrDiv && typeof QRCode !== "undefined") {
-        new QRCode(qrDiv, GAME_URL);
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    const canvas = await html2canvas(certDiv, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-    });
-
-    const img = canvas.toDataURL("image/png");
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF("landscape", "pt", "a4");
-
-    pdf.addImage(img, "PNG", 0, 0, pdf.internal.pageSize.width, pdf.internal.pageSize.height);
-    pdf.save("certificate.pdf");
-}
-
-
-// =======================================================
-// HELPER: Load external scripts
-// =======================================================
-function loadScript(url) {
-    return new Promise(resolve => {
-        const s = document.createElement("script");
-        s.src = url;
-        s.onload = resolve;
-        document.body.appendChild(s);
-    });
-}
-
-
-// =======================================================
-// INIT GAME
-// =======================================================
-initGame();
 
 
