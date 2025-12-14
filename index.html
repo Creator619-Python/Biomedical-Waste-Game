@@ -3,43 +3,83 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
     <title>Biomedical Waste Segregation Game</title>
+
+    <!-- MAIN CSS -->
     <link rel="stylesheet" href="style.css" />
+
+    <!-- GOOGLE ANALYTICS (AUTO ENABLED) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+
+        gtag('js', new Date());
+        gtag('config', 'G-4DQYGRYMM7');
+    </script>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
-    <!-- FULLSCREEN CONFETTI -->
+
+    <!-- CONFETTI -->
     <div id="confettiContainer"></div>
 
     <!-- FULLSCREEN BUTTON -->
     <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
 
-    <!-- APP WRAPPER -->
+    <!-- ANALYTICS BUTTON (TOP-RIGHT) -->
+    <button id="analyticsBtn" class="analytics-btn">📊</button>
+
+    <!-- RIGHT SLIDE ANALYTICS PANEL -->
+    <div id="analyticsPanel" class="analytics-panel">
+        <h2 class="analytics-title">📊 Performance Analytics</h2>
+
+        <div class="analytics-content">
+            <p><strong>Total Games:</strong> <span id="statTotalGames">0</span></p>
+            <p><strong>Best Score:</strong> <span id="statBestScore">0</span></p>
+            <p><strong>Average Score:</strong> <span id="statAvgScore">0</span></p>
+            <p><strong>Total Correct:</strong> <span id="statTotalCorrect">0</span></p>
+            <p><strong>Total Wrong:</strong> <span id="statTotalWrong">0</span></p>
+            <p><strong>Overall Accuracy:</strong> <span id="statOverallAccuracy">0%</span></p>
+
+            <h3 class="analysis-sub">🧪 Error Pattern Analysis</h3>
+            <p><strong>Weak Bins:</strong></p>
+            <ul id="weakBinsList"></ul>
+
+            <h3 class="analysis-sub">📈 Difficulty Adaptation Log</h3>
+            <div id="difficultyLog"></div>
+        </div>
+
+        <button id="closeAnalytics" class="close-analytics-btn">Close</button>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
     <div class="app-wrapper">
 
-        <!-- LEFT PANEL (Start Screen) -->
-        <div class="left-panel" id="startScreen">
+        <!-- START SCREEN (LEFT PANEL) -->
+        <div id="startScreen" class="left-panel">
             <h1 class="title">Biomedical Waste Segregation Game</h1>
-            <p class="subtitle">Match each biomedical item to the correct color-coded bin.</p>
+            <p class="subtitle">Match each biomedical item to the correct bin.</p>
 
             <h2 class="section-title">Select Difficulty</h2>
             <div class="difficulty-grid">
                 <div class="difficulty-card" data-level="easy">
-                    <h3>Easy</h3>
-                    <p>90 seconds</p>
+                    <h3>Easy</h3><p>90 seconds</p>
                 </div>
                 <div class="difficulty-card selected" data-level="medium">
-                    <h3>Medium</h3>
-                    <p>60 seconds</p>
+                    <h3>Medium</h3><p>60 seconds</p>
                 </div>
                 <div class="difficulty-card" data-level="hard">
-                    <h3>Hard</h3>
-                    <p>30 seconds</p>
+                    <h3>Hard</h3><p>30 seconds</p>
                 </div>
             </div>
 
             <button id="startGameBtn" class="primary-btn">Start Game</button>
-
+            
             <button id="toggleInstructions" class="secondary-btn">
                 ▼ Show Instructions
             </button>
@@ -48,20 +88,19 @@
                 <ol>
                     <li>Click <strong>Start Game</strong> to begin.</li>
                     <li>An item will appear on the right side.</li>
-                    <li>Select the correct bin according to BMW rules.</li>
-                    <li>Correct = +1, Wrong = -1</li>
-                    <li>Try to maximize accuracy before time runs out!</li>
+                    <li>Select the correct waste bin.</li>
+                    <li>Correct +1, Wrong -1.</li>
+                    <li>Game adapts based on your accuracy.</li>
                 </ol>
             </div>
 
-            <!-- FOOTER CREDIT -->
             <footer class="footer-credit">
                 Made with ❤️ by <strong>Gokul T.B.</strong>
             </footer>
         </div>
 
-        <!-- RIGHT PANEL (Game Area) -->
-        <div class="right-panel hidden" id="gameContainer">
+        <!-- GAME PANEL (RIGHT SIDE) -->
+        <div id="gameContainer" class="right-panel hidden">
 
             <div class="top-bar">
                 <div class="timer-box">
@@ -79,7 +118,7 @@
             </div>
 
             <div class="item-area">
-                <img id="itemImage" src="" class="item-image" alt="Item" />
+                <img id="itemImage" src="" alt="Item" class="item-image" />
                 <div id="itemName" class="item-name">Item Name</div>
             </div>
 
