@@ -19,22 +19,22 @@
         gtag('config', 'G-4DQYGRYMM7');
     </script>
 
-    <!-- PWA -->
+    <!-- PWA MANIFEST -->
     <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
 
-    <!-- CONFETTI -->
+    <!-- CONFETTI CONTAINER -->
     <div id="confettiContainer"></div>
 
     <!-- FULLSCREEN BUTTON -->
     <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
 
-    <!-- ANALYTICS BUTTON (TOP-RIGHT) -->
+    <!-- ANALYTICS BUTTON -->
     <button id="analyticsBtn" class="analytics-btn">📊</button>
 
-    <!-- RIGHT SLIDE ANALYTICS PANEL -->
+    <!-- RIGHT-SLIDE ANALYTICS PANEL -->
     <div id="analyticsPanel" class="analytics-panel">
         <h2 class="analytics-title">📊 Performance Analytics</h2>
 
@@ -47,7 +47,6 @@
             <p><strong>Overall Accuracy:</strong> <span id="statOverallAccuracy">0%</span></p>
 
             <h3 class="analysis-sub">🧪 Error Pattern Analysis</h3>
-            <p><strong>Weak Bins:</strong></p>
             <ul id="weakBinsList"></ul>
 
             <h3 class="analysis-sub">📈 Difficulty Adaptation Log</h3>
@@ -60,12 +59,13 @@
     <!-- MAIN APP WRAPPER -->
     <div class="app-wrapper">
 
-        <!-- START SCREEN (LEFT PANEL) -->
+        <!-- START SCREEN -->
         <div id="startScreen" class="left-panel">
             <h1 class="title">Biomedical Waste Segregation Game</h1>
             <p class="subtitle">Match each biomedical item to the correct bin.</p>
 
             <h2 class="section-title">Select Difficulty</h2>
+
             <div class="difficulty-grid">
                 <div class="difficulty-card" data-level="easy">
                     <h3>Easy</h3><p>90 seconds</p>
@@ -79,7 +79,7 @@
             </div>
 
             <button id="startGameBtn" class="primary-btn">Start Game</button>
-            
+
             <button id="toggleInstructions" class="secondary-btn">
                 ▼ Show Instructions
             </button>
@@ -88,9 +88,9 @@
                 <ol>
                     <li>Click <strong>Start Game</strong> to begin.</li>
                     <li>An item will appear on the right side.</li>
-                    <li>Select the correct waste bin.</li>
-                    <li>Correct +1, Wrong -1.</li>
-                    <li>Game adapts based on your accuracy.</li>
+                    <li>Select the correct bin.</li>
+                    <li>Correct = +1, Wrong = -1</li>
+                    <li>Game adapts based on your performance.</li>
                 </ol>
             </div>
 
@@ -99,13 +99,14 @@
             </footer>
         </div>
 
-        <!-- GAME PANEL (RIGHT SIDE) -->
+        <!-- GAME CONTAINER -->
         <div id="gameContainer" class="right-panel hidden">
 
             <div class="top-bar">
                 <div class="timer-box">
                     <span class="label">Time</span>
                     <span id="timerValue" class="timer-value">00:60</span>
+
                     <div class="timer-progress">
                         <div id="progressFill" class="progress-fill"></div>
                     </div>
@@ -141,8 +142,10 @@
     <!-- GAME OVER MODAL -->
     <div id="gameOverModal" class="modal hidden">
         <div class="modal-backdrop"></div>
+
         <div class="modal-content">
             <h2>Game Over!</h2>
+
             <p id="finalScoreText"></p>
             <p id="finalStatsText"></p>
 
@@ -155,6 +158,15 @@
         </div>
     </div>
 
+    <!-- GAME ENGINE -->
     <script src="game.js"></script>
+
+    <!-- REGISTER SERVICE WORKER -->
+    <script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js");
+    }
+    </script>
 </body>
 </html>
+
