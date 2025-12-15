@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    background: #0d1117;
+    font-family: "Segoe UI", sans-serif;
+    color: white;
+    padding: 20px;
+}
+
+.analytics-container {
+    max-width: 600px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+}
+
+canvas {
+    margin-top: 25px;
+    background: #161b22;
+    border-radius: 10px;
+}
+
+.back-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 14px;
+    background: #238636;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    color: white;
+}
