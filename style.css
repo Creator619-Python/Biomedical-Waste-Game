@@ -118,12 +118,18 @@ button {
     border-radius: 8px;
 }
 
-.instructions {
-    margin-top: 15px;
-    padding: 10px;
-    background: #1f242c;
-    border-radius: 8px;
+.hidden {
+  display: none;
 }
+
+.instructions {
+  margin-top: 12px;
+  padding: 14px;
+  background: #0f172a;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
 
 .footer-credit {
     text-align: center;
