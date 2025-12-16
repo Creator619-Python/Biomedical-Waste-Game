@@ -1,69 +1,24 @@
-// analytics.js — ES MODULE (Firebase v10 compatible)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Analytics</title>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <link rel="stylesheet" href="analytics.css">
+    <script src="analytics.js" type="module"></script>
+</head>
 
-import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
+<body>
 
-/* =====================================================
-   FIREBASE CONFIG — MUST MATCH game.js
-===================================================== */
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-};
+    <div class="analytics-container">
+        <h1>Your Training Analytics</h1>
+        <canvas id="scoreChart"></canvas>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        <button class="back-btn" onclick="window.location.href='index.html'">
+            Back to Game
+        </button>
+    </div>
 
-/* =====================================================
-   LOAD DATA + RENDER CHART
-===================================================== */
-async function loadAnalytics() {
-  const snapshot = await getDocs(collection(db, "scores"));
-
-  if (snapshot.empty) {
-    console.warn("No analytics data available");
-    return;
-  }
-
-  const labels = [];
-  const scores = [];
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    labels.push(data.name);
-    scores.push(data.score);
-  });
-
-  const ctx = document.getElementById("scoreChart");
-
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Score",
-        data: scores
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-}
-
-loadAnalytics();
+</body>
+</html>
