@@ -277,3 +277,13 @@ button {
         flex-direction: column;
     }
 }
+.linkedin-link {
+    color: #0A66C2;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.linkedin-link:hover {
+    text-decoration: underline;
+}
+
