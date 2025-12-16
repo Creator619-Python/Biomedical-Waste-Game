@@ -1,31 +1,33 @@
-// analytics.js — Firebase Analytics (FINAL)
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore,
   collection,
   getDocs
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
 
 /* =====================================================
-   FIREBASE CONFIG (MUST MATCH game.js)
+   FIREBASE CONFIG (SAME AS firebase.js)
 ===================================================== */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
+  apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
+  authDomain: "biomedicalwastegame.firebaseapp.com",
+  projectId: "biomedicalwastegame",
+  storageBucket: "biomedicalwastegame.firebasestorage.app",
+  messagingSenderId: "502355834534",
+  appId: "1:502355834534:web:e7cd3369f7a4b174f3e667",
+  measurementId: "G-BBXXM9BXFM"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* =====================================================
-   LOAD ANALYTICS DATA
+   LOAD ANALYTICS
 ===================================================== */
 async function loadAnalytics() {
-  const snapshot = await getDocs(collection(db, "scores"));
+  const snapshot = await getDocs(collection(db, "leaderboard"));
 
   if (snapshot.empty) {
     console.warn("No analytics data found");
@@ -56,7 +58,7 @@ async function loadAnalytics() {
 }
 
 /* =====================================================
-   SUMMARY METRICS
+   SUMMARY
 ===================================================== */
 function renderSummary(total, avg, best) {
   const container = document.createElement("div");
