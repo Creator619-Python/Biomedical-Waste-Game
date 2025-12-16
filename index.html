@@ -22,6 +22,34 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 
 </head>
+<template id="global-modals">
+
+  <!-- LEADERBOARD MODAL -->
+  <div id="leaderboardModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h2>🏆 Global Leaderboard</h2>
+      <ul id="leaderboardList"></ul>
+      <button id="closeLeaderboardBtn" class="secondary-btn">Close</button>
+    </div>
+  </div>
+
+  <!-- CERTIFICATE MODAL -->
+  <div id="certificateModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content certificate">
+      <h2>🎉 Certificate of Completion</h2>
+      <p>This certifies that</p>
+      <h3 id="certName"></h3>
+      <p>has successfully completed the</p>
+      <p><b>Biomedical Waste Segregation Training</b></p>
+      <p id="certScore"></p>
+      <button onclick="closeCertificate()" class="primary-btn">Close</button>
+    </div>
+  </div>
+
+</template>
+
 
 <body>
 
