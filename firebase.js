@@ -23,17 +23,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function saveScore(name, score) {
+export async function saveScore(name, score, timeTaken = 0) {
   try {
     await addDoc(collection(db, "leaderboard"), {
-      name,
-      score,
+      name: name,
+      score: score,
+      time: timeTaken,              // ✅ REQUIRED
       createdAt: serverTimestamp()
     });
-    console.log("Score saved:", name, score);
     return true;
   } catch (err) {
     console.error("Firestore error:", err);
     return false;
   }
 }
+
