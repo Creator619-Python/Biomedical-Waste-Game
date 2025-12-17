@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let timer = null;
   let totalTime = 60;
-  let gameRunning = false;
+  let gameRunning = false; // 🔑 single source of truth
 
   /* =============================
      DOM ELEMENTS
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const scoreSubmitModal = document.getElementById("scoreSubmitModal");
 
   /* =============================
-     LOAD ITEMS
+     LOAD ITEMS (NO CACHE)
   ============================== */
   async function loadItems() {
     const res = await fetch("items.json?v=" + Date.now());
@@ -92,12 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
     startScreen.classList.add("hidden");
     gameContainer.classList.remove("hidden");
 
+    // reset state
     score = 0;
     correct = 0;
     wrong = 0;
     currentItem = null;
     gameRunning = true;
 
+    // reset UI
     scoreDisplay.textContent = score;
     feedback.textContent = "Choose the correct bin";
     feedback.style.color = "";
@@ -112,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /* =============================
-     TIMER
+     TIMER (HARD STOP)
   ============================== */
   function startTimer() {
     let timeLeft = totalTime;
@@ -120,7 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     clearInterval(timer);
     timer = setInterval(() => {
-      if (!gameRunning) return;
+      if (!gameRunning) {
+        clearInterval(timer);
+        return;
+      }
 
       timeLeft--;
       timerValue.textContent = formatTime(timeLeft);
@@ -133,13 +138,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     LOAD ITEM
+     LOAD ITEM (IMAGE FIX ✅)
   ============================== */
   function loadNewItem() {
     if (!gameRunning) return;
 
     currentItem = items[Math.floor(Math.random() * items.length)];
-    itemImage.src = currentItem.image;
+
+    // 🔥 CRITICAL FIX FOR GITHUB PAGES
+    itemImage.src = new URL(currentItem.image, window.location.href).href;
     itemImage.alt = currentItem.name;
 
     itemName.textContent = currentItem.name;
@@ -237,3 +244,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
