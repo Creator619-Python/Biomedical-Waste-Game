@@ -1,125 +1,26 @@
 [
-  {
-    "name": "Ampoules",
-    "image": "images/Ampoules.webp",
-    "bin": "Blue"
-  },
-  {
-    "name": "Blade",
-    "image": "images/Blade.webp",
-    "bin": "White"
-  },
-  {
-    "name": "Blood Bag",
-    "image": "images/Blood Bag.avif",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Catheter",
-    "image": "images/Catheter.jpg",
-    "bin": "Red"
-  },
-  {
-    "name": "Contaminated Cotton Swabs",
-    "image": "images/Contaminated-Cotton-Swabs.webp",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Dialysis Kit",
-    "image": "images/Dialysis Kit.webp",
-    "bin": "Red"
-  },
-  {
-    "name": "Expired Medicines",
-    "image": "images/Expired Medicines.webp",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Human Anatomical Waste",
-    "image": "images/Human anatomical waste.webp",
-    "bin": "Yellow"
-  },
-  {
-    "name": "IV Set",
-    "image": "images/IV SET.png",
-    "bin": "Red"
-  },
-  {
-    "name": "IV Bottles",
-    "image": "images/IV bottles.jpg",
-    "bin": "Blue"
-  },
-  {
-    "name": "Lab Slides",
-    "image": "images/Lab Slides.jpg",
-    "bin": "Blue"
-  },
-  {
-    "name": "Mask",
-    "image": "images/Mask.webp",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Metallic Body Implants",
-    "image": "images/Metallic body implants.png",
-    "bin": "Blue"
-  },
-  {
-    "name": "Needles",
-    "image": "images/Needles.jpg",
-    "bin": "White"
-  },
-  {
-    "name": "Placenta",
-    "image": "images/Placenta.webp",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Plaster Cast",
-    "image": "images/Plaster cast.jpg",
-    "bin": "Yellow"
-  },
-  {
-    "name": "Scalpel",
-    "image": "images/Scalpel.webp",
-    "bin": "White"
-  },
-  {
-    "name": "Scissors",
-    "image": "images/Scissors.webp",
-    "bin": "White"
-  },
-  {
-    "name": "Syringe",
-    "image": "images/Syringe.webp",
-    "bin": "Red"
-  },
-  {
-    "name": "Syringes with Needles",
-    "image": "images/Syringes with needles.png",
-    "bin": "White"
-  },
-  {
-    "name": "Urine Bag",
-    "image": "images/Urine Bag.webp",
-    "bin": "Red"
-  },
-  {
-    "name": "Vacutainers",
-    "image": "images/Vacutainers.webp",
-    "bin": "Red"
-  },
-  {
-    "name": "Vial",
-    "image": "images/Vial.jpg",
-    "bin": "Blue"
-  },
-  {
-    "name": "Wound Dressing",
-    "image": "images/Wound dressing.webp",
-    "bin": "Yellow"
-  }
+  { "name": "Ampoules", "image": "images/ampoules.webp", "bin": "Blue" },
+  { "name": "Blade", "image": "images/blade.webp", "bin": "White" },
+  { "name": "Blood Bag", "image": "images/blood_bag.webp", "bin": "Yellow" },
+  { "name": "Catheter", "image": "images/catheter.jpg", "bin": "Red" },
+  { "name": "Contaminated Cotton Swabs", "image": "images/contaminated_cotton_swabs.webp", "bin": "Yellow" },
+  { "name": "Dialysis Kit", "image": "images/dialysis_kit.webp", "bin": "Red" },
+  { "name": "Expired Medicines", "image": "images/expired_medicines.webp", "bin": "Yellow" },
+  { "name": "Human Anatomical Waste", "image": "images/human_anatomical_waste.webp", "bin": "Yellow" },
+  { "name": "IV Set", "image": "images/iv_set.png", "bin": "Red" },
+  { "name": "IV Bottles", "image": "images/iv_bottles.webp", "bin": "Blue" },
+  { "name": "Lab Slides", "image": "images/lab_slides.webp", "bin": "Blue" },
+  { "name": "Mask", "image": "images/mask.webp", "bin": "Yellow" },
+  { "name": "Metallic Body Implants", "image": "images/metallic_body_implants.webp", "bin": "Blue" },
+  { "name": "Needles", "image": "images/needles.webp", "bin": "White" },
+  { "name": "Placenta", "image": "images/placenta.webp", "bin": "Yellow" },
+  { "name": "Plaster Cast", "image": "images/plaster_cast.webp", "bin": "Yellow" },
+  { "name": "Scalpel", "image": "images/scalpel.webp", "bin": "White" },
+  { "name": "Scissors", "image": "images/scissors.webp", "bin": "White" },
+  { "name": "Syringe", "image": "images/syringe.webp", "bin": "Red" },
+  { "name": "Syringes with Needles", "image": "images/syringes_with_needles.webp", "bin": "White" },
+  { "name": "Urine Bag", "image": "images/urine_bag.webp", "bin": "Red" },
+  { "name": "Vacutainers", "image": "images/vacutainers.webp", "bin": "Red" },
+  { "name": "Vial", "image": "images/vial.webp", "bin": "Blue" },
+  { "name": "Wound Dressing", "image": "images/wound_dressing.webp", "bin": "Yellow" }
 ]
-
-
-
