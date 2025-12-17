@@ -1,122 +1,125 @@
 [
   {
     "name": "Ampoules",
-    "image": "images/ampoules.webp",
+    "image": "images/Ampoules.webp",
     "bin": "Blue"
   },
   {
     "name": "Blade",
-    "image": "images/blade.webp",
+    "image": "images/Blade.webp",
     "bin": "White"
   },
   {
     "name": "Blood Bag",
-    "image": "images/blood-bag.avif",
+    "image": "images/Blood Bag.avif",
     "bin": "Yellow"
   },
   {
     "name": "Catheter",
-    "image": "images/catheter.jpg",
+    "image": "images/Catheter.jpg",
     "bin": "Red"
   },
   {
     "name": "Contaminated Cotton Swabs",
-    "image": "images/contaminated-cotton-swabs.webp",
+    "image": "images/Contaminated-Cotton-Swabs.webp",
     "bin": "Yellow"
   },
   {
     "name": "Dialysis Kit",
-    "image": "images/dialysis-kit.webp",
+    "image": "images/Dialysis Kit.webp",
     "bin": "Red"
   },
   {
     "name": "Expired Medicines",
-    "image": "images/expired-medicines.webp",
+    "image": "images/Expired Medicines.webp",
     "bin": "Yellow"
   },
   {
     "name": "Human Anatomical Waste",
-    "image": "images/human-anatomical-waste.webp",
+    "image": "images/Human anatomical waste.webp",
     "bin": "Yellow"
   },
   {
     "name": "IV Set",
-    "image": "images/iv-set.png",
+    "image": "images/IV SET.png",
     "bin": "Red"
   },
   {
     "name": "IV Bottles",
-    "image": "images/iv-bottles.jpg",
+    "image": "images/IV bottles.jpg",
     "bin": "Blue"
   },
   {
     "name": "Lab Slides",
-    "image": "images/lab-slides.jpg",
+    "image": "images/Lab Slides.jpg",
     "bin": "Blue"
   },
   {
     "name": "Mask",
-    "image": "images/mask.webp",
+    "image": "images/Mask.webp",
     "bin": "Yellow"
   },
   {
     "name": "Metallic Body Implants",
-    "image": "images/metallic-body-implants.png",
+    "image": "images/Metallic body implants.png",
     "bin": "Blue"
   },
   {
     "name": "Needles",
-    "image": "images/needles.jpg",
+    "image": "images/Needles.jpg",
     "bin": "White"
   },
   {
     "name": "Placenta",
-    "image": "images/placenta.webp",
+    "image": "images/Placenta.webp",
     "bin": "Yellow"
   },
   {
     "name": "Plaster Cast",
-    "image": "images/plaster-cast.jpg",
+    "image": "images/Plaster cast.jpg",
     "bin": "Yellow"
   },
   {
     "name": "Scalpel",
-    "image": "images/scalpel.webp",
+    "image": "images/Scalpel.webp",
     "bin": "White"
   },
   {
     "name": "Scissors",
-    "image": "images/scissors.webp",
+    "image": "images/Scissors.webp",
     "bin": "White"
   },
   {
     "name": "Syringe",
-    "image": "images/syringe.webp",
+    "image": "images/Syringe.webp",
     "bin": "Red"
   },
   {
     "name": "Syringes with Needles",
-    "image": "images/syringes-with-needles.png",
+    "image": "images/Syringes with needles.png",
     "bin": "White"
   },
   {
     "name": "Urine Bag",
-    "image": "images/urine-bag.webp",
+    "image": "images/Urine Bag.webp",
     "bin": "Red"
   },
   {
     "name": "Vacutainers",
-    "image": "images/vacutainers.webp",
+    "image": "images/Vacutainers.webp",
     "bin": "Red"
   },
   {
     "name": "Vial",
-    "image": "images/vial.jpg",
+    "image": "images/Vial.jpg",
     "bin": "Blue"
   },
   {
     "name": "Wound Dressing",
-    "image": "images/wound-dressing.webp",
+    "image": "images/Wound dressing.webp",
     "bin": "Yellow"
   }
 ]
+
+
+
