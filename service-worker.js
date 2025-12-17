@@ -1,6 +1,6 @@
-const CACHE_NAME = "bmw-game-v3"; // 🔥 CHANGE VERSION EVERY MAJOR UPDATE
+const CACHE_NAME = "bmw-game-v6";
 
-// Only cache STABLE files
+// Cache only the app shell
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -25,7 +25,7 @@ self.addEventListener("install", event => {
 });
 
 // --------------------
-// ACTIVATE — CLEAN OLD CACHES
+// ACTIVATE
 // --------------------
 self.addEventListener("activate", event => {
   event.waitUntil(
@@ -39,24 +39,31 @@ self.addEventListener("activate", event => {
 });
 
 // --------------------
-// FETCH STRATEGY
+// FETCH
 // --------------------
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
+  const req = event.request;
 
-  // ❌ NEVER cache game data or images
+  // 🚫 NEVER intercept images, JSON, or media
   if (
-    url.pathname.endsWith("items.json") ||
-    url.pathname.startsWith("/Biomedical-Waste-Game/images/")
+    req.destination === "image" ||
+    req.destination === "video" ||
+    req.destination === "audio" ||
+    req.url.endsWith(".json")
   ) {
-    event.respondWith(fetch(event.request));
+    return; // browser handles it
+  }
+
+  // ✅ Navigation fallback ONLY for pages
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req).catch(() => caches.match("./index.html"))
+    );
     return;
   }
 
-  // ✅ Cache-first for app shell
+  // ✅ Cache-first for static assets
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request)
-    )
+    caches.match(req).then(res => res || fetch(req))
   );
 });
