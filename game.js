@@ -126,7 +126,7 @@ function startTimer() {
 function loadNewItem() {
     currentItem = items[Math.floor(Math.random() * items.length)];
 
-    itemImage.src = currentItem.image;
+   itemImage.src = new URL(currentItem.image, window.location.href).href;
     itemImage.alt = currentItem.name;
 
     itemName.textContent = currentItem.name;
