@@ -1,3 +1,4 @@
+// firebase.js
 import { initializeApp } from
   "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 
@@ -9,13 +10,14 @@ import {
 } from
   "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// ✅ REAL CONFIG FROM YOUR FIREBASE SCREENSHOT
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
+  apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
+  authDomain: "biomedicalwastegame.firebaseapp.com",
+  projectId: "biomedicalwastegame",
+  storageBucket: "biomedicalwastegame.firebasestorage.app",
+  messagingSenderId: "502355834534",
+  appId: "1:502355834534:web:e7cd3369f7a4b174f3e667"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -28,6 +30,7 @@ export async function saveScore(name, score) {
       score,
       createdAt: serverTimestamp()
     });
+    console.log("Score saved:", name, score);
     return true;
   } catch (err) {
     console.error("Firestore error:", err);
