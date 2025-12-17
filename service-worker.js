@@ -1,39 +1,62 @@
-const CACHE_NAME = "bmw-game-cache-v1";
-const urlsToCache = [
-    "index.html",
-    "leaderboard.html",
-    "analytics.html",
-    "style.css",
-    "leaderboard.css",
-    "analytics.css",
-    "game.js",
-    "leaderboard.js",
-    "analytics.js",
-    "firebase.js",
-    "items.json",
-    "icon-192.png",
-    "icon-512.png"
+const CACHE_NAME = "bmw-game-v3"; // 🔥 CHANGE VERSION EVERY MAJOR UPDATE
+
+// Only cache STABLE files
+const STATIC_ASSETS = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./game.js",
+  "./leaderboard.html",
+  "./leaderboard.js",
+  "./analytics.html",
+  "./analytics.js",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-// Install – cache all files
+// --------------------
+// INSTALL
+// --------------------
 self.addEventListener("install", event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(urlsToCache);
-        })
-    );
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+  );
 });
 
-// Fetch – serve cache first, fallback to network
+// --------------------
+// ACTIVATE — CLEAN OLD CACHES
+// --------------------
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// --------------------
+// FETCH STRATEGY
+// --------------------
 self.addEventListener("fetch", event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            return (
-                response ||
-                fetch(event.request).then(res => {
-                    return res;
-                })
-            );
-        })
-    );
+  const url = new URL(event.request.url);
+
+  // ❌ NEVER cache game data or images
+  if (
+    url.pathname.endsWith("items.json") ||
+    url.pathname.startsWith("/Biomedical-Waste-Game/images/")
+  ) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // ✅ Cache-first for app shell
+  event.respondWith(
+    caches.match(event.request).then(response =>
+      response || fetch(event.request)
+    )
+  );
 });
