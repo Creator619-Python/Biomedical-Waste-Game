@@ -20,12 +20,13 @@ let wrong = 0;
 
 let timer = null;
 let totalTime = 60;
+let gameRunning = false; // 🔑 SINGLE SOURCE OF TRUTH
 
 /* =====================================================
    LOAD ITEMS.JSON
 ===================================================== */
 async function loadItems() {
-    const res = await fetch("items.json?v=2")
+    const res = await fetch("items.json?v=" + Date.now());
     items = await res.json();
 }
 
@@ -85,13 +86,22 @@ document.getElementById("startGameBtn").onclick = async () => {
     startScreen.classList.add("hidden");
     gameContainer.classList.remove("hidden");
 
+    // RESET STATE
     score = 0;
     correct = 0;
     wrong = 0;
+    currentItem = null;
 
+    gameRunning = true;
+
+    // RESET UI
     scoreDisplay.textContent = score;
     feedback.textContent = "Choose the correct bin";
     feedback.style.color = "";
+
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+    });
 
     updateStats();
     startTimer();
@@ -108,13 +118,17 @@ function startTimer() {
     clearInterval(timer);
 
     timer = setInterval(() => {
+        if (!gameRunning) {
+            clearInterval(timer);
+            return;
+        }
+
         timeLeft--;
 
         timerValue.textContent = formatTime(timeLeft);
         progressFill.style.width = `${(timeLeft / totalTime) * 100}%`;
 
         if (timeLeft <= 0) {
-            clearInterval(timer);
             gameOver();
         }
     }, 1000);
@@ -124,9 +138,11 @@ function startTimer() {
    LOAD NEW ITEM
 ===================================================== */
 function loadNewItem() {
+    if (!gameRunning) return;
+
     currentItem = items[Math.floor(Math.random() * items.length)];
 
-   itemImage.src = new URL(currentItem.image, window.location.href).href;
+    itemImage.src = new URL(currentItem.image, window.location.href).href;
     itemImage.alt = currentItem.name;
 
     itemName.textContent = currentItem.name;
@@ -139,6 +155,7 @@ function loadNewItem() {
 ===================================================== */
 document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.onclick = () => {
+        if (!gameRunning) return;
         if (!currentItem) return;
 
         const chosen = btn.dataset.bin;
@@ -173,11 +190,20 @@ function updateStats() {
 }
 
 /* =====================================================
-   GAME OVER
+   GAME OVER (HARD STOP)
 ===================================================== */
 function gameOver() {
+    if (!gameRunning) return;
+
+    gameRunning = false;
+    clearInterval(timer);
+
     feedback.textContent = "⏱ Time's up!";
     feedback.style.color = "#ffd700";
+
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = true;
+    });
 
     window.finalGameScore = score;
     scoreSubmitModal.classList.remove("hidden");
@@ -210,7 +236,7 @@ document.getElementById("submitScoreBtn").onclick = async () => {
 };
 
 /* =====================================================
-   OPTIONAL WHATSAPP SHARE
+   WHATSAPP SHARE
 ===================================================== */
 document.getElementById("shareWhatsappBtn").onclick = () => {
     const text =
@@ -219,12 +245,14 @@ document.getElementById("shareWhatsappBtn").onclick = () => {
 Try it here:
 https://creator619-python.github.io/Biomedical-Waste-Game/`;
 
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
+    window.open(
+        `https://wa.me/?text=${encodeURIComponent(text)}`,
+        "_blank"
+    );
 };
 
 /* =====================================================
-   OPTIONAL CERTIFICATE
+   CERTIFICATE
 ===================================================== */
 document.getElementById("getCertificateBtn").onclick = () => {
     const name = document.getElementById("playerNameInput").value.trim();
@@ -238,15 +266,12 @@ document.getElementById("getCertificateBtn").onclick = () => {
 };
 
 /* =====================================================
-   SKIP ACTIONS
+   SKIP & CANCEL
 ===================================================== */
 document.getElementById("skipActionsBtn").onclick = () => {
     window.location.href = "leaderboard.html";
 };
 
-/* =====================================================
-   CANCEL SUBMISSION
-===================================================== */
 document.getElementById("cancelSubmitBtn").onclick = () => {
     scoreSubmitModal.classList.add("hidden");
 };
