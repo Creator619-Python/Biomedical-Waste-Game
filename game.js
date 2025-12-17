@@ -244,7 +244,12 @@ if (submitBtn) {
 
     errorText.classList.add("hidden");
 
-    const saved = await saveScore(name, window.finalGameScore);
+    const saved = await saveScore(
+  name,
+  window.finalGameScore,
+  totalTime   // or actual time used (see note below)
+);
+
     if (!saved) alert("Error saving score. Please try again.");
   };
 }
