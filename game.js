@@ -84,9 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =============================
-     START GAME
-  ============================== */
-  document.getElementById("startGameBtn").onclick = async () => {
+   START GAME (SAFE)
+============================= */
+const startGameBtn = document.getElementById("startGameBtn");
+
+if (startGameBtn) {
+  startGameBtn.onclick = async () => {
     if (items.length === 0) await loadItems();
 
     startScreen.classList.add("hidden");
@@ -112,6 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
     startTimer();
     loadNewItem();
   };
+} else {
+  console.error("startGameBtn not found in DOM");
+}
 
   /* =============================
      TIMER (HARD STOP)
