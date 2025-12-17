@@ -212,26 +212,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     SCORE SUBMIT
-  ============================== */
-  const submitBtn = document.getElementById("submitScoreBtn");
-  if (submitBtn) {
-    submitBtn.onclick = async () => {
-      const nameInput = document.getElementById("playerNameInput");
-      const errorText = document.getElementById("nameError");
-      const name = nameInput.value.trim();
+   SCORE SUBMIT (SAFE)
+============================= */
 
-      if (!/^[A-Za-z ]{3,20}$/.test(name)) {
-        errorText.classList.remove("hidden");
-        return;
-      }
+const submitBtn = document.getElementById("submitScoreBtn");
 
-      errorText.classList.add("hidden");
+if (submitBtn) {
+  submitBtn.onclick = async () => {
 
-      const saved = await saveScore(name, window.finalGameScore);
-      if (!saved) alert("Error saving score. Please try again.");
-    };
-  }
+    const nameInput = document.getElementById("playerNameInput");
+    const errorText = document.getElementById("nameError");
+
+    // 🛑 HARD GUARD — prevents crash
+    if (!nameInput || !errorText) {
+      console.error("Score submit elements not found in DOM");
+      return;
+    }
+
+    const name = nameInput.value.trim();
+
+    if (!/^[A-Za-z ]{3,20}$/.test(name)) {
+      errorText.classList.remove("hidden");
+      return;
+    }
+
+    errorText.classList.add("hidden");
+
+    const saved = await saveScore(name, window.finalGameScore);
+    if (!saved) alert("Error saving score. Please try again.");
+  };
+}
+
 
   /* =============================
      CANCEL
