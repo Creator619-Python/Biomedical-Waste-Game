@@ -189,6 +189,16 @@ toggleBtn.addEventListener("click", () => {
     ? "▼ Show Instructions"
     : "▲ Hide Instructions";
 });
+        <!--
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js");
+  });
+}
+</script>
+-->
+
         if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
@@ -201,8 +211,12 @@ toggleBtn.addEventListener("click", () => {
       });
   });
         }
-        document.getElementById("analyticsBtn").onclick = () =>
-            window.location.href = "analytics.html";
+       const analyticsBtn = document.getElementById("analyticsBtn");
+if (analyticsBtn) {
+  analyticsBtn.onclick = () => {
+    window.location.href = "analytics.html";
+  };
+}
     </script>
 
 </body>
