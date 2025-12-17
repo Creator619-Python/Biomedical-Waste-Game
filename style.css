@@ -292,24 +292,28 @@ button {
 .linkedin-link:hover {
     text-decoration: underline;
 }
-/* === IMAGE VISIBILITY DEBUG === */
+/* ================================
+   ITEM AREA — FINAL FIX
+================================ */
 .item-area {
-  min-height: 220px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 2px dashed orange; /* debug */
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;   /* 🔑 THIS WAS MISSING */
+  align-items: center;
+  justify-content: center;
 }
 
-#itemImage {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: static !important;
-  max-width: 180px !important;
-  max-height: 180px !important;
-  width: auto !important;
-  height: auto !important;
-  border: 2px solid red; /* debug */
+/* Image */
+.item-image {
+  width: 180px;
+  height: 180px;
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: contain;
+  display: block;
 }
 
+/* Feedback text space (prevents jump) */
+.feedback {
+  min-height: 24px;
+}
