@@ -25,7 +25,7 @@ let totalTime = 60;
    LOAD ITEMS.JSON
 ===================================================== */
 async function loadItems() {
-    const res = await fetch("items.json");
+    const res = await fetch("items.json?v=2")
     items = await res.json();
 }
 
