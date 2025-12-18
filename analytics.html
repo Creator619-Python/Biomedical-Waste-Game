@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Analytics & Leaderboard</title>
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Load Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
-    
+    <!-- Your CSS -->
     <link rel="stylesheet" href="analytics.css">
-    <script src="analytics.js" type="module"></script>
 </head>
 
 <body>
@@ -43,75 +39,20 @@
         
         <!-- Analytics Tab -->
         <div id="analyticsTab" class="tab-content active">
-            <div class="tab-header">
-                <h2>Your Performance Dashboard</h2>
-                <p>Track your improvement journey in biomedical waste segregation</p>
-            </div>
-            
-            <!-- Summary Stats -->
-            <div id="statsContainer" class="stats-grid"></div>
-            
-            <!-- Performance Chart -->
-            <div class="chart-section">
-                <h3>Performance Trend</h3>
-                <div class="chart-container">
-                    <canvas id="scoreChart"></canvas>
-                </div>
-            </div>
-            
-            <!-- Recent Attempts -->
-            <div id="recentAttempts" class="recent-section"></div>
+            <!-- Content will be loaded by JavaScript -->
         </div>
         
         <!-- Leaderboard Tab -->
         <div id="leaderboardTab" class="tab-content">
-            <div class="tab-header">
-                <h2>Global Leaderboard</h2>
-                <p>Top players from around the world</p>
-                <div class="leaderboard-info">
-                    <span class="info-badge">🌍 Live Ranking</span>
-                    <span class="info-badge">🔄 Updates real-time</span>
-                </div>
-            </div>
-            
-            <!-- Leaderboard Filters -->
-            <div class="leaderboard-filters">
-                <button class="filter-btn active" data-filter="all">All Time</button>
-                <button class="filter-btn" data-filter="month">This Month</button>
-                <button class="filter-btn" data-filter="week">This Week</button>
-            </div>
-            
-            <!-- Leaderboard List -->
-            <div id="leaderboardList" class="leaderboard-full">
-                <div class="loading-board">
-                    <div class="spinner"></div>
-                    <p>Loading leaderboard...</p>
-                </div>
-            </div>
-            
-            <!-- Your Position -->
-            <div id="yourPosition" class="your-position-card"></div>
+            <!-- Content will be loaded by JavaScript -->
         </div>
         
-        <!-- Training Stats Tab -->
+        <!-- Training Tab -->
         <div id="trainingTab" class="tab-content">
-            <div class="tab-header">
-                <h2>Training Statistics</h2>
-                <p>Detailed breakdown of your learning progress</p>
-            </div>
-            
-            <div id="trainingStats" class="training-grid"></div>
-            
-            <!-- Accuracy by Bin Type -->
-            <div class="accuracy-section">
-                <h3>Accuracy by Waste Category</h3>
-                <div class="accuracy-chart-container">
-                    <canvas id="accuracyChart"></canvas>
-                </div>
-            </div>
+            <!-- Content will be loaded by JavaScript -->
         </div>
         
-        <!-- Back Button -->
+        <!-- Action Buttons -->
         <div class="action-buttons">
             <button class="back-btn" onclick="window.location.href='index.html'">
                 <span class="btn-icon">←</span>
@@ -129,6 +70,9 @@
             <p>Data updates in real-time • Last updated: <span id="lastUpdated">Now</span></p>
         </div>
     </div>
+
+    <!-- Load your JavaScript -->
+    <script type="module" src="analytics.js"></script>
 
 </body>
 </html>
