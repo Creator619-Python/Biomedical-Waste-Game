@@ -7,7 +7,6 @@ import { saveScore } from "./firebase.js";
 // DOM READY
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
-
   /* =============================
      INJECT GLOBAL MODALS
   ============================== */
@@ -28,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let timer = null;
   let totalTime = 60;
-  let gameRunning = false; // ðŸ”‘ single source of truth
+  let gameRunning = false; // ✅ single source of truth
 
   /* =============================
      DOM ELEMENTS
@@ -51,8 +50,17 @@ document.addEventListener("DOMContentLoaded", () => {
      LOAD ITEMS (NO CACHE)
   ============================== */
   async function loadItems() {
-    const res = await fetch("items.json?v=" + Date.now());
-    items = await res.json();
+    try {
+      const res = await fetch("items.json?v=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      items = await res.json();
+    } catch (error) {
+      console.error("Failed to load items:", error);
+      // Provide fallback items or show error to user
+      items = [
+        { name: "Sample Item", image: "fallback.jpg", bin: "yellow" }
+      ];
+    }
   }
 
   /* =============================
@@ -62,6 +70,49 @@ document.addEventListener("DOMContentLoaded", () => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  /* =============================
+     CONFETTI ANIMATION
+  ============================== */
+  function launchConfetti() {
+    const container = document.getElementById("confettiContainer");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.animationDelay = Math.random() * 2 + "s";
+      piece.style.backgroundColor =
+        ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
+
+      container.appendChild(piece);
+    }
+
+    setTimeout(() => (container.innerHTML = ""), 5000);
+  }
+
+  /* =============================
+     WHATSAPP SHARE
+  ============================== */
+  function showWhatsAppShare(name, score) {
+    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    if (!whatsappBtn) return;
+
+    const text =
+      `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
+      `👤 Name: ${name}\n` +
+      `🏆 Score: ${score}\n\n` +
+      `Try it yourself 👇\n` +
+      `https://creator619-python.github.io/Biomedical-Waste-Game/`;
+
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    whatsappBtn.classList.remove("hidden");
+    whatsappBtn.onclick = () => window.open(url, "_blank");
   }
 
   /* =============================
@@ -84,40 +135,44 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* =============================
-   START GAME (SAFE)
-============================= */
-const startGameBtn = document.getElementById("startGameBtn");
+     START GAME (SAFE)
+  ============================== */
+  const startGameBtn = document.getElementById("startGameBtn");
 
-if (startGameBtn) {
-  startGameBtn.onclick = async () => {
-    if (items.length === 0) await loadItems();
+  if (startGameBtn) {
+    startGameBtn.onclick = async () => {
+      if (items.length === 0) await loadItems();
+      if (items.length === 0) {
+        alert("Failed to load game items. Please refresh and try again.");
+        return;
+      }
 
-    startScreen.classList.add("hidden");
-    gameContainer.classList.remove("hidden");
+      startScreen.classList.add("hidden");
+      gameContainer.classList.remove("hidden");
 
-    // reset state
-    score = 0;
-    correct = 0;
-    wrong = 0;
-    currentItem = null;
-    gameRunning = true;
+      // reset state
+      score = 0;
+      correct = 0;
+      wrong = 0;
+      currentItem = null;
+      gameRunning = true;
 
-    // reset UI
-    scoreDisplay.textContent = score;
-    feedback.textContent = "Choose the correct bin";
-    feedback.style.color = "";
+      // reset UI
+      scoreDisplay.textContent = score;
+      feedback.textContent = "Choose the correct bin";
+      feedback.style.color = "";
 
-    document.querySelectorAll(".bin-btn").forEach(btn => {
-      btn.disabled = false;
-    });
+      document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+      });
 
-    updateStats();
-    startTimer();
-    loadNewItem();
-  };
-} else {
-  console.error("startGameBtn not found in DOM");
-}
+      updateStats();
+      startTimer();
+      loadNewItem();
+    };
+  } else {
+    console.error("startGameBtn not found in DOM");
+  }
 
   /* =============================
      TIMER (HARD STOP)
@@ -125,6 +180,7 @@ if (startGameBtn) {
   function startTimer() {
     let timeLeft = totalTime;
     timerValue.textContent = formatTime(timeLeft);
+    progressFill.style.width = "100%";
 
     clearInterval(timer);
     timer = setInterval(() => {
@@ -144,16 +200,21 @@ if (startGameBtn) {
   }
 
   /* =============================
-     LOAD ITEM (IMAGE FIX âœ…)
+     LOAD ITEM (IMAGE FIX ✅)
   ============================== */
   function loadNewItem() {
-    if (!gameRunning) return;
+    if (!gameRunning || items.length === 0) return;
 
     currentItem = items[Math.floor(Math.random() * items.length)];
 
-    // ðŸ”¥ CRITICAL FIX FOR GITHUB PAGES
-    itemImage.src = new URL(currentItem.image, window.location.href).href;
-    itemImage.alt = currentItem.name;
+    // 🚀 CRITICAL FIX FOR GITHUB PAGES
+    try {
+      itemImage.src = new URL(currentItem.image, window.location.href).href;
+      itemImage.alt = currentItem.name;
+    } catch (error) {
+      console.error("Error loading image:", error);
+      itemImage.src = "fallback.jpg";
+    }
 
     itemName.textContent = currentItem.name;
     feedback.textContent = "Choose the correct bin";
@@ -172,12 +233,12 @@ if (startGameBtn) {
       if (chosen === currentItem.bin) {
         score++;
         correct++;
-        feedback.textContent = "âœ” Correct!";
+        feedback.textContent = "✅ Correct!";
         feedback.style.color = "#4caf50";
       } else {
         score = Math.max(0, score - 1);
         wrong++;
-        feedback.textContent = `âœ– Wrong â€” Correct bin: ${currentItem.bin}`;
+        feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
         feedback.style.color = "#ff5252";
       }
 
@@ -206,7 +267,7 @@ if (startGameBtn) {
     gameRunning = false;
     clearInterval(timer);
 
-    feedback.textContent = "â± Time's up!";
+    feedback.textContent = "⏱️ Time's up!";
     feedback.style.color = "#ffd700";
 
     document.querySelectorAll(".bin-btn").forEach(btn => {
@@ -214,100 +275,83 @@ if (startGameBtn) {
     });
 
     window.finalGameScore = score;
-    scoreSubmitModal.classList.remove("hidden");
-  }
-
-  /* =============================
-   SCORE SUBMIT (SAFE)
-============================= */
-
-const submitBtn = document.getElementById("submitScoreBtn");
-
-if (submitBtn) {
-  /* =============================
-   WHATSAPP SHARE
-============================= */
-function showWhatsAppShare(name, score) {
-  const whatsappBtn = document.getElementById("whatsappShareBtn");
-  if (!whatsappBtn) return;
-
-  const text =
-    `ðŸŽ‰ I just completed the Biomedical Waste Segregation Game!\n\n` +
-    `ðŸ‘¤ Name: ${name}\n` +
-    `ðŸ† Score: ${score}\n\n` +
-    `Try it yourself ðŸ‘‡\n` +
-    `https://creator619-python.github.io/Biomedical-Waste-Game/`;
-
-  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-
-  whatsappBtn.classList.remove("hidden");
-  whatsappBtn.onclick = () => window.open(url, "_blank");
-}
-
-  submitBtn.onclick = async () => {
-
+    
+    // Reset form when showing modal
     const nameInput = document.getElementById("playerNameInput");
     const errorText = document.getElementById("nameError");
-
-    // ðŸ›‘ HARD GUARD â€” prevents crash
-    if (!nameInput || !errorText) {
-      console.error("Score submit elements not found in DOM");
-      return;
+    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    
+    if (nameInput) nameInput.value = "";
+    if (errorText) errorText.classList.add("hidden");
+    if (whatsappBtn) whatsappBtn.classList.add("hidden");
+    
+    if (scoreSubmitModal) {
+      scoreSubmitModal.classList.remove("hidden");
     }
-
-    const name = nameInput.value.trim();
-
-    if (!/^[A-Za-z ]{3,20}$/.test(name)) {
-      errorText.classList.remove("hidden");
-      return;
-    }
-
-    errorText.classList.add("hidden");
-
-    const saved = await saveScore(
-  name,
-  window.finalGameScore,
-  totalTime   // or actual time used (see note below)
-);
-if (!saved) {
-  alert("Error saving score. Please try again.");
-  return;
-}
-    // ðŸŽ‰ CONFETTI CELEBRATION
-function launchConfetti() {
-  const container = document.getElementById("confettiContainer");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  for (let i = 0; i < 80; i++) {
-    const piece = document.createElement("div");
-    piece.className = "confetti";
-    piece.style.left = Math.random() * 100 + "vw";
-    piece.style.animationDelay = Math.random() * 2 + "s";
-    piece.style.backgroundColor =
-      ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
-
-    container.appendChild(piece);
   }
 
-  setTimeout(() => (container.innerHTML = ""), 5000);
-}
-    // ðŸŽ‰ CONFETTI MOMENT
-launchConfetti();
+  /* =============================
+     SCORE SUBMIT (SAFE)
+  ============================== */
+  const submitBtn = document.getElementById("submitScoreBtn");
 
-// âœ… SUCCESS FLOW
-showWhatsAppShare(name, window.finalGameScore);
+  if (submitBtn) {
+    submitBtn.onclick = async () => {
+      const nameInput = document.getElementById("playerNameInput");
+      const errorText = document.getElementById("nameError");
 
+      // 🚨 HARD GUARD — prevents crash
+      if (!nameInput || !errorText) {
+        console.error("Score submit elements not found in DOM");
+        return;
+      }
+
+      const name = nameInput.value.trim();
+
+      if (!/^[A-Za-z ]{3,20}$/.test(name)) {
+        errorText.classList.remove("hidden");
+        return;
+      }
+
+      errorText.classList.add("hidden");
+
+      try {
+        const saved = await saveScore(
+          name,
+          window.finalGameScore,
+          totalTime
+        );
+        
+        if (!saved) {
+          alert("Error saving score. Please try again.");
+          return;
+        }
+
+        // 🎉 CONFETTI CELEBRATION
+        launchConfetti();
+
+        // ✅ SUCCESS FLOW
+        showWhatsAppShare(name, window.finalGameScore);
+
+      } catch (error) {
+        console.error("Error submitting score:", error);
+        alert("Error saving score. Please check your connection and try again.");
+      }
+    };
+  }
 
   /* =============================
-     CANCEL
+     CANCEL SUBMIT
   ============================== */
   const cancelBtn = document.getElementById("cancelSubmitBtn");
   if (cancelBtn) {
     cancelBtn.onclick = () => {
-      scoreSubmitModal.classList.add("hidden");
+      if (scoreSubmitModal) {
+        scoreSubmitModal.classList.add("hidden");
+      }
+      // Optionally restart game or go to home
+      startScreen.classList.remove("hidden");
+      gameContainer.classList.add("hidden");
     };
   }
-
 });
