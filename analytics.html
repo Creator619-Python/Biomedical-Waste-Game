@@ -19,36 +19,115 @@
 <body>
 
     <div class="analytics-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>📊 Game Analytics Center</h1>
+            <p class="subtitle">Track your performance and compete with others</p>
+        </div>
+        
         <!-- Navigation Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" data-tab="analytics">📊 My Analytics</button>
-            <button class="tab-btn" data-tab="leaderboard">🏆 Global Leaderboard</button>
+            <button class="tab-btn active" data-tab="analytics">
+                <span class="tab-icon">📈</span>
+                <span class="tab-text">My Analytics</span>
+            </button>
+            <button class="tab-btn" data-tab="leaderboard">
+                <span class="tab-icon">🏆</span>
+                <span class="tab-text">Global Leaderboard</span>
+            </button>
+            <button class="tab-btn" data-tab="training">
+                <span class="tab-icon">🎯</span>
+                <span class="tab-text">Training Stats</span>
+            </button>
         </div>
         
         <!-- Analytics Tab -->
         <div id="analyticsTab" class="tab-content active">
-            <h2>Your Training Performance</h2>
-            <p class="subtitle">Track your improvement over time</p>
-            
-            <div id="statsContainer" class="stats-grid"></div>
-            <div class="chart-container">
-                <canvas id="scoreChart"></canvas>
+            <div class="tab-header">
+                <h2>Your Performance Dashboard</h2>
+                <p>Track your improvement journey in biomedical waste segregation</p>
             </div>
+            
+            <!-- Summary Stats -->
+            <div id="statsContainer" class="stats-grid"></div>
+            
+            <!-- Performance Chart -->
+            <div class="chart-section">
+                <h3>Performance Trend</h3>
+                <div class="chart-container">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Recent Attempts -->
+            <div id="recentAttempts" class="recent-section"></div>
         </div>
         
         <!-- Leaderboard Tab -->
         <div id="leaderboardTab" class="tab-content">
-            <h2>Global Leaderboard</h2>
-            <p class="subtitle">Top players worldwide</p>
+            <div class="tab-header">
+                <h2>Global Leaderboard</h2>
+                <p>Top players from around the world</p>
+                <div class="leaderboard-info">
+                    <span class="info-badge">🌍 Live Ranking</span>
+                    <span class="info-badge">🔄 Updates real-time</span>
+                </div>
+            </div>
             
+            <!-- Leaderboard Filters -->
+            <div class="leaderboard-filters">
+                <button class="filter-btn active" data-filter="all">All Time</button>
+                <button class="filter-btn" data-filter="month">This Month</button>
+                <button class="filter-btn" data-filter="week">This Week</button>
+            </div>
+            
+            <!-- Leaderboard List -->
             <div id="leaderboardList" class="leaderboard-full">
-                <!-- Will be populated by JS -->
+                <div class="loading-board">
+                    <div class="spinner"></div>
+                    <p>Loading leaderboard...</p>
+                </div>
+            </div>
+            
+            <!-- Your Position -->
+            <div id="yourPosition" class="your-position-card"></div>
+        </div>
+        
+        <!-- Training Stats Tab -->
+        <div id="trainingTab" class="tab-content">
+            <div class="tab-header">
+                <h2>Training Statistics</h2>
+                <p>Detailed breakdown of your learning progress</p>
+            </div>
+            
+            <div id="trainingStats" class="training-grid"></div>
+            
+            <!-- Accuracy by Bin Type -->
+            <div class="accuracy-section">
+                <h3>Accuracy by Waste Category</h3>
+                <div class="accuracy-chart-container">
+                    <canvas id="accuracyChart"></canvas>
+                </div>
             </div>
         </div>
         
-        <button class="back-btn" onclick="window.location.href='index.html'">
-            ← Back to Game
-        </button>
+        <!-- Back Button -->
+        <div class="action-buttons">
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <span class="btn-icon">←</span>
+                <span class="btn-text">Back to Game</span>
+            </button>
+            
+            <button class="share-btn" id="shareAnalyticsBtn">
+                <span class="btn-icon">📤</span>
+                <span class="btn-text">Share Progress</span>
+            </button>
+        </div>
+        
+        <!-- Footer -->
+        <div class="analytics-footer">
+            <p>Data updates in real-time • Last updated: <span id="lastUpdated">Now</span></p>
+        </div>
     </div>
 
 </body>
