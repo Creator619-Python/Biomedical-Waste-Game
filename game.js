@@ -243,19 +243,66 @@ function showWhatsAppShare(name, score) {
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
 
   whatsappBtn.classList.remove("hidden");
-  whatsappBtn.onclick = () => window.open(url, "_blank");
+  /* =============================
+   CONFETTI
+============================= */
+function launchConfetti() {
+  const container = document.getElementById("confettiContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (let i = 0; i < 80; i++) {
+    const confetti = document.createElement("div");
+    confetti.className = "confetti";
+    confetti.style.left = Math.random() * 100 + "vw";
+    confetti.style.animationDuration = 2 + Math.random() * 3 + "s";
+    confetti.style.backgroundColor =
+      ["#22c55e", "#3b82f6", "#facc15", "#ef4444"][
+        Math.floor(Math.random() * 4)
+      ];
+    container.appendChild(confetti);
+  }
+
+  setTimeout(() => {
+    container.innerHTML = "";
+  }, 5000);
 }
 
-  submitBtn.onclick = async () => {
+/* =============================
+   WHATSAPP SHARE
+============================= */
+function showWhatsAppShare(name, score) {
+  const whatsappBtn = document.getElementById("whatsappShareBtn");
+  if (!whatsappBtn) return;
 
+  const text =
+    `🎉 I completed the Biomedical Waste Segregation Game!\n\n` +
+    `👤 Name: ${name}\n` +
+    `🏆 Score: ${score}\n\n` +
+    `Play here 👇\n` +
+    `https://creator619-python.github.io/Biomedical-Waste-Game/`;
+
+  whatsappBtn.classList.remove("hidden");
+  whatsappBtn.onclick = () => {
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank"
+    );
+  };
+}
+
+/* =============================
+   SCORE SUBMIT (SAFE & FINAL)
+============================= */
+const submitBtn = document.getElementById("submitScoreBtn");
+
+if (submitBtn) {
+  submitBtn.onclick = async () => {
     const nameInput = document.getElementById("playerNameInput");
     const errorText = document.getElementById("nameError");
 
-    // 🛑 HARD GUARD — prevents crash
-    if (!nameInput || !errorText) {
-      console.error("Score submit elements not found in DOM");
-      return;
-    }
+    if (!nameInput || !errorText) return;
 
     const name = nameInput.value.trim();
 
@@ -267,50 +314,17 @@ function showWhatsAppShare(name, score) {
     errorText.classList.add("hidden");
 
     const saved = await saveScore(
-  name,
-  window.finalGameScore,
-  totalTime   // or actual time used (see note below)
-);
-if (!saved) {
-  alert("Error saving score. Please try again.");
-  return;
+      name,
+      window.finalGameScore,
+      totalTime
+    );
+
+    if (!saved) {
+      alert("Error saving score");
+      return;
+    }
+
+    launchConfetti();
+    showWhatsAppShare(name, window.finalGameScore);
+  };
 }
-    // 🎉 CONFETTI CELEBRATION
-function launchConfetti() {
-  const container = document.getElementById("confettiContainer");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  for (let i = 0; i < 80; i++) {
-    const piece = document.createElement("div");
-    piece.className = "confetti";
-    piece.style.left = Math.random() * 100 + "vw";
-    piece.style.animationDelay = Math.random() * 2 + "s";
-    piece.style.backgroundColor =
-      ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
-
-    container.appendChild(piece);
-  }
-
-  setTimeout(() => (container.innerHTML = ""), 5000);
-}
-    // 🎉 CONFETTI MOMENT
-launchConfetti();
-
-// ✅ SUCCESS FLOW
-showWhatsAppShare(name, window.finalGameScore);
-
-
-  /* =============================
-     CANCEL
-  ============================== */
-  const cancelBtn = document.getElementById("cancelSubmitBtn");
-  if (cancelBtn) {
-    cancelBtn.onclick = () => {
-      scoreSubmitModal.classList.add("hidden");
-    };
-  }
-
-});
-
