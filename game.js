@@ -89,20 +89,22 @@ document.addEventListener("DOMContentLoaded", () => {
 const startGameBtn = document.getElementById("startGameBtn");
 
 if (startGameBtn) {
-  startGameBtn.onclick = async () => {
+
+  const startHandler = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (items.length === 0) await loadItems();
 
     startScreen.classList.add("hidden");
     gameContainer.classList.remove("hidden");
 
-    // reset state
     score = 0;
     correct = 0;
     wrong = 0;
     currentItem = null;
     gameRunning = true;
 
-    // reset UI
     scoreDisplay.textContent = score;
     feedback.textContent = "Choose the correct bin";
     feedback.style.color = "";
@@ -115,7 +117,7 @@ if (startGameBtn) {
     startTimer();
     loadNewItem();
   };
-} else {
+ else {
   console.error("startGameBtn not found in DOM");
 }
 
