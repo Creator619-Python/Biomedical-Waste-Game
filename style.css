@@ -6,17 +6,28 @@ body {
   padding: 0;
   background: #0d1117;
   color: white;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Better font stack */
   overflow-x: hidden;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased; /* Better text rendering */
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .hidden {
   display: none !important;
+  visibility: hidden; /* Additional hidden property */
 }
 
 button {
   cursor: pointer;
   touch-action: manipulation;
+  transition: all 0.2s ease; /* Smooth transitions */
+  outline: none; /* Remove default outline */
+}
+
+button:focus-visible {
+  outline: 2px solid #2ea043; /* Accessible focus indicator */
+  outline-offset: 2px;
 }
 
 /* =========================================
@@ -33,6 +44,16 @@ button {
   border-radius: 8px;
   color: white;
   font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.fullscreen-btn:hover {
+  background: #2ea043;
+  transform: scale(1.05);
+}
+
+.fullscreen-btn:active {
+  transform: scale(0.95);
 }
 
 /* =========================================
@@ -41,6 +62,8 @@ button {
 .app-wrapper {
   display: flex;
   min-height: 100vh;
+  max-width: 1600px; /* Prevent too wide on large screens */
+  margin: 0 auto;
 }
 
 /* =========================================
@@ -55,20 +78,26 @@ button {
   justify-content: space-between;
   position: relative;
   z-index: 1;
+  min-height: 100vh; /* Ensure full height on mobile */
 }
 
 .title {
   font-size: 32px;
   font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.2;
 }
 
 .subtitle {
   color: #9aa0a6;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .section-title {
   margin-top: 30px;
   font-size: 22px;
+  margin-bottom: 10px;
 }
 
 /* Difficulty */
@@ -76,51 +105,103 @@ button {
   display: flex;
   gap: 10px;
   margin-top: 15px;
+  flex-wrap: wrap; /* Wrap on small screens */
 }
 
 .difficulty-card {
   flex: 1;
+  min-width: 80px; /* Prevent too small on mobile */
   padding: 15px;
   background: #1f242c;
   border-radius: 10px;
   text-align: center;
   border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.difficulty-card:hover:not(.selected) {
+  background: #252c37;
+  transform: translateY(-2px);
 }
 
 .difficulty-card.selected {
   border-color: #2ea043;
+  background: #1c2b1e;
+}
+
+.difficulty-level {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.difficulty-time {
+  font-size: 12px;
+  color: #9aa0a6;
 }
 
 /* Buttons */
 .primary-btn {
   margin-top: 20px;
-  padding: 12px;
+  padding: 14px; /* Slightly larger for better touch */
   width: 100%;
   background: #238636;
   border: none;
   color: white;
   font-size: 18px;
   border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: #2ea043;
+  transform: translateY(-2px);
+}
+
+.primary-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .secondary-btn {
   margin-top: 12px;
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   background: #30363d;
   border: none;
   color: white;
   font-size: 16px;
   border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background: #3c434b;
 }
 
 /* Instructions */
 .instructions {
   margin-top: 12px;
-  padding: 14px;
+  padding: 16px;
   background: #0f172a;
   border-radius: 8px;
   font-size: 14px;
+  line-height: 1.5;
+}
+
+.instructions ul {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 6px;
 }
 
 /* =========================================
@@ -131,89 +212,163 @@ button {
   padding: 25px;
   position: relative;
   z-index: 1;
+  min-height: 100vh; /* Ensure full height */
 }
 
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap; /* Wrap on small screens */
+  gap: 10px;
 }
 
 .timer-box,
 .score-box {
   background: #161b22;
-  padding: 12px;
+  padding: 12px 16px;
   border-radius: 10px;
   min-width: 120px;
   text-align: center;
+  flex: 1;
+  max-width: 200px;
 }
 
-.timer-value {
-  font-size: 22px;
+.timer-label,
+.score-label {
+  font-size: 14px;
+  color: #9aa0a6;
+  margin-bottom: 4px;
+}
+
+.timer-value,
+.score-value {
+  font-size: 24px;
   font-weight: bold;
+  color: #ffffff;
+}
+
+/* Timer progress bar */
+.timer-progress {
+  height: 6px;
+  background: #30363d;
+  width: 100%;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 8px;
 }
 
 .progress-fill {
-  height: 6px;
-  background: #2ea043;
+  height: 100%;
+  background: linear-gradient(90deg, #2ea043, #2ea043);
   width: 100%;
   border-radius: 5px;
+  transition: width 1s linear;
 }
 
 /* Item area */
 .item-area {
-  min-height: 220px;
+  min-height: 280px; /* Increased for better spacing */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  margin: 20px 0;
 }
 
 .item-image {
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
   display: block;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
 }
 
 .item-name {
-  margin-top: 12px;
-  font-size: 22px;
+  margin-top: 16px;
+  font-size: 24px;
   font-weight: 600;
+  text-align: center;
+  min-height: 30px;
 }
 
 .feedback {
   min-height: 24px;
   margin-top: 20px;
   text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Bins */
 .bins-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-top: 30px;
+  flex-wrap: wrap; /* Wrap on mobile */
 }
 
 .bin-btn {
   flex: 1;
-  padding: 12px;
+  padding: 16px;
   border-radius: 10px;
   border: none;
   font-size: 16px;
+  font-weight: 600;
   color: white;
+  transition: all 0.2s ease;
+  min-width: 120px; /* Prevent too small */
 }
 
-.bin-yellow { background: #e6c200; }
-.bin-red { background: #cc0000; }
-.bin-white { background: #bfbfbf; color: black; }
-.bin-blue { background: #0077cc; }
-.bin-green { background: #00994d; }
+.bin-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.bin-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.bin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bin-yellow { 
+  background: linear-gradient(135deg, #e6c200, #ffd700);
+  color: #000;
+}
+.bin-red { 
+  background: linear-gradient(135deg, #cc0000, #ff4444);
+}
+.bin-white { 
+  background: linear-gradient(135deg, #bfbfbf, #e0e0e0);
+  color: #000;
+}
+.bin-blue { 
+  background: linear-gradient(135deg, #0077cc, #0099ff);
+}
+.bin-green { 
+  background: linear-gradient(135deg, #00994d, #00cc66);
+}
 
 /* Stats */
 .game-stats {
   margin-top: 25px;
   text-align: center;
+  font-size: 14px;
+  color: #9aa0a6;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
 }
 
 /* =========================================
@@ -223,33 +378,138 @@ button {
   position: fixed;
   inset: 0;
   z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .modal.hidden {
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .modal-backdrop {
   position: absolute;
   inset: 0;
   backdrop-filter: blur(6px);
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.7);
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .modal:not(.hidden) .modal-backdrop {
   pointer-events: auto;
+  opacity: 1;
 }
 
 .modal-content {
   position: relative;
   width: 90%;
-  max-width: 350px;
+  max-width: 400px;
   background: #161b22;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 80px auto;
+  border-radius: 16px;
+  padding: 30px;
   text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.modal:not(.hidden) .modal-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.modal-title {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.modal-subtitle {
+  color: #9aa0a6;
+  margin-bottom: 24px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 14px;
+  background: #0f172a;
+  border: 2px solid #30363d;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #2ea043;
+}
+
+.error-message {
+  color: #ff5252;
+  font-size: 14px;
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-btn-primary {
+  background: #238636;
+  color: white;
+}
+
+.modal-btn-primary:hover {
+  background: #2ea043;
+}
+
+.modal-btn-secondary {
+  background: #30363d;
+  color: white;
+}
+
+.modal-btn-secondary:hover {
+  background: #3c434b;
+}
+
+.whatsapp-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+  background: #1ebc5a;
+  transform: translateY(-2px);
 }
 
 /* =========================================
@@ -260,18 +520,26 @@ button {
   inset: 0;
   pointer-events: none;
   z-index: 999;
+  overflow: hidden;
 }
 
 .confetti {
   position: absolute;
-  width: 8px;
-  height: 14px;
+  width: 10px;
+  height: 20px;
   animation: fall linear forwards;
+  border-radius: 2px;
 }
 
 @keyframes fall {
-  from { transform: translateY(-10vh) rotate(0); }
-  to { transform: translateY(110vh) rotate(720deg); }
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(100px) rotate(720deg);
+    opacity: 0;
+  }
 }
 
 /* =========================================
@@ -280,12 +548,114 @@ button {
 @media (max-width: 900px) {
   .app-wrapper {
     flex-direction: column;
+    min-height: 100vh;
   }
+  
+  .left-panel,
+  .right-panel {
+    min-height: auto;
+    padding: 20px;
+  }
+  
   .bins-row {
+    flex-direction: row; /* Keep as row but wrap */
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .bin-btn {
+    flex: 1 1 calc(50% - 12px); /* Two per row on mobile */
+    min-width: 140px;
+    margin-bottom: 8px;
+  }
+  
+  .item-image {
+    width: 160px;
+    height: 160px;
+  }
+  
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .timer-box,
+  .score-box {
+    max-width: none;
+    margin-bottom: 10px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 28px;
+  }
+  
+  .section-title {
+    font-size: 20px;
+  }
+  
+  .item-name {
+    font-size: 20px;
+  }
+  
+  .bin-btn {
+    flex: 1 1 100%; /* One per row on very small screens */
+    margin-bottom: 8px;
+  }
+  
+  .difficulty-grid {
     flex-direction: column;
   }
-  .item-image {
-    width: 140px;
-    height: 140px;
+  
+  .difficulty-card {
+    min-width: auto;
+  }
+}
+
+/* =========================================
+   ACCESSIBILITY
+========================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .confetti {
+    display: none;
+  }
+}
+
+/* =========================================
+   DARK MODE SUPPORT (already dark, but ensure contrast)
+========================================= */
+@media (prefers-color-scheme: dark) {
+  .bin-white {
+    color: #000 !important; /* Ensure contrast */
+  }
+}
+
+/* =========================================
+   PRINT STYLES
+========================================= */
+@media print {
+  .right-panel,
+  .modal,
+  .fullscreen-btn {
+    display: none !important;
+  }
+  
+  .left-panel {
+    background: white !important;
+    color: black !important;
   }
 }
