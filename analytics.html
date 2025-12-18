@@ -4,8 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Training Analytics</title>
-
+    
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
+    
+    <!-- Your Styles -->
     <link rel="stylesheet" href="analytics.css">
+    
+    <!-- Your Analytics Script -->
     <script src="analytics.js" type="module"></script>
 </head>
 
@@ -15,9 +25,16 @@
         <h1>📊 Your Training Analytics</h1>
         <p class="subtitle">Track your performance and improvement over time</p>
         
-        <!-- Summary stats will be inserted here by JS -->
-        <!-- Chart container will be inserted here by JS -->
-        <!-- Top players list will be inserted here by JS -->
+        <!-- Statistics will appear here -->
+        <div id="statsContainer"></div>
+        
+        <!-- Chart will appear here -->
+        <div class="chart-container">
+            <canvas id="scoreChart"></canvas>
+        </div>
+        
+        <!-- Top Players will appear here -->
+        <div id="playersContainer"></div>
 
         <button class="back-btn" onclick="window.location.href='index.html'">
             ← Back to Game
