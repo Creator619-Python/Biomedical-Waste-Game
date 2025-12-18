@@ -1,30 +1,24 @@
-// analytics.js - COMPLETE WORKING VERSION
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+// analytics.js - NON-MODULE VERSION (works with regular script tag)
 
-// Initialize Firebase
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
-  authDomain: "biomedicalwastegame.firebaseapp.com",
-  projectId: "biomedicalwastegame",
-  storageBucket: "biomedicalwastegame.firebasestorage.app",
-  messagingSenderId: "502355834534",
-  appId: "1:502355834534:web:e7cd3369f7a4b174f3e667",
-  measurementId: "G-BBXXM9BXFM"
+    apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
+    authDomain: "biomedicalwastegame.firebaseapp.com",
+    projectId: "biomedicalwastegame",
+    storageBucket: "biomedicalwastegame.firebasestorage.app",
+    messagingSenderId: "502355834534",
+    appId: "1:502355834534:web:e7cd3369f7a4b174f3e667",
+    measurementId: "G-BBXXM9BXFM"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Global variables
 let allScores = [];
 let performanceChart = null;
+let difficultyChart = null;
 
 // Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", function() {
@@ -32,25 +26,32 @@ document.addEventListener("DOMContentLoaded", function() {
     initTabs();
     loadAnalyticsData();
     setupEventListeners();
+    
+    // Update last updated time
+    updateLastUpdated();
+    setInterval(updateLastUpdated, 60000); // Update every minute
 });
 
 // Initialize tab system
 function initTabs() {
     const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
     
     tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
+        button.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
             
-            // Remove active class from all buttons and contents
+            // Remove active class from all buttons
             tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.remove('active'));
             
             // Add active class to clicked button
-            button.classList.add('active');
+            this.classList.add('active');
             
-            // Show corresponding content
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show active tab content
             const activeTab = document.getElementById(tabId + 'Tab');
             if (activeTab) {
                 activeTab.classList.add('active');
@@ -73,8 +74,10 @@ async function loadAnalyticsData() {
     try {
         showLoadingState();
         
-        const q = query(collection(db, "leaderboard"), orderBy("score", "desc"));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await db.collection("leaderboard")
+            .orderBy("score", "desc")
+            .limit(100)
+            .get();
         
         allScores = [];
         querySnapshot.forEach((doc) => {
@@ -93,9 +96,6 @@ async function loadAnalyticsData() {
         
         // Render the initial tab
         renderAnalyticsTab();
-        
-        // Update last updated time
-        updateLastUpdated();
         
     } catch (error) {
         console.error("Error loading analytics:", error);
@@ -166,7 +166,7 @@ function renderAnalyticsTab() {
         return;
     }
     
-    // Calculate player stats
+    // Get player name from localStorage or use 'You'
     const playerName = localStorage.getItem('playerName') || 'You';
     const playerScores = allScores.filter(score => score.name === playerName);
     const stats = calculateStats(playerScores);
@@ -192,7 +192,7 @@ function renderAnalyticsTab() {
     // Render stats
     renderStats(stats, playerScores.length > 0);
     
-    // Render chart
+    // Render chart if player has scores
     if (playerScores.length > 0) {
         renderPerformanceChart(playerScores);
     } else {
@@ -217,7 +217,7 @@ function calculateStats(scores) {
             bestScore: 0,
             accuracy: 0,
             totalPoints: 0,
-            improvement: 0
+            rank: 'N/A'
         };
     }
     
@@ -229,21 +229,13 @@ function calculateStats(scores) {
     const maxPossible = scores.length * 50;
     const accuracy = Math.round((totalPoints / maxPossible) * 100);
     
-    // Calculate improvement (compare last 3 games with first 3)
-    let improvement = 0;
-    if (scores.length >= 6) {
-        const firstThree = scores.slice(-3).reduce((sum, s) => sum + s.score, 0) / 3;
-        const lastThree = scores.slice(0, 3).reduce((sum, s) => sum + s.score, 0) / 3;
-        improvement = Math.round(((lastThree - firstThree) / firstThree) * 100);
-    }
-    
     return {
         totalSessions: scores.length,
         averageScore: averageScore,
         bestScore: bestScore,
         accuracy: accuracy,
         totalPoints: totalPoints,
-        improvement: improvement
+        rank: '#' + (allScores.findIndex(s => s.name === (localStorage.getItem('playerName') || 'You')) + 1 || 'N/A')
     };
 }
 
@@ -296,43 +288,29 @@ function renderPerformanceChart(scores) {
         performanceChart.destroy();
     }
     
-    // Prepare data
-    const recentScores = scores.slice(0, 10).reverse(); // Last 10 games
+    // Prepare data (last 10 games, reversed for chronological order)
+    const recentScores = scores.slice(0, 10).reverse();
     const labels = recentScores.map((score, index) => `Game ${index + 1}`);
     const dataPoints = recentScores.map(score => score.score);
     
-    // Calculate average line
-    const average = recentScores.reduce((sum, score) => sum + score.score, 0) / recentScores.length;
-    const averageLine = Array(recentScores.length).fill(average);
-    
+    // Create chart
     performanceChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [
-                {
-                    label: 'Your Score',
-                    data: dataPoints,
-                    borderColor: '#4caf50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#ffd700',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6
-                },
-                {
-                    label: 'Average',
-                    data: averageLine,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    borderWidth: 1,
-                    borderDash: [5, 5],
-                    fill: false,
-                    pointRadius: 0
-                }
-            ]
+            datasets: [{
+                label: 'Your Score',
+                data: dataPoints,
+                borderColor: '#4caf50',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#ffd700',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
         },
         options: {
             responsive: true,
@@ -454,7 +432,7 @@ function renderLeaderboardTab() {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            loadLeaderboard(this.dataset.filter);
+            loadLeaderboard(this.getAttribute('data-filter'));
         });
     });
 }
@@ -476,20 +454,19 @@ function loadLeaderboard(filter) {
         filteredScores = filteredScores.filter(s => s.createdAt >= weekAgo);
     }
     
-    // Get top 50 unique players (best score per player)
-    const playersMap = new Map();
+    // Get unique players (best score per player)
+    const playersMap = {};
     filteredScores.forEach(score => {
-        if (!playersMap.has(score.name) || score.score > playersMap.get(score.name).score) {
-            playersMap.set(score.name, {
+        if (!playersMap[score.name] || score.score > playersMap[score.name].score) {
+            playersMap[score.name] = {
                 name: score.name,
                 score: score.score,
-                date: score.createdAt,
-                attempts: 1
-            });
+                date: score.createdAt
+            };
         }
     });
     
-    const topPlayers = Array.from(playersMap.values())
+    const topPlayers = Object.values(playersMap)
         .sort((a, b) => b.score - a.score)
         .slice(0, 50);
     
@@ -564,7 +541,7 @@ function renderTrainingTab() {
     // Calculate training stats
     const playerName = localStorage.getItem('playerName');
     const playerScores = playerName ? allScores.filter(s => s.name === playerName) : [];
-    const totalPlayers = new Set(allScores.map(s => s.name)).size;
+    const totalPlayers = [...new Set(allScores.map(s => s.name))].length;
     const totalGames = allScores.length;
     const avgScoreAll = Math.round(allScores.reduce((sum, s) => sum + s.score, 0) / totalGames);
     
@@ -614,6 +591,11 @@ function renderDifficultyChart() {
     const ctx = document.getElementById('difficultyChart');
     if (!ctx) return;
     
+    // Destroy existing chart
+    if (difficultyChart) {
+        difficultyChart.destroy();
+    }
+    
     // Count difficulties
     const difficulties = {
         easy: allScores.filter(s => s.difficulty === 'easy').length,
@@ -621,7 +603,7 @@ function renderDifficultyChart() {
         hard: allScores.filter(s => s.difficulty === 'hard').length
     };
     
-    new Chart(ctx, {
+    difficultyChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Easy', 'Medium', 'Hard'],
@@ -629,7 +611,8 @@ function renderDifficultyChart() {
                 data: [difficulties.easy, difficulties.medium, difficulties.hard],
                 backgroundColor: ['#4caf50', '#2196f3', '#f44336'],
                 borderColor: ['#388e3c', '#1976d2', '#d32f2f'],
-                borderWidth: 2
+                borderWidth: 2,
+                hoverOffset: 15
             }]
         },
         options: {
@@ -675,6 +658,7 @@ function getTimeAgo(date) {
 }
 
 function getInitials(name) {
+    if (!name) return '??';
     return name.split(' ')
         .map(word => word[0])
         .join('')
@@ -685,7 +669,8 @@ function getInitials(name) {
 function updateLastUpdated() {
     const element = document.getElementById('lastUpdated');
     if (element) {
-        element.textContent = new Date().toLocaleTimeString([], { 
+        const now = new Date();
+        element.textContent = now.toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
@@ -710,34 +695,30 @@ function setupEventListeners() {
                 `🎮 Sessions: ${stats.totalSessions}\n\n` +
                 `Play the game: https://creator619-python.github.io/Biomedical-Waste-Game/`;
             
+            // Try Web Share API first
             if (navigator.share) {
                 navigator.share({
-                    title: 'My Game Progress',
+                    title: 'My Biomedical Waste Game Progress',
                     text: shareText
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                    copyToClipboard(shareText);
                 });
             } else {
-                navigator.clipboard.writeText(shareText);
-                alert('Progress copied to clipboard! 📋');
+                copyToClipboard(shareText);
             }
         });
     }
 }
 
-// Add CSS for loading spinner
-const style = document.createElement('style');
-style.textContent = `
-    .loading-spinner {
-        border: 4px solid rgba(255, 255, 255, 0.1);
-        border-left-color: #4caf50;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(
+        function() {
+            alert('Progress copied to clipboard! 📋\nYou can now paste it anywhere.');
+        },
+        function(err) {
+            console.error('Could not copy text: ', err);
+            alert('Failed to copy to clipboard. Please try again.');
+        }
+    );
+}
