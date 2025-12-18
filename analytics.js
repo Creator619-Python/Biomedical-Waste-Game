@@ -1,19 +1,14 @@
+// analytics.js - COMPLETE WORKING VERSION
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore,
   collection,
   getDocs,
   query,
-  orderBy,
-  where,
-  Timestamp
+  orderBy
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
-
-/* =====================================================
-   FIREBASE CONFIG
-===================================================== */
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
   authDomain: "biomedicalwastegame.firebaseapp.com",
@@ -27,432 +22,722 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* =====================================================
-   GLOBAL STATE
-===================================================== */
+// Global variables
 let allScores = [];
-let currentPlayerName = localStorage.getItem('playerName') || 'Guest';
 let performanceChart = null;
-let accuracyChart = null;
 
-/* =====================================================
-   DOM READY
-===================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  initializeTabs();
-  initializeShareButton();
-  loadAllAnalytics();
-  updateLastUpdated();
+// Initialize when DOM is loaded
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("Analytics page loaded");
+    initTabs();
+    loadAnalyticsData();
+    setupEventListeners();
 });
 
-/* =====================================================
-   TAB SYSTEM
-===================================================== */
-function initializeTabs() {
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabContents = document.querySelectorAll('.tab-content');
-  
-  tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tabId = btn.dataset.tab;
-      
-      // Update active tab button
-      tabBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      // Show active tab content
-      tabContents.forEach(content => {
-        content.classList.remove('active');
-        if (content.id === `${tabId}Tab`) {
-          content.classList.add('active');
-        }
-      });
-      
-      // Load data for the tab if needed
-      if (tabId === 'leaderboard') {
-        loadLeaderboard('all');
-      } else if (tabId === 'training') {
-        loadTrainingStats();
-      }
+// Initialize tab system
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            
+            // Remove active class from all buttons and contents
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            // Show corresponding content
+            const activeTab = document.getElementById(tabId + 'Tab');
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+            
+            // Load data for the tab
+            if (tabId === 'analytics') {
+                renderAnalyticsTab();
+            } else if (tabId === 'leaderboard') {
+                renderLeaderboardTab();
+            } else if (tabId === 'training') {
+                renderTrainingTab();
+            }
+        });
     });
-  });
 }
 
-/* =====================================================
-   SHARE BUTTON
-===================================================== */
-function initializeShareButton() {
-  const shareBtn = document.getElementById('shareAnalyticsBtn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      try {
-        const stats = await calculatePlayerStats();
-        const text = 
-          `🎮 Biomedical Waste Game - My Progress\n\n` +
-          `👤 Player: ${stats.name}\n` +
-          `🏆 Best Score: ${stats.bestScore}\n` +
-          `📈 Average Score: ${stats.avgScore}\n` +
-          `🎯 Accuracy: ${stats.accuracy}%\n` +
-          `🎮 Sessions: ${stats.sessions}\n\n` +
-          `Try the game: https://creator619-python.github.io/Biomedical-Waste-Game/`;
+// Load all analytics data from Firebase
+async function loadAnalyticsData() {
+    try {
+        showLoadingState();
         
-        if (navigator.share) {
-          await navigator.share({
-            title: 'My Game Progress',
-            text: text
-          });
-        } else {
-          navigator.clipboard.writeText(text);
-          alert('Progress copied to clipboard! 📋');
+        const q = query(collection(db, "leaderboard"), orderBy("score", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        allScores = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            allScores.push({
+                id: doc.id,
+                name: data.name || "Anonymous",
+                score: data.score || 0,
+                time: data.time || 0,
+                createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
+                difficulty: data.difficulty || "medium"
+            });
+        });
+        
+        console.log(`Loaded ${allScores.length} scores from Firebase`);
+        
+        // Render the initial tab
+        renderAnalyticsTab();
+        
+        // Update last updated time
+        updateLastUpdated();
+        
+    } catch (error) {
+        console.error("Error loading analytics:", error);
+        showErrorState("Failed to load data. Please check your internet connection.");
+    }
+}
+
+// Show loading state
+function showLoadingState() {
+    const containers = ['analyticsTab', 'leaderboardTab', 'trainingTab'];
+    containers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div class="loading-spinner"></div>
+                    <p style="color: #9aa0a6; margin-top: 20px;">Loading data...</p>
+                </div>
+            `;
         }
-      } catch (error) {
-        console.error('Error sharing:', error);
-      }
     });
-  }
 }
 
-/* =====================================================
-   LOAD ALL ANALYTICS
-===================================================== */
-async function loadAllAnalytics() {
-  showLoading('#analyticsTab');
-  showLoading('#leaderboardTab');
-  showLoading('#trainingTab');
-  
-  try {
-    const q = query(collection(db, "leaderboard"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty) {
-      showNoData();
-      return;
-    }
-    
-    allScores = [];
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      allScores.push({
-        id: doc.id,
-        name: data.name || 'Anonymous',
-        score: data.score || 0,
-        time: data.time || 0,
-        createdAt: data.createdAt?.toDate() || new Date(),
-        difficulty: data.difficulty || 'medium'
-      });
+// Show error state
+function showErrorState(message) {
+    const containers = ['analyticsTab', 'leaderboardTab', 'trainingTab'];
+    containers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <div style="color: #f44336; font-size: 48px;">⚠️</div>
+                    <p style="color: #f44336; margin: 20px 0;">${message}</p>
+                    <button onclick="location.reload()" style="
+                        background: #238636;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    ">Try Again</button>
+                </div>
+            `;
+        }
     });
+}
+
+// Render Analytics Tab
+function renderAnalyticsTab() {
+    const container = document.getElementById('analyticsTab');
+    if (!container) return;
     
-    // Load each section
-    loadPlayerAnalytics();
-    loadLeaderboard('all');
-    loadTrainingStats();
+    if (allScores.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 50px;">
+                <p style="color: #9aa0a6;">No data available yet. Play the game first!</p>
+                <button onclick="window.location.href='index.html'" style="
+                    background: #238636;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-top: 20px;
+                ">Play Game</button>
+            </div>
+        `;
+        return;
+    }
     
-  } catch (error) {
-    console.error("Error loading analytics:", error);
-    showError("Failed to load analytics. Please check your connection.");
-  }
-}
-
-/* =====================================================
-   PLAYER ANALYTICS
-===================================================== */
-async function loadPlayerAnalytics() {
-  const stats = await calculatePlayerStats();
-  renderPlayerStats(stats);
-  renderPerformanceChart(stats.recentScores);
-  renderRecentAttempts(stats.recentAttempts);
-}
-
-async function calculatePlayerStats() {
-  const playerScores = allScores.filter(score => 
-    score.name.toLowerCase() === currentPlayerName.toLowerCase()
-  );
-  
-  if (playerScores.length === 0) {
-    return {
-      name: currentPlayerName,
-      sessions: 0,
-      totalScore: 0,
-      avgScore: 0,
-      bestScore: 0,
-      worstScore: 0,
-      accuracy: 0,
-      recentScores: [],
-      recentAttempts: [],
-      rank: 'N/A'
-    };
-  }
-  
-  const totalScore = playerScores.reduce((sum, score) => sum + score.score, 0);
-  const bestScore = Math.max(...playerScores.map(s => s.score));
-  const worstScore = Math.min(...playerScores.map(s => s.score));
-  const avgScore = Math.round(totalScore / playerScores.length);
-  
-  // Calculate accuracy (assuming max 50 points per game)
-  const accuracy = Math.round((totalScore / (playerScores.length * 50)) * 100);
-  
-  // Get recent scores (last 10 attempts)
-  const recentScores = playerScores.slice(0, 10).map(s => s.score);
-  const recentAttempts = playerScores.slice(0, 5).map(s => ({
-    score: s.score,
-    date: formatDate(s.createdAt),
-    difficulty: s.difficulty
-  }));
-  
-  // Calculate rank
-  const allPlayers = getUniquePlayers();
-  const sortedPlayers = allPlayers.sort((a, b) => b.bestScore - a.bestScore);
-  const playerRank = sortedPlayers.findIndex(p => 
-    p.name.toLowerCase() === currentPlayerName.toLowerCase()
-  ) + 1;
-  
-  return {
-    name: currentPlayerName,
-    sessions: playerScores.length,
-    totalScore: totalScore,
-    avgScore: avgScore,
-    bestScore: bestScore,
-    worstScore: worstScore,
-    accuracy: accuracy,
-    recentScores: recentScores,
-    recentAttempts: recentAttempts,
-    rank: playerRank || 'N/A'
-  };
-}
-
-function renderPlayerStats(stats) {
-  const container = document.getElementById('statsContainer');
-  if (!container) return;
-  
-  container.innerHTML = `
-    <div class="stat-card">
-      <h3>Total Sessions</h3>
-      <p class="stat-number">${stats.sessions}</p>
-      <p class="stat-sub">Training Completed</p>
-    </div>
-    <div class="stat-card">
-      <h3>Average Score</h3>
-      <p class="stat-number">${stats.avgScore}</p>
-      <p class="stat-sub">Per Session</p>
-    </div>
-    <div class="stat-card">
-      <h3>Best Score</h3>
-      <p class="stat-number">${stats.bestScore}</p>
-      <p class="stat-sub">Personal Record</p>
-    </div>
-    <div class="stat-card">
-      <h3>Accuracy Rate</h3>
-      <p class="stat-number">${stats.accuracy}%</p>
-      <p class="stat-sub">Success Rate</p>
-    </div>
-  `;
-}
-
-function renderPerformanceChart(scores) {
-  const ctx = document.getElementById('scoreChart');
-  if (!ctx) return;
-  
-  if (performanceChart) {
-    performanceChart.destroy();
-  }
-  
-  const labels = scores.map((_, i) => `Session ${i + 1}`);
-  
-  performanceChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Your Score',
-        data: scores,
-        borderColor: '#4caf50',
-        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#ffd700',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: {
-            color: '#fff',
-            font: {
-              size: 14
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#4caf50',
-          borderWidth: 1
-        }
-      },
-      scales: {
-        x: {
-          grid: {
-            color: 'rgba(255, 255, 255, 0.1)'
-          },
-          ticks: {
-            color: '#9aa0a6'
-          }
-        },
-        y: {
-          beginAtZero: true,
-          suggestedMax: 50,
-          grid: {
-            color: 'rgba(255, 255, 255, 0.1)'
-          },
-          ticks: {
-            color: '#9aa0a6',
-            callback: function(value) {
-              return value + ' pts';
-            }
-          }
-        }
-      }
-    }
-  });
-}
-
-function renderRecentAttempts(attempts) {
-  const container = document.getElementById('recentAttempts');
-  if (!container) return;
-  
-  if (attempts.length === 0) {
-    container.innerHTML = '<p class="no-data">No recent attempts</p>';
-    return;
-  }
-  
-  let html = '<h3>Recent Sessions</h3>';
-  attempts.forEach(attempt => {
-    html += `
-      <div class="attempt-item">
-        <div>
-          <div class="attempt-date">${attempt.date}</div>
-          <div class="attempt-difficulty">${attempt.difficulty}</div>
-        </div>
-        <div class="attempt-score">${attempt.score} pts</div>
-      </div>
-    `;
-  });
-  
-  container.innerHTML = html;
-}
-
-/* =====================================================
-   LEADERBOARD
-===================================================== */
-function loadLeaderboard(filter) {
-  const container = document.getElementById('leaderboardList');
-  if (!container) return;
-  
-  container.innerHTML = '<div class="loading-board"><div class="spinner"></div><p>Loading leaderboard...</p></div>';
-  
-  // Filter scores based on time
-  let filteredScores = [...allScores];
-  const now = new Date();
-  
-  if (filter === 'month') {
-    const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
-    filteredScores = filteredScores.filter(s => s.createdAt >= monthAgo);
-  } else if (filter === 'week') {
-    const weekAgo = new Date(now.setDate(now.getDate() - 7));
-    filteredScores = filteredScores.filter(s => s.createdAt >= weekAgo);
-  }
-  
-  // Get unique players with their best scores
-  const playersMap = new Map();
-  filteredScores.forEach(score => {
-    const playerName = score.name;
-    if (!playersMap.has(playerName) || score.score > playersMap.get(playerName).score) {
-      playersMap.set(playerName, {
-        name: playerName,
-        score: score.score,
-        date: score.createdAt,
-        attempts: 1
-      });
-    } else {
-      const player = playersMap.get(playerName);
-      player.attempts++;
-    }
-  });
-  
-  // Sort by score (descending)
-  const players = Array.from(playersMap.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 50); // Top 50 players
-  
-  renderLeaderboard(players);
-  renderYourPosition(players);
-  
-  // Update active filter button
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.filter === filter) {
-      btn.classList.add('active');
-    }
-  });
-  
-  // Add filter button events
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.onclick = () => loadLeaderboard(btn.dataset.filter);
-  });
-}
-
-function renderLeaderboard(players) {
-  const container = document.getElementById('leaderboardList');
-  if (!container) return;
-  
-  if (players.length === 0) {
-    container.innerHTML = '<div class="no-data"><p>No players found</p></div>';
-    return;
-  }
-  
-  let html = '';
-  players.forEach((player, index) => {
-    const rankClass = `rank-${index < 3 ? index + 1 : 'other'}`;
-    const initials = getInitials(player.name);
-    const dateStr = formatDate(player.date);
+    // Calculate player stats
+    const playerName = localStorage.getItem('playerName') || 'You';
+    const playerScores = allScores.filter(score => score.name === playerName);
+    const stats = calculateStats(playerScores);
     
-    html += `
-      <div class="leaderboard-row">
-        <div class="rank-badge ${rankClass}">${index + 1}</div>
-        <div class="player-info">
-          <div class="player-avatar">${initials}</div>
-          <div>
-            <div class="player-name">${player.name}</div>
-            <div class="player-stats">${dateStr} • ${player.attempts} attempts</div>
-          </div>
-        </div>
-        <div class="player-score">${player.score}</div>
-      </div>
-    `;
-  });
-  
-  container.innerHTML = html;
-}
-
-function renderYourPosition(players) {
-  const container = document.getElementById('yourPosition');
-  if (!container) return;
-  
-  const playerIndex = players.findIndex(p => 
-    p.name.toLowerCase() === currentPlayerName.toLowerCase()
-  );
-  
-  if (playerIndex !== -1) {
-    const player = players[playerIndex];
     container.innerHTML = `
-      <div class="position-rank">#${playerIndex + 1}</div>
-      <div class="position-label">Your Global Rank</div>
-      <div class="position-stats">
-        Score: ${player.score}
+        <div class="tab-header">
+            <h2>Your Performance Dashboard</h2>
+            <p>Track your improvement journey in biomedical waste segregation</p>
+        </div>
+        
+        <div id="statsContainer" class="stats-grid"></div>
+        
+        <div class="chart-section">
+            <h3>Performance Trend</h3>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+        
+        <div id="recentAttempts" class="recent-section"></div>
+    `;
+    
+    // Render stats
+    renderStats(stats, playerScores.length > 0);
+    
+    // Render chart
+    if (playerScores.length > 0) {
+        renderPerformanceChart(playerScores);
+    } else {
+        document.querySelector('.chart-container').innerHTML = `
+            <div style="text-align: center; padding: 50px; color: #9aa0a6;">
+                <p>No performance data available</p>
+                <p>Play a game to see your progress!</p>
+            </div>
+        `;
+    }
+    
+    // Render recent attempts
+    renderRecentAttempts(playerScores.slice(0, 5));
+}
+
+// Calculate statistics
+function calculateStats(scores) {
+    if (scores.length === 0) {
+        return {
+            totalSessions: 0,
+            averageScore: 0,
+            bestScore: 0,
+            accuracy: 0,
+            totalPoints: 0,
+            improvement: 0
+        };
+    }
+    
+    const totalPoints = scores.reduce((sum, score) => sum + score.score, 0);
+    const averageScore = Math.round(totalPoints / scores.length);
+    const bestScore = Math.max(...scores.map(s => s.score));
+    
+    // Calculate accuracy (assuming max 50 points per game)
+    const maxPossible = scores.length * 50;
+    const accuracy = Math.round((totalPoints / maxPossible) * 100);
+    
+    // Calculate improvement (compare last 3 games with first 3)
+    let improvement = 0;
+    if (scores.length >= 6) {
+        const firstThree = scores.slice(-3).reduce((sum, s) => sum + s.score, 0) / 3;
+        const lastThree = scores.slice(0, 3).reduce((sum, s) => sum + s.score, 0) / 3;
+        improvement = Math.round(((lastThree - firstThree) / firstThree) * 100);
+    }
+    
+    return {
+        totalSessions: scores.length,
+        averageScore: averageScore,
+        bestScore: bestScore,
+        accuracy: accuracy,
+        totalPoints: totalPoints,
+        improvement: improvement
+    };
+}
+
+// Render statistics
+function renderStats(stats, hasData) {
+    const container = document.getElementById('statsContainer');
+    if (!container) return;
+    
+    if (!hasData) {
+        container.innerHTML = `
+            <div style="text-align: center; grid-column: 1 / -1; padding: 30px; color: #9aa0a6;">
+                <p>No statistics available yet</p>
+                <p>Complete your first game to see stats!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="stat-card">
+            <h3>Total Sessions</h3>
+            <p class="stat-number">${stats.totalSessions}</p>
+            <p class="stat-sub">Games Played</p>
+        </div>
+        <div class="stat-card">
+            <h3>Average Score</h3>
+            <p class="stat-number">${stats.averageScore}</p>
+            <p class="stat-sub">Points per Game</p>
+        </div>
+        <div class="stat-card">
+            <h3>Best Score</h3>
+            <p class="stat-number">${stats.bestScore}</p>
+            <p class="stat-sub">Personal Record</p>
+        </div>
+        <div class="stat-card">
+            <h3>Accuracy</h3>
+            <p class="stat-number">${stats.accuracy}%</p>
+            <p class="stat-sub">Success Rate</p>
+        </div>
+    `;
+}
+
+// Render performance chart
+function renderPerformanceChart(scores) {
+    const ctx = document.getElementById('scoreChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (performanceChart) {
+        performanceChart.destroy();
+    }
+    
+    // Prepare data
+    const recentScores = scores.slice(0, 10).reverse(); // Last 10 games
+    const labels = recentScores.map((score, index) => `Game ${index + 1}`);
+    const dataPoints = recentScores.map(score => score.score);
+    
+    // Calculate average line
+    const average = recentScores.reduce((sum, score) => sum + score.score, 0) / recentScores.length;
+    const averageLine = Array(recentScores.length).fill(average);
+    
+    performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Your Score',
+                    data: dataPoints,
+                    borderColor: '#4caf50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffd700',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                },
+                {
+                    label: 'Average',
+                    data: averageLine,
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    borderWidth: 1,
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#fff',
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#9aa0a6'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    ticks: {
+                        color: '#9aa0a6',
+                        callback: function(value) {
+                            return value + ' pts';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Render recent attempts
+function renderRecentAttempts(attempts) {
+    const container = document.getElementById('recentAttempts');
+    if (!container) return;
+    
+    if (attempts.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #9aa0a6;">
+                <p>No recent attempts</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<h3>Recent Sessions</h3>';
+    attempts.forEach(attempt => {
+        const dateStr = formatDate(attempt.createdAt);
+        const timeAgo = getTimeAgo(attempt.createdAt);
+        
+        html += `
+            <div class="attempt-item">
+                <div>
+                    <div class="attempt-score">${attempt.score} points</div>
+                    <div class="attempt-details">
+                        <span class="attempt-difficulty">${attempt.difficulty}</span>
+                        <span class="attempt-time">${timeAgo}</span>
+                    </div>
+                </div>
+                <div class="attempt-date">${dateStr}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Render Leaderboard Tab
+function renderLeaderboardTab() {
+    const container = document.getElementById('leaderboardTab');
+    if (!container) return;
+    
+    if (allScores.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 50px;">
+                <p style="color: #9aa0a6;">No leaderboard data available yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="tab-header">
+            <h2>Global Leaderboard</h2>
+            <p>Top players from around the world</p>
+            <div class="leaderboard-info">
+                <span class="info-badge">🌍 Live Ranking</span>
+                <span class="info-badge">🔄 Updates real-time</span>
+            </div>
+        </div>
+        
+        <div class="leaderboard-filters">
+            <button class="filter-btn active" data-filter="all">All Time</button>
+            <button class="filter-btn" data-filter="month">This Month</button>
+            <button class="filter-btn" data-filter="week">This Week</button>
+        </div>
+        
+        <div id="leaderboardList" class="leaderboard-full">
+            <!-- Leaderboard will be loaded here -->
+        </div>
+        
+        <div id="yourPosition" class="your-position-card"></div>
+    `;
+    
+    // Load leaderboard
+    loadLeaderboard('all');
+    
+    // Setup filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            loadLeaderboard(this.dataset.filter);
+        });
+    });
+}
+
+// Load leaderboard with filter
+function loadLeaderboard(filter) {
+    const container = document.getElementById('leaderboardList');
+    if (!container) return;
+    
+    // Filter scores
+    let filteredScores = [...allScores];
+    const now = new Date();
+    
+    if (filter === 'month') {
+        const monthAgo = new Date(now.setMonth(now.getMonth() - 1));
+        filteredScores = filteredScores.filter(s => s.createdAt >= monthAgo);
+    } else if (filter === 'week') {
+        const weekAgo = new Date(now.setDate(now.getDate() - 7));
+        filteredScores = filteredScores.filter(s => s.createdAt >= weekAgo);
+    }
+    
+    // Get top 50 unique players (best score per player)
+    const playersMap = new Map();
+    filteredScores.forEach(score => {
+        if (!playersMap.has(score.name) || score.score > playersMap.get(score.name).score) {
+            playersMap.set(score.name, {
+                name: score.name,
+                score: score.score,
+                date: score.createdAt,
+                attempts: 1
+            });
+        }
+    });
+    
+    const topPlayers = Array.from(playersMap.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 50);
+    
+    // Render leaderboard
+    container.innerHTML = '';
+    topPlayers.forEach((player, index) => {
+        const rankClass = index < 3 ? `rank-${index + 1}` : 'rank-other';
+        const initials = getInitials(player.name);
+        const dateStr = formatDate(player.date);
+        
+        const row = document.createElement('div');
+        row.className = 'leaderboard-row';
+        row.innerHTML = `
+            <div class="rank-badge ${rankClass}">${index + 1}</div>
+            <div class="player-info">
+                <div class="player-avatar">${initials}</div>
+                <div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-stats">${dateStr}</div>
+                </div>
+            </div>
+            <div class="player-score">${player.score}</div>
+        `;
+        container.appendChild(row);
+    });
+    
+    // Show user's position
+    showUserPosition(topPlayers);
+}
+
+// Show user's position on leaderboard
+function showUserPosition(players) {
+    const container = document.getElementById('yourPosition');
+    if (!container) return;
+    
+    const playerName = localStorage.getItem('playerName');
+    if (!playerName) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    const userIndex = players.findIndex(p => p.name === playerName);
+    if (userIndex !== -1) {
+        const user = players[userIndex];
+        container.innerHTML = `
+            <div class="position-rank">#${userIndex + 1}</div>
+            <div class="position-label">Your Global Rank</div>
+            <div class="position-stats">
+                Score: ${user.score} • ${formatDate(user.date)}
+            </div>
+        `;
+        container.classList.add('show');
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+// Render Training Tab
+function renderTrainingTab() {
+    const container = document.getElementById('trainingTab');
+    if (!container) return;
+    
+    if (allScores.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 50px;">
+                <p style="color: #9aa0a6;">No training data available yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calculate training stats
+    const playerName = localStorage.getItem('playerName');
+    const playerScores = playerName ? allScores.filter(s => s.name === playerName) : [];
+    const totalPlayers = new Set(allScores.map(s => s.name)).size;
+    const totalGames = allScores.length;
+    const avgScoreAll = Math.round(allScores.reduce((sum, s) => sum + s.score, 0) / totalGames);
+    
+    container.innerHTML = `
+        <div class="tab-header">
+            <h2>Training Statistics</h2>
+            <p>Detailed breakdown of learning progress</p>
+        </div>
+        
+        <div class="training-grid">
+            <div class="training-card">
+                <h4>Global Participation</h4>
+                <p class="stat-number">${totalPlayers}</p>
+                <p class="stat-sub">Unique Players</p>
+            </div>
+            <div class="training-card">
+                <h4>Total Games Played</h4>
+                <p class="stat-number">${totalGames}</p>
+                <p class="stat-sub">Worldwide Attempts</p>
+            </div>
+            <div class="training-card">
+                <h4>Global Average</h4>
+                <p class="stat-number">${avgScoreAll}</p>
+                <p class="stat-sub">Average Score</p>
+            </div>
+            <div class="training-card">
+                <h4>Your Progress</h4>
+                <p class="stat-number">${playerScores.length}</p>
+                <p class="stat-sub">Your Sessions</p>
+            </div>
+        </div>
+        
+        <div class="accuracy-section">
+            <h3>Difficulty Distribution</h3>
+            <div class="accuracy-chart-container">
+                <canvas id="difficultyChart"></canvas>
+            </div>
+        </div>
+    `;
+    
+    // Render difficulty chart
+    renderDifficultyChart();
+}
+
+// Render difficulty distribution chart
+function renderDifficultyChart() {
+    const ctx = document.getElementById('difficultyChart');
+    if (!ctx) return;
+    
+    // Count difficulties
+    const difficulties = {
+        easy: allScores.filter(s => s.difficulty === 'easy').length,
+        medium: allScores.filter(s => s.difficulty === 'medium').length,
+        hard: allScores.filter(s => s.difficulty === 'hard').length
+    };
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Easy', 'Medium', 'Hard'],
+            datasets: [{
+                data: [difficulties.easy, difficulties.medium, difficulties.hard],
+                backgroundColor: ['#4caf50', '#2196f3', '#f44336'],
+                borderColor: ['#388e3c', '#1976d2', '#d32f2f'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#fff',
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Utility functions
+function formatDate(date) {
+    if (!date) return 'Unknown';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - new Date(date);
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return formatDate(date);
+}
+
+function getInitials(name) {
+    return name.split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+}
+
+function updateLastUpdated() {
+    const element = document.getElementById('lastUpdated');
+    if (element) {
+        element.textContent = new Date().toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    }
+}
+
+function setupEventListeners() {
+    // Share progress button
+    const shareBtn = document.getElementById('shareAnalyticsBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            const playerName = localStorage.getItem('playerName') || 'Player';
+            const playerScores = allScores.filter(s => s.name === playerName);
+            const stats = calculateStats(playerScores);
+            
+            const shareText = 
+                `🎮 Biomedical Waste Game - My Progress\n\n` +
+                `👤 Player: ${playerName}\n` +
+                `🏆 Best Score: ${stats.bestScore}\n` +
+                `📈 Average Score: ${stats.averageScore}\n` +
+                `🎯 Accuracy: ${stats.accuracy}%\n` +
+                `🎮 Sessions: ${stats.totalSessions}\n\n` +
+                `Play the game: https://creator619-python.github.io/Biomedical-Waste-Game/`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Game Progress',
+                    text: shareText
+                });
+            } else {
+                navigator.clipboard.writeText(shareText);
+                alert('Progress copied to clipboard! 📋');
+            }
+        });
+    }
+}
+
+// Add CSS for loading spinner
+const style = document.createElement('style');
+style.textContent = `
+    .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-left-color: #4caf50;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
