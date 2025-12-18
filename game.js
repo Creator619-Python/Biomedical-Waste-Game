@@ -274,11 +274,27 @@ if (!saved) {
   return;
 }
     // 🎉 CONFETTI CELEBRATION
-confetti({
-  particleCount: 180,
-  spread: 80,
-  origin: { y: 0.6 }
-});
+function launchConfetti() {
+  const container = document.getElementById("confettiContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti";
+    piece.style.left = Math.random() * 100 + "vw";
+    piece.style.animationDelay = Math.random() * 2 + "s";
+    piece.style.backgroundColor =
+      ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
+
+    container.appendChild(piece);
+  }
+
+  setTimeout(() => (container.innerHTML = ""), 5000);
+}
+    // 🎉 CONFETTI MOMENT
+launchConfetti();
 
 // ✅ SUCCESS FLOW
 showWhatsAppShare(name, window.finalGameScore);
