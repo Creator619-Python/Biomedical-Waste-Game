@@ -345,4 +345,36 @@ button {
     transform: translateY(110vh) rotate(720deg);
   }
 }
+/* 🔒 CRITICAL: allow clicks to pass through overlays */
+#confettiContainer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
 
+/* 🔒 Hidden modals MUST NOT block taps */
+.modal.hidden {
+  pointer-events: none;
+}
+
+/* 🔒 Backdrop only clickable when modal is visible */
+.modal-backdrop {
+  pointer-events: none;
+}
+.modal:not(.hidden) .modal-backdrop {
+  pointer-events: auto;
+}
+
+/* 🔒 Ensure main UI is clickable */
+.left-panel,
+.right-panel {
+  position: relative;
+  z-index: 1;
+}
+
+/* 🔒 Start button MUST accept touch */
+#startGameBtn {
+  pointer-events: auto;
+  touch-action: manipulation;
+}
