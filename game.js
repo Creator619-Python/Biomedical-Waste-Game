@@ -273,6 +273,12 @@ if (!saved) {
   alert("Error saving score. Please try again.");
   return;
 }
+    // 🎉 CONFETTI CELEBRATION
+confetti({
+  particleCount: 180,
+  spread: 80,
+  origin: { y: 0.6 }
+});
 
 // ✅ SUCCESS FLOW
 showWhatsAppShare(name, window.finalGameScore);
