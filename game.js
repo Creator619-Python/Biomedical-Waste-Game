@@ -269,10 +269,13 @@ function showWhatsAppShare(name, score) {
   window.finalGameScore,
   totalTime   // or actual time used (see note below)
 );
-
-    if (!saved) alert("Error saving score. Please try again.");
-  };
+if (!saved) {
+  alert("Error saving score. Please try again.");
+  return;
 }
+
+// ✅ SUCCESS FLOW
+showWhatsAppShare(name, window.finalGameScore);
 
 
   /* =============================
