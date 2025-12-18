@@ -3,39 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Training Analytics</title>
+    <title>Game Analytics & Leaderboard</title>
     
-    <!-- Chart.js Library -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
-    <!-- Firebase SDKs -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"></script>
     
-    <!-- Your Styles -->
     <link rel="stylesheet" href="analytics.css">
-    
-    <!-- Your Analytics Script -->
     <script src="analytics.js" type="module"></script>
 </head>
 
 <body>
 
     <div class="analytics-container">
-        <h1>📊 Your Training Analytics</h1>
-        <p class="subtitle">Track your performance and improvement over time</p>
-        
-        <!-- Statistics will appear here -->
-        <div id="statsContainer"></div>
-        
-        <!-- Chart will appear here -->
-        <div class="chart-container">
-            <canvas id="scoreChart"></canvas>
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="analytics">📊 My Analytics</button>
+            <button class="tab-btn" data-tab="leaderboard">🏆 Global Leaderboard</button>
         </div>
         
-        <!-- Top Players will appear here -->
-        <div id="playersContainer"></div>
-
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content active">
+            <h2>Your Training Performance</h2>
+            <p class="subtitle">Track your improvement over time</p>
+            
+            <div id="statsContainer" class="stats-grid"></div>
+            <div class="chart-container">
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Leaderboard Tab -->
+        <div id="leaderboardTab" class="tab-content">
+            <h2>Global Leaderboard</h2>
+            <p class="subtitle">Top players worldwide</p>
+            
+            <div id="leaderboardList" class="leaderboard-full">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+        
         <button class="back-btn" onclick="window.location.href='index.html'">
             ← Back to Game
         </button>
