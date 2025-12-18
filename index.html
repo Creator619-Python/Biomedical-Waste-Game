@@ -6,26 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Biomedical Waste Segregation Game</title>
 
-  <!-- Meta Tags -->
-  <meta name="description" content="Learn biomedical waste segregation through an interactive game. Train yourself on proper waste disposal according to BMW Rules.">
-  <meta name="keywords" content="biomedical waste, segregation, game, training, healthcare, BMW rules">
   <meta name="author" content="Gokul Krishna T.B">
   <meta name="linkedin" content="https://www.linkedin.com/in/gokul-k-148624117/">
   <meta name="creator" content="Gokul Krishna T.B — Biomedical Waste Game Developer">
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://creator619-python.github.io/Biomedical-Waste-Game/">
-  <meta property="og:title" content="Biomedical Waste Segregation Game">
-  <meta property="og:description" content="Interactive training game for biomedical waste segregation according to BMW Rules">
-  <meta property="og:image" content="https://creator619-python.github.io/Biomedical-Waste-Game/icon-512.png">
-  
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://creator619-python.github.io/Biomedical-Waste-Game/">
-  <meta property="twitter:title" content="Biomedical Waste Segregation Game">
-  <meta property="twitter:description" content="Interactive training game for biomedical waste segregation according to BMW Rules">
-  <meta property="twitter:image" content="https://creator619-python.github.io/Biomedical-Waste-Game/icon-512.png">
 
   <link rel="stylesheet" href="style.css" />
 
@@ -34,29 +17,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="theme-color" content="#0d1117">
-  <link rel="icon" type="image/png" href="icon-192.png">
 </head>
 
 <!-- GLOBAL MODALS TEMPLATE -->
 <template id="global-modals">
+
   <!-- LEADERBOARD MODAL -->
   <div id="leaderboardModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
-      <h2 class="modal-title">🏆 Global Leaderboard</h2>
-      <div class="leaderboard-container">
-        <div class="leaderboard-header">
-          <span>Rank</span>
-          <span>Name</span>
-          <span>Score</span>
-          <span>Time</span>
-        </div>
-        <ul id="leaderboardList" class="leaderboard-list"></ul>
-      </div>
-      <div class="modal-buttons">
-        <button id="closeLeaderboardBtn" class="modal-btn modal-btn-secondary">Close</button>
-      </div>
+      <h2>🏆 Global Leaderboard</h2>
+      <ul id="leaderboardList"></ul>
+      <button id="closeLeaderboardBtn" class="secondary-btn">Close</button>
     </div>
   </div>
 
@@ -65,170 +37,119 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content certificate">
       <h2>🎉 Certificate of Completion</h2>
-      <div class="certificate-content">
-        <p>This certifies that</p>
-        <h3 id="certName" class="certificate-name"></h3>
-        <p>has successfully completed the</p>
-        <p class="certificate-title"><strong>Biomedical Waste Segregation Training</strong></p>
-        <p class="certificate-score" id="certScore"></p>
-        <p class="certificate-date" id="certDate"></p>
-        <div class="signature">
-          <div class="signature-line"></div>
-          <p>Gokul Krishna T.B.<br>Game Developer</p>
-        </div>
-      </div>
-      <div class="modal-buttons">
-        <button id="closeCertificateBtn" class="modal-btn modal-btn-primary">Close</button>
-        <button id="downloadCertificateBtn" class="modal-btn modal-btn-secondary">Download PDF</button>
-      </div>
+      <p>This certifies that</p>
+      <h3 id="certName"></h3>
+      <p>has successfully completed the</p>
+      <p><b>Biomedical Waste Segregation Training</b></p>
+      <p id="certScore"></p>
+      <button class="primary-btn">Close</button>
     </div>
   </div>
+
 </template>
 
 <body>
 
   <!-- Fullscreen Button -->
-  <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Toggle fullscreen mode">⤢</button>
+  <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
 
   <!-- Confetti -->
-  <div id="confettiContainer" aria-hidden="true"></div>
+  <div id="confettiContainer"></div>
 
   <div class="app-wrapper">
 
     <!-- LEFT PANEL -->
     <div class="left-panel" id="startScreen">
-      <header>
-        <h1 class="title">Biomedical Waste Segregation Game</h1>
-        <p class="subtitle">Match each biomedical item to the correct color-coded bin according to BMW Rules.</p>
-      </header>
+      <h1 class="title">Biomedical Waste Segregation Game</h1>
+      <p class="subtitle">Match each biomedical item to the correct color-coded bin.</p>
 
-      <main class="game-setup">
-        <h2 class="section-title">Select Difficulty</h2>
+      <h2 class="section-title">Select Difficulty</h2>
 
-        <div class="difficulty-grid" role="radiogroup" aria-label="Select game difficulty">
-          <div class="difficulty-card" data-level="easy" role="radio" aria-checked="false" tabindex="0">
-            <div class="difficulty-level">Easy</div>
-            <div class="difficulty-time">90 seconds</div>
-          </div>
-          <div class="difficulty-card selected" data-level="medium" role="radio" aria-checked="true" tabindex="0">
-            <div class="difficulty-level">Medium</div>
-            <div class="difficulty-time">60 seconds</div>
-          </div>
-          <div class="difficulty-card" data-level="hard" role="radio" aria-checked="false" tabindex="0">
-            <div class="difficulty-level">Hard</div>
-            <div class="difficulty-time">30 seconds</div>
-          </div>
+      <div class="difficulty-grid">
+        <div class="difficulty-card" data-level="easy">
+          <h3>Easy</h3><p>90 seconds</p>
         </div>
-
-        <div class="button-group">
-          <button id="startGameBtn" class="primary-btn" aria-label="Start the game">Start Game</button>
-          <button id="analyticsBtn" class="secondary-btn" aria-label="View training analytics">Training Analytics</button>
+        <div class="difficulty-card selected" data-level="medium">
+          <h3>Medium</h3><p>60 seconds</p>
         </div>
-
-        <div class="instructions-section">
-          <button id="toggleInstructions" class="secondary-btn" aria-expanded="false" aria-controls="instructionsPanel">
-            <span class="toggle-icon">▼</span>
-            <span class="toggle-text">Show Instructions</span>
-          </button>
-
-          <p class="hint-text">ℹ️ New users should read instructions before starting</p>
-
-          <div id="instructionsPanel" class="instructions hidden" aria-hidden="true">
-            <h3>How to Play</h3>
-            <ul>
-              <li>You will see a biomedical waste item with its name.</li>
-              <li>Select the correct color bin as per BMW Rules 2016.</li>
-              <li>Correct answers increase your score by +1 point.</li>
-              <li>Wrong answers reduce your score by -1 point.</li>
-              <li>The game ends when the timer runs out.</li>
-            </ul>
-
-            <h4>Bin Color Guide (India BMW Rules 2016)</h4>
-            <ul class="bin-guide">
-              <li><span class="bin-color yellow"></span> <b>Yellow</b> – Human anatomical waste, soiled waste, expired medicines</li>
-              <li><span class="bin-color red"></span> <b>Red</b> – Contaminated plastics, tubing, bottles, gloves</li>
-              <li><span class="bin-color white"></span> <b>White</b> – Sharps (needles, syringes, scalpels, blades)</li>
-              <li><span class="bin-color blue"></span> <b>Blue</b> – Glassware, metallic implants, broken glass</li>
-              <li><span class="bin-color green"></span> <b>Green</b> – General non-infectious waste, food waste</li>
-            </ul>
-
-            <div class="scoring-info">
-              <h4>Scoring System</h4>
-              <p><strong>Correct Answer:</strong> +1 point</p>
-              <p><strong>Wrong Answer:</strong> -1 point (minimum score is 0)</p>
-              <p><strong>Accuracy:</strong> (Correct / Total) × 100%</p>
-            </div>
-          </div>
+        <div class="difficulty-card" data-level="hard">
+          <h3>Hard</h3><p>30 seconds</p>
         </div>
-      </main>
+      </div>
+
+      <button id="startGameBtn" class="primary-btn">Start Game</button>
+      <button id="analyticsBtn" class="secondary-btn">Training Analytics</button>
+
+      <button id="toggleInstructions" class="secondary-btn">
+        ▼ Show Instructions
+      </button>
+
+      <p class="hint-text">ℹ️ New users should read instructions before starting</p>
+
+      <div id="instructionsPanel" class="instructions hidden">
+        <h3>How to Play</h3>
+        <ul>
+          <li>You will see a biomedical waste item.</li>
+          <li>Select the correct color bin as per BMW Rules.</li>
+          <li>Correct answers increase score.</li>
+          <li>Wrong answers reduce accuracy.</li>
+          <li>Game ends when time runs out.</li>
+        </ul>
+
+        <h4>Bin Color Guide (India BMW Rules)</h4>
+        <ul>
+          <li><b>Yellow</b> – Human anatomical, soiled waste</li>
+          <li><b>Red</b> – Contaminated recyclable waste</li>
+          <li><b>White</b> – Sharps</li>
+          <li><b>Blue</b> – Glassware, metallic implants</li>
+          <li><b>Green</b> – General waste (non-BMW)</li>
+        </ul>
+      </div>
 
       <footer class="footer-credit">
-        <p>Made with ❤️ by <strong>Gokul Krishna T.B.</strong></p>
-        <p>
-          <a href="https://www.linkedin.com/in/gokul-k-148624117/" target="_blank" rel="noopener noreferrer">
-            Connect on LinkedIn
-          </a>
-          |
-          <a href="https://github.com/creator619-python/Biomedical-Waste-Game" target="_blank" rel="noopener noreferrer">
-            View on GitHub
-          </a>
-        </p>
-        <p class="footer-note">For educational purposes. Always follow hospital-specific protocols.</p>
+        Made with ❤️ by <strong>Gokul Krishna T.B.</strong><br>
+        <a href="https://www.linkedin.com/in/gokul-k-148624117/" target="_blank">
+          Connect on LinkedIn
+        </a>
       </footer>
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="right-panel hidden" id="gameContainer" aria-hidden="true">
+    <div class="right-panel hidden" id="gameContainer">
 
       <div class="top-bar">
         <div class="timer-box">
-          <span class="timer-label">Time</span>
-          <span id="timerValue" class="timer-value">01:00</span>
-          <div class="timer-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+          <span class="label">Time</span>
+          <span id="timerValue" class="timer-value">00:60</span>
+          <div class="timer-progress">
             <div id="progressFill" class="progress-fill"></div>
           </div>
         </div>
 
         <div class="score-box">
-          <span class="score-label">Score</span>
+          <span class="label">Score</span>
           <span id="score" class="score-value">0</span>
         </div>
 
-        <button id="openLeaderboardBtn" class="leaderboard-btn" aria-label="Open leaderboard">🏆</button>
-        <button id="endGameBtn" class="secondary-btn" aria-label="End game early">End Game</button>
+        <button id="openLeaderboardBtn" class="leaderboard-btn">🏆</button>
       </div>
 
       <div class="item-area">
-        <img id="itemImage" class="item-image" alt="" aria-labelledby="itemName">
+        <img id="itemImage" class="item-image" alt="">
         <div id="itemName" class="item-name"></div>
       </div>
 
-      <div id="feedback" class="feedback" role="status" aria-live="polite">Choose the correct bin</div>
+      <div id="feedback" class="feedback">Choose the correct bin</div>
 
-      <div class="bins-row" role="group" aria-label="Waste disposal bins">
-        <button class="bin-btn bin-yellow" data-bin="Yellow" aria-label="Yellow bin for anatomical waste">
-          <span class="bin-label">Yellow</span>
-          <span class="bin-desc">Anatomical Waste</span>
-        </button>
-        <button class="bin-btn bin-red" data-bin="Red" aria-label="Red bin for contaminated plastics">
-          <span class="bin-label">Red</span>
-          <span class="bin-desc">Contaminated Plastics</span>
-        </button>
-        <button class="bin-btn bin-white" data-bin="White" aria-label="White bin for sharps">
-          <span class="bin-label">White</span>
-          <span class="bin-desc">Sharps</span>
-        </button>
-        <button class="bin-btn bin-blue" data-bin="Blue" aria-label="Blue bin for glassware">
-          <span class="bin-label">Blue</span>
-          <span class="bin-desc">Glassware</span>
-        </button>
-        <button class="bin-btn bin-green" data-bin="Green" aria-label="Green bin for general waste">
-          <span class="bin-label">Green</span>
-          <span class="bin-desc">General Waste</span>
-        </button>
+      <div class="bins-row">
+        <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow</button>
+        <button class="bin-btn bin-red" data-bin="Red">Red</button>
+        <button class="bin-btn bin-white" data-bin="White">White</button>
+        <button class="bin-btn bin-blue" data-bin="Blue">Blue</button>
+        <button class="bin-btn bin-green" data-bin="Green">Green</button>
       </div>
 
-      <div id="gameStats" class="game-stats" role="status" aria-live="polite">
+      <div id="gameStats" class="game-stats">
         Correct: 0 | Wrong: 0 | Accuracy: 0%
       </div>
 
@@ -236,38 +157,26 @@
   </div>
 
   <!-- SCORE SUBMISSION MODAL -->
-  <div id="scoreSubmitModal" class="modal hidden" aria-hidden="true" aria-labelledby="scoreSubmitTitle">
+  <div id="scoreSubmitModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
-      <h2 id="scoreSubmitTitle">Submit Your Score</h2>
-      <p class="modal-subtitle">Enter your name for the Global Leaderboard</p>
+      <h2>Submit Your Score</h2>
+      <p class="modal-small">Enter your name for the Global Leaderboard</p>
 
-      <div class="score-display">
-        <p>Your Score: <span id="finalScoreDisplay" class="final-score">0</span></p>
-      </div>
+      <input id="playerNameInput" class="name-input" maxlength="20"
+             placeholder="Enter your name">
 
-      <input id="playerNameInput" 
-             class="modal-input" 
-             type="text" 
-             maxlength="20"
-             placeholder="Enter your name (3-20 letters)"
-             aria-label="Enter your name for leaderboard"
-             required>
-
-      <p id="nameError" class="error-message hidden" role="alert">
+      <p id="nameError" class="error-text hidden">
         Please enter a valid name (3–20 letters only)
       </p>
 
-      <div class="modal-buttons">
-        <button id="submitScoreBtn" class="modal-btn modal-btn-primary">Submit Score</button>
-        <button id="whatsappShareBtn" class="modal-btn modal-btn-secondary hidden" aria-label="Share score on WhatsApp">
-          <span class="btn-icon">📤</span> Share on WhatsApp
-        </button>
-        <button id="viewCertificateBtn" class="modal-btn modal-btn-secondary hidden" aria-label="View certificate">
-          <span class="btn-icon">🎓</span> View Certificate
-        </button>
-        <button id="cancelSubmitBtn" class="modal-btn modal-btn-secondary">Cancel</button>
-      </div>
+      <button id="submitScoreBtn" class="primary-btn">Submit Score</button>
+      <!-- 👇 ADD SHARE BUTTON HERE -->
+    <button id="whatsappShareBtn"
+            class="secondary-btn hidden">
+      📤 Share on WhatsApp
+    </button>
+      <button id="cancelSubmitBtn" class="secondary-btn">Cancel</button>
     </div>
   </div>
 
@@ -276,243 +185,26 @@
 
   <!-- INLINE UI + PWA LOGIC -->
   <script>
-    // DOM ready
-    document.addEventListener('DOMContentLoaded', () => {
-      // Instructions toggle
-      const toggleBtn = document.getElementById("toggleInstructions");
-      const instructions = document.getElementById("instructionsPanel");
+    const toggleBtn = document.getElementById("toggleInstructions");
+    const instructions = document.getElementById("instructionsPanel");
 
-      if (toggleBtn && instructions) {
-        toggleBtn.addEventListener("click", () => {
-          const isHidden = instructions.classList.toggle("hidden");
-          instructions.setAttribute("aria-hidden", isHidden);
-          toggleBtn.setAttribute("aria-expanded", !isHidden);
-          
-          const icon = toggleBtn.querySelector(".toggle-icon");
-          const text = toggleBtn.querySelector(".toggle-text");
-          
-          if (icon) icon.textContent = isHidden ? "▼" : "▲";
-          if (text) text.textContent = isHidden ? "Show Instructions" : "Hide Instructions";
-        });
-      }
-
-      // Analytics button
-      const analyticsBtn = document.getElementById("analyticsBtn");
-      if (analyticsBtn) {
-        analyticsBtn.addEventListener("click", () => {
-          window.location.href = "analytics.html";
-        });
-      }
-
-      // Fullscreen functionality
-      const fullscreenBtn = document.getElementById("fullscreenBtn");
-      if (fullscreenBtn) {
-        fullscreenBtn.addEventListener("click", toggleFullscreen);
-        
-        // Update button text based on fullscreen state
-        document.addEventListener("fullscreenchange", updateFullscreenButton);
-        document.addEventListener("webkitfullscreenchange", updateFullscreenButton);
-        document.addEventListener("mozfullscreenchange", updateFullscreenButton);
-        document.addEventListener("MSFullscreenChange", updateFullscreenButton);
-      }
-
-      // Leaderboard button
-      const leaderboardBtn = document.getElementById("openLeaderboardBtn");
-      if (leaderboardBtn) {
-        leaderboardBtn.addEventListener("click", () => {
-          const modal = document.getElementById("leaderboardModal");
-          if (modal) modal.classList.remove("hidden");
-        });
-      }
-
-      // Close leaderboard button
-      const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
-      if (closeLeaderboardBtn) {
-        closeLeaderboardBtn.addEventListener("click", () => {
-          const modal = document.getElementById("leaderboardModal");
-          if (modal) modal.classList.add("hidden");
-        });
-      }
-
-      // End game button
-      const endGameBtn = document.getElementById("endGameBtn");
-      if (endGameBtn) {
-        endGameBtn.addEventListener("click", () => {
-          if (confirm("Are you sure you want to end the game early?")) {
-            // This will be handled by game.js
-            if (typeof gameOver === 'function') {
-              gameOver();
-            }
-          }
-        });
-      }
-
-      // PWA Service Worker Registration
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-              console.log('ServiceWorker registered:', registration);
-            })
-            .catch(error => {
-              console.log('ServiceWorker registration failed:', error);
-            });
-        });
-      }
-    });
-
-    // Fullscreen functions
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`);
-        });
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    }
-
-    function updateFullscreenButton() {
-      const fullscreenBtn = document.getElementById("fullscreenBtn");
-      if (fullscreenBtn) {
-        fullscreenBtn.textContent = document.fullscreenElement ? "⤢ Exit Fullscreen" : "⤢ Fullscreen";
-      }
-    }
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      // Space to toggle instructions
-      if (e.code === 'Space' && e.target === document.body) {
-        e.preventDefault();
-        const toggleBtn = document.getElementById("toggleInstructions");
-        if (toggleBtn) toggleBtn.click();
-      }
-      
-      // Escape to close modals
-      if (e.code === 'Escape') {
-        closeAllModals();
-      }
-      
-      // Number keys for bin selection during game
-      if (!document.getElementById("gameContainer").classList.contains("hidden")) {
-        if (e.code >= 'Digit1' && e.code <= 'Digit5') {
-          const index = parseInt(e.code.replace('Digit', '')) - 1;
-          const binButtons = document.querySelectorAll('.bin-btn');
-          if (binButtons[index]) {
-            binButtons[index].click();
-          }
-        }
-      }
-    });
-
-    function closeAllModals() {
-      document.querySelectorAll('.modal').forEach(modal => {
-        modal.classList.add('hidden');
+    if (toggleBtn && instructions) {
+      toggleBtn.addEventListener("click", () => {
+        instructions.classList.toggle("hidden");
+        toggleBtn.innerText = instructions.classList.contains("hidden")
+          ? "▼ Show Instructions"
+          : "▲ Hide Instructions";
       });
     }
 
-    // Add CSS for new elements
-    const style = document.createElement('style');
-    style.textContent = `
-      .bin-color {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-right: 8px;
-        vertical-align: middle;
-      }
-      .bin-color.yellow { background: #e6c200; }
-      .bin-color.red { background: #cc0000; }
-      .bin-color.white { background: #bfbfbf; }
-      .bin-color.blue { background: #0077cc; }
-      .bin-color.green { background: #00994d; }
-      
-      .bin-label {
-        display: block;
-        font-size: 18px;
-        font-weight: bold;
-      }
-      .bin-desc {
-        display: block;
-        font-size: 12px;
-        opacity: 0.9;
-      }
-      
-      .button-group {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 20px;
-      }
-      
-      .leaderboard-container {
-        margin: 20px 0;
-        background: rgba(255,255,255,0.05);
-        border-radius: 8px;
-        padding: 10px;
-      }
-      
-      .leaderboard-header {
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 1fr;
-        padding: 10px;
-        font-weight: bold;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-      }
-      
-      .leaderboard-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      
-      .leaderboard-list li {
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 1fr;
-        padding: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-      }
-      
-      .final-score {
-        font-size: 32px;
-        font-weight: bold;
-        color: #ffd700;
-      }
-      
-      .certificate-content {
-        padding: 20px;
-        border: 2px solid #2ea043;
-        border-radius: 12px;
-        margin: 20px 0;
-        background: rgba(255,255,255,0.05);
-      }
-      
-      .certificate-name {
-        font-size: 28px;
-        margin: 10px 0;
-        color: #ffd700;
-      }
-      
-      .signature {
-        margin-top: 30px;
-        text-align: right;
-      }
-      
-      .signature-line {
-        width: 200px;
-        height: 1px;
-        background: white;
-        margin: 5px 0 10px auto;
-      }
-      
-      .btn-icon {
-        margin-right: 8px;
-      }
-    `;
-    document.head.appendChild(style);
-  </script>
+    const analyticsBtn = document.getElementById("analyticsBtn");
+    if (analyticsBtn) {
+      analyticsBtn.onclick = () => {
+        window.location.href = "analytics.html";
+      };
+    }
+
+    </script>
+
 </body>
 </html>
