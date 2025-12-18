@@ -224,6 +224,26 @@ if (startGameBtn) {
 const submitBtn = document.getElementById("submitScoreBtn");
 
 if (submitBtn) {
+  /* =============================
+   WHATSAPP SHARE
+============================= */
+function showWhatsAppShare(name, score) {
+  const whatsappBtn = document.getElementById("whatsappShareBtn");
+  if (!whatsappBtn) return;
+
+  const text =
+    `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
+    `👤 Name: ${name}\n` +
+    `🏆 Score: ${score}\n\n` +
+    `Try it yourself 👇\n` +
+    `https://creator619-python.github.io/Biomedical-Waste-Game/`;
+
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+  whatsappBtn.classList.remove("hidden");
+  whatsappBtn.onclick = () => window.open(url, "_blank");
+}
+
   submitBtn.onclick = async () => {
 
     const nameInput = document.getElementById("playerNameInput");
