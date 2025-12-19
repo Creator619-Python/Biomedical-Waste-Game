@@ -196,27 +196,6 @@
 
   <!-- INLINE UI + PWA LOGIC -->
   <script>
-    const toggleBtn = document.getElementById("toggleInstructions");
-    const instructions = document.getElementById("instructionsPanel");
-
-    if (toggleBtn && instructions) {
-      toggleBtn.addEventListener("click", () => {
-        instructions.classList.toggle("hidden");
-        toggleBtn.innerText = instructions.classList.contains("hidden")
-          ? "▼ Show Instructions"
-          : "▲ Hide Instructions";
-      });
-    }
-
-    const analyticsBtn = document.getElementById("analyticsBtn");
-    if (analyticsBtn) {
-      analyticsBtn.onclick = () => {
-        window.location.href = "analytics.html";
-      };
-    }
-
-    </script>
-  <script>
   /* ---------- Existing code (keep as-is) ---------- */
 
   const toggleBtn = document.getElementById("toggleInstructions");
