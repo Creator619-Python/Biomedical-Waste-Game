@@ -175,14 +175,19 @@
     });
     document.getElementById(tabName + 'Tab').classList.add('active');
                 // Load data if needed
-    if (tabName === 'analytics') {
-        renderAnalyticsTab();
-    } else if (tabName === 'leaderboard') {
-        renderLeaderboardTab();
-    } else if (tabName === 'training') {
-        renderTrainingTab();
-    }
+    if (allScores.length === 0) {
+    loadAnalyticsData();
+    return;
 }
+
+if (tabName === 'analytics') {
+    renderAnalyticsTab();
+} else if (tabName === 'leaderboard') {
+    renderLeaderboardTab();
+} else if (tabName === 'training') {
+    renderTrainingTab();
+}
+
 
 
         // Load all analytics data from Firebase
