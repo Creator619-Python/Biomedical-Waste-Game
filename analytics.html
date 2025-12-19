@@ -152,19 +152,29 @@
             updateLastUpdated();
         };
 
-        // Tab switching function
-        function switchTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + 'Tab').classList.add('active');
+        function switchTab(tabName, btn) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(tabName + 'Tab').classList.add('active');
+
+    // Load data if needed
+    if (tabName === 'analytics') {
+        renderAnalyticsTab();
+    } else if (tabName === 'leaderboard') {
+        renderLeaderboardTab();
+    } else if (tabName === 'training') {
+        renderTrainingTab();
+    }
+}
+
             
             // Load data for the tab if needed
             if (tabName === 'analytics') {
