@@ -174,6 +174,16 @@
         content.classList.remove('active');
     });
     document.getElementById(tabName + 'Tab').classList.add('active');
+                // Load data if needed
+    if (tabName === 'analytics') {
+        renderAnalyticsTab();
+    } else if (tabName === 'leaderboard') {
+        renderLeaderboardTab();
+    } else if (tabName === 'training') {
+        renderTrainingTab();
+    }
+}
+
 
         // Load all analytics data from Firebase
         async function loadAnalyticsData() {
