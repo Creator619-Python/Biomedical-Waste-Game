@@ -1,140 +1,357 @@
-import { saveScore, saveGameAttempt } from "./firebase.js";
+// ===============================
+// MODULE IMPORT
+// ===============================
+import { saveScore } from "./firebase.js";
 
-/* ==============================
-   GAME ENGINE
-================================ */
+// ===============================
+// DOM READY
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  /* =============================
+     INJECT GLOBAL MODALS
+  ============================== */
+  const modalTemplate = document.getElementById("global-modals");
+  if (modalTemplate) {
+    document.body.appendChild(modalTemplate.content.cloneNode(true));
+  }
 
-window.startGame = function (difficulty) {
+  /* =============================
+     GLOBAL STATE
+  ============================== */
+  let items = [];
+  let currentItem = null;
 
-  /* ---------- TIME ---------- */
-  const timeMap = { easy: 90, medium: 60, hard: 30 };
-  let remainingTime = timeMap[difficulty] || 60;
-
-  /* ---------- GAME STATE ---------- */
   let score = 0;
   let correct = 0;
   let wrong = 0;
-  let gameRunning = true;
 
-  /* ---------- DOM ---------- */
-  const timerEl = document.getElementById("timerValue");
-  const scoreEl = document.getElementById("score");
-  const feedbackEl = document.getElementById("feedback");
-  const statsEl = document.getElementById("gameStats");
-  const itemNameEl = document.getElementById("itemName");
+  let timer = null;
+  let totalTime = 60;
+  let gameRunning = false; // ✅ single source of truth
 
-  /* ---------- ITEM DATA (THIS WAS MISSING) ---------- */
-  const items = [
-    { name: "Used Syringe", bin: "White" },
-    { name: "Blood Soaked Gauze", bin: "Yellow" },
-    { name: "IV Tubing", bin: "Red" },
-    { name: "Broken Ampoule", bin: "Blue" },
-    { name: "Food Wrapper", bin: "Green" }
-  ];
+  /* =============================
+     DOM ELEMENTS
+  ============================== */
+  const startScreen = document.getElementById("startScreen");
+  const gameContainer = document.getElementById("gameContainer");
 
-  let currentIndex = 0;
+  const scoreDisplay = document.getElementById("score");
+  const itemImage = document.getElementById("itemImage");
+  const itemName = document.getElementById("itemName");
+  const feedback = document.getElementById("feedback");
 
-  function loadItem() {
-    const item = items[currentIndex];
-    itemNameEl.textContent = item.name;
-  }
+  const timerValue = document.getElementById("timerValue");
+  const progressFill = document.getElementById("progressFill");
+  const gameStats = document.getElementById("gameStats");
 
-  loadItem(); // 🔥 CRITICAL LINE
+  const scoreSubmitModal = document.getElementById("scoreSubmitModal");
 
-  /* ---------- TIMER ---------- */
-  function updateTimer() {
-    const m = String(Math.floor(remainingTime / 60)).padStart(2, "0");
-    const s = String(remainingTime % 60).padStart(2, "0");
-    timerEl.textContent = `${m}:${s}`;
-  }
-
-  updateTimer();
-
-  const interval = setInterval(() => {
-    remainingTime--;
-    updateTimer();
-
-    if (remainingTime <= 0) {
-      clearInterval(interval);
-      endGame();
+  /* =============================
+     LOAD ITEMS (NO CACHE)
+  ============================== */
+  async function loadItems() {
+    try {
+      const res = await fetch("items.json?v=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      items = await res.json();
+    } catch (error) {
+      console.error("Failed to load items:", error);
+      // Provide fallback items or show error to user
+      items = [
+        { name: "Sample Item", image: "fallback.jpg", bin: "yellow" }
+      ];
     }
-  }, 1000);
+  }
 
-  /* ---------- BIN HANDLING ---------- */
-  document.querySelectorAll(".bin-btn").forEach(btn => {
-    btn.onclick = () => {
-      if (!gameRunning) return;
+  /* =============================
+     UTIL
+  ============================== */
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
 
-      const selected = btn.dataset.bin;
-      const correctBin = items[currentIndex].bin;
+  /* =============================
+     CONFETTI ANIMATION
+  ============================== */
+  function launchConfetti() {
+    const container = document.getElementById("confettiContainer");
+    if (!container) return;
 
-      if (selected === correctBin) {
-        score += 10;
-        correct++;
-        feedbackEl.textContent = "✅ Correct!";
-      } else {
-        wrong++;
-        feedbackEl.textContent = `❌ Wrong! Correct bin: ${correctBin}`;
-      }
+    container.innerHTML = "";
 
-      currentIndex++;
-      if (currentIndex >= items.length) currentIndex = 0;
+    for (let i = 0; i < 80; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.animationDelay = Math.random() * 2 + "s";
+      piece.style.backgroundColor =
+        ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
 
-      loadItem(); // 🔥 UPDATE ITEM NAME
+      container.appendChild(piece);
+    }
 
-      scoreEl.textContent = score;
-      statsEl.textContent =
-        `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${
-          Math.round((correct / (correct + wrong)) * 100) || 0
-        }%`;
+    setTimeout(() => (container.innerHTML = ""), 5000);
+  }
+
+  /* =============================
+     WHATSAPP SHARE
+  ============================== */
+  function showWhatsAppShare(name, score) {
+    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    if (!whatsappBtn) return;
+
+    const text =
+      `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
+      `👤 Name: ${name}\n` +
+      `🏆 Score: ${score}\n\n` +
+      `Try it yourself 👇\n` +
+      `https://creator619-python.github.io/Biomedical-Waste-Game/`;
+
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    whatsappBtn.classList.remove("hidden");
+    whatsappBtn.onclick = () => window.open(url, "_blank");
+  }
+
+  /* =============================
+     DIFFICULTY
+  ============================== */
+  document.querySelectorAll(".difficulty-card").forEach(card => {
+    card.onclick = () => {
+      document.querySelectorAll(".difficulty-card")
+        .forEach(c => c.classList.remove("selected"));
+
+      card.classList.add("selected");
+
+      const level = card.dataset.level;
+      if (level === "easy") totalTime = 90;
+      if (level === "medium") totalTime = 60;
+      if (level === "hard") totalTime = 30;
+
+      timerValue.textContent = formatTime(totalTime);
     };
   });
 
-  /* ---------- GAME OVER ---------- */
-  function endGame() {
-    gameRunning = false;
-    window.finalGameScore = score;
-    window.totalTime = timeMap[difficulty];
-    document.getElementById("scoreSubmitModal")?.classList.remove("hidden");
+  /* =============================
+     START GAME (SAFE)
+  ============================== */
+  const startGameBtn = document.getElementById("startGameBtn");
+
+  if (startGameBtn) {
+    startGameBtn.onclick = async () => {
+      if (items.length === 0) await loadItems();
+      if (items.length === 0) {
+        alert("Failed to load game items. Please refresh and try again.");
+        return;
+      }
+
+      startScreen.classList.add("hidden");
+      gameContainer.classList.remove("hidden");
+
+      // reset state
+      score = 0;
+      correct = 0;
+      wrong = 0;
+      currentItem = null;
+      gameRunning = true;
+
+      // reset UI
+      scoreDisplay.textContent = score;
+      feedback.textContent = "Choose the correct bin";
+      feedback.style.color = "";
+
+      document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+      });
+
+      updateStats();
+      startTimer();
+      loadNewItem();
+    };
+  } else {
+    console.error("startGameBtn not found in DOM");
   }
-};
 
-/* ==============================
-   SCORE SUBMISSION (UNCHANGED)
-================================ */
+  /* =============================
+     TIMER (HARD STOP)
+  ============================== */
+  function startTimer() {
+    let timeLeft = totalTime;
+    timerValue.textContent = formatTime(timeLeft);
+    progressFill.style.width = "100%";
 
-document.addEventListener("DOMContentLoaded", () => {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (!gameRunning) {
+        clearInterval(timer);
+        return;
+      }
 
-  const submitBtn = document.getElementById("submitScoreBtn");
+      timeLeft--;
+      timerValue.textContent = formatTime(timeLeft);
+      progressFill.style.width = `${(timeLeft / totalTime) * 100}%`;
 
-  submitBtn.onclick = async () => {
+      if (timeLeft <= 0) {
+        gameOver();
+      }
+    }, 1000);
+  }
 
-    const nameInput = document.getElementById("playerNameInput");
-    const errorText = document.getElementById("nameError");
-    const name = nameInput.value.trim();
+  /* =============================
+     LOAD ITEM (IMAGE FIX ✅)
+  ============================== */
+  function loadNewItem() {
+    if (!gameRunning || items.length === 0) return;
 
-    if (!/^[A-Za-z ]{3,20}$/.test(name)) {
-      errorText.classList.remove("hidden");
-      return;
+    currentItem = items[Math.floor(Math.random() * items.length)];
+
+    // 🚀 CRITICAL FIX FOR GITHUB PAGES
+    try {
+      itemImage.src = new URL(currentItem.image, window.location.href).href;
+      itemImage.alt = currentItem.name;
+    } catch (error) {
+      console.error("Error loading image:", error);
+      itemImage.src = "fallback.jpg";
     }
 
-    errorText.classList.add("hidden");
-    localStorage.setItem("playerName", name);
+    itemName.textContent = currentItem.name;
+    feedback.textContent = "Choose the correct bin";
+    feedback.style.color = "";
+  }
 
-    await saveScore(
-      name,
-      window.finalGameScore,
-      window.totalTime || 60
-    );
+  /* =============================
+     BIN HANDLERS
+  ============================== */
+  document.querySelectorAll(".bin-btn").forEach(btn => {
+    btn.onclick = () => {
+      if (!gameRunning || !currentItem) return;
 
-    await saveGameAttempt({
-      name,
-      score: window.finalGameScore,
-      duration: window.totalTime || 60
+      const chosen = btn.dataset.bin;
+
+      if (chosen === currentItem.bin) {
+        score++;
+        correct++;
+        feedback.textContent = "✅ Correct!";
+        feedback.style.color = "#4caf50";
+      } else {
+        score = Math.max(0, score - 1);
+        wrong++;
+        feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
+        feedback.style.color = "#ff5252";
+      }
+
+      scoreDisplay.textContent = score;
+      updateStats();
+      loadNewItem();
+    };
+  });
+
+  /* =============================
+     STATS
+  ============================== */
+  function updateStats() {
+    const total = correct + wrong;
+    const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
+    gameStats.textContent =
+      `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}%`;
+  }
+
+  /* =============================
+     GAME OVER
+  ============================== */
+  function gameOver() {
+    if (!gameRunning) return;
+
+    gameRunning = false;
+    clearInterval(timer);
+
+    feedback.textContent = "⏱️ Time's up!";
+    feedback.style.color = "#ffd700";
+
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+      btn.disabled = true;
     });
 
-    alert("Score saved!");
-    document.getElementById("scoreSubmitModal")?.classList.add("hidden");
-  };
-});
+    window.finalGameScore = score;
+    
+    // Reset form when showing modal
+    const nameInput = document.getElementById("playerNameInput");
+    const errorText = document.getElementById("nameError");
+    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    
+    if (nameInput) nameInput.value = "";
+    if (errorText) errorText.classList.add("hidden");
+    if (whatsappBtn) whatsappBtn.classList.add("hidden");
+    
+    if (scoreSubmitModal) {
+      scoreSubmitModal.classList.remove("hidden");
+    }
+  }
 
+  /* =============================
+     SCORE SUBMIT (SAFE)
+  ============================== */
+  const submitBtn = document.getElementById("submitScoreBtn");
+
+  if (submitBtn) {
+    submitBtn.onclick = async () => {
+      const nameInput = document.getElementById("playerNameInput");
+      const errorText = document.getElementById("nameError");
+
+      // 🚨 HARD GUARD — prevents crash
+      if (!nameInput || !errorText) {
+        console.error("Score submit elements not found in DOM");
+        return;
+      }
+
+      const name = nameInput.value.trim();
+
+      if (!/^[A-Za-z ]{3,20}$/.test(name)) {
+        errorText.classList.remove("hidden");
+        return;
+      }
+
+      errorText.classList.add("hidden");
+
+      try {
+        const saved = await saveScore(
+          name,
+          window.finalGameScore,
+          totalTime
+        );
+        
+        if (!saved) {
+          alert("Error saving score. Please try again.");
+          return;
+        }
+
+        // 🎉 CONFETTI CELEBRATION
+        launchConfetti();
+
+        // ✅ SUCCESS FLOW
+        showWhatsAppShare(name, window.finalGameScore);
+
+      } catch (error) {
+        console.error("Error submitting score:", error);
+        alert("Error saving score. Please check your connection and try again.");
+      }
+    };
+  }
+
+  /* =============================
+     CANCEL SUBMIT
+  ============================== */
+  const cancelBtn = document.getElementById("cancelSubmitBtn");
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      if (scoreSubmitModal) {
+        scoreSubmitModal.classList.add("hidden");
+      }
+      // Optionally restart game or go to home
+      startScreen.classList.remove("hidden");
+      gameContainer.classList.add("hidden");
+    };
+  }
+});
