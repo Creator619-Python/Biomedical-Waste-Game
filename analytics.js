@@ -229,8 +229,11 @@ function calculateStats(scores) {
     const bestScore = Math.max(...scores.map(s => s.score));
     
     // Calculate accuracy (assuming max 50 points per game)
-    const maxPossible = scores.length * 50;
-    const accuracy = Math.round((totalPoints / maxPossible) * 100);
+    const maxPossible = scores.length * 20; // based on your game scoring
+const accuracy = maxPossible
+  ? Math.round((totalPoints / maxPossible) * 100)
+  : 0;
+
     
     return {
         totalSessions: scores.length,
