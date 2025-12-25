@@ -47,26 +47,89 @@
   <div id="certificateModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content certificate">
-      <!-- 🎉 THANK YOU SECTION -->
-      <div class="thank-you-section">
-        <h2>🎉 Congratulations!</h2>
-        <p>Thank you, <span id="thankYouName"></span>, for completing the training!</p>
+      <!-- Header: Congratulations -->
+      <div class="certificate-header">
+        <div class="congrats">
+          <h1>🎉 Congratulations!</h1>
+          <p class="thank-you">Thank you, <span id="thankYouName"></span>, for completing the training!</p>
+        </div>
       </div>
-      
-      <h2>Certificate of Completion</h2>
-      <p>This certifies that</p>
-      <h3 id="certName"></h3>
-      <p>has successfully completed the</p>
-      <p><b>Biomedical Waste Segregation Training</b></p>
-      <p id="certScore"></p>
-      
-      <button id="downloadCertBtn" class="secondary-btn">
-        📄 Download Certificate
-      </button>
-      <button id="whatsappShareBtn" class="secondary-btn hidden">
-        📤 Share on WhatsApp
-      </button>
-      <button id="closeCertBtn" class="primary-btn">Close</button>
+
+      <!-- Body: Certificate Content -->
+      <div class="certificate-body">
+        <h2>Certificate of Completion</h2>
+        
+        <p class="certify-text">This certifies that</p>
+        
+        <h3 id="certName"></h3>
+        
+        <p class="certify-text">has successfully completed the</p>
+        
+        <div class="training-title" id="trainingTitle">
+          Biomedical Waste Segregation Training
+        </div>
+      </div>
+
+      <!-- Footer: Score, Time, Links, Credit -->
+      <div class="certificate-footer">
+        <!-- Score and Time -->
+        <div class="score-time-section">
+          <div class="score-box-cert">
+            <h4>Score</h4>
+            <p id="certScore"></p>
+          </div>
+          <div class="time-box-cert">
+            <h4>Time</h4>
+            <p id="certTime"></p>
+          </div>
+        </div>
+
+        <!-- Educational Disclaimer -->
+        <div class="disclaimer">
+          <p><strong>Note:</strong> This training module is for educational purposes only. 
+          Always refer to local biomedical waste management guidelines and regulations for professional practice.</p>
+        </div>
+
+        <!-- Game Link -->
+        <div class="game-link-section">
+          <p>Try the game yourself:</p>
+          <p>
+            <a href="https://creator619-python.github.io/Biomedical-Waste-Game/" 
+               target="_blank" 
+               rel="noopener noreferrer">
+              https://creator619-python.github.io/Biomedical-Waste-Game/
+            </a>
+          </p>
+        </div>
+
+        <!-- Creator Credit -->
+        <div class="creator-credit">
+          <p class="title">Training module designed & built by</p>
+          <p class="name">Gokul Krishna T.B.</p>
+          <p>
+            <a href="https://linkedin.com/in/gokul-k-148624117" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="linkedin-link">
+              linkedin.com/in/gokul-k-148624117
+            </a>
+          </p>
+        </div>
+
+        <!-- Certificate Type Note -->
+        <p class="certificate-note">Self-paced digital training module • Certificate ID: <span id="certId"></span></p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="certificate-buttons">
+        <button id="downloadCertBtn" class="secondary-btn">
+          📄 Download Certificate
+        </button>
+        <button id="whatsappShareBtn" class="secondary-btn hidden">
+          📤 Share on WhatsApp
+        </button>
+        <button id="closeCertBtn" class="primary-btn">Close</button>
+      </div>
     </div>
   </div>
 
@@ -207,8 +270,7 @@
 
   <!-- INLINE UI + PWA LOGIC -->
   <script>
-  /* ---------- Existing code (keep as-is) ---------- */
-
+  /* ---------- Existing code ---------- */
   const toggleBtn = document.getElementById("toggleInstructions");
   const instructions = document.getElementById("instructionsPanel");
 
@@ -228,10 +290,8 @@
     };
   }
 
-  /* ---------- 🔹 PART 2: GA4 GAME COMPLETE ---------- */
-
+  /* ---------- 🔹 GA4 GAME COMPLETE ---------- */
   const scoreModal = document.getElementById("scoreSubmitModal");
-
   if (scoreModal) {
     const observer = new MutationObserver(() => {
       if (!scoreModal.classList.contains("hidden")) {
@@ -241,7 +301,6 @@
         }
       }
     });
-
     observer.observe(scoreModal, { attributes: true });
   }
 
