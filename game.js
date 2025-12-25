@@ -54,6 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const res = await fetch("items.json?v=" + Date.now());
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       items = await res.json();
+      
+      // ✅ Ensure all bin values in items are lowercase for consistency
+      items = items.map(item => ({
+        ...item,
+        bin: item.bin.toLowerCase()
+      }));
+      
     } catch (error) {
       console.error("Failed to load items:", error);
       // Provide fallback items or show error to user
@@ -96,12 +103,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     WHATSAPP SHARE
+     WHATSAPP SHARE - IMPROVED SCOPING
   ============================== */
   function showWhatsAppShare(name, score) {
-    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    // ✅ IMPROVEMENT: Scoped selector for maximum robustness
+    const whatsappBtn = document.querySelector("#certificateModal #whatsappShareBtn");
+    
     if (!whatsappBtn) {
-      console.error("WhatsApp button not found!");
+      console.error("WhatsApp button not found in certificate modal!");
       return;
     }
 
@@ -115,9 +124,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
 
     whatsappBtn.classList.remove("hidden");
-    whatsappBtn.onclick = () => window.open(url, "_blank");
     
-    console.log("WhatsApp share button enabled");
+    // ✅ IMPROVEMENT: Use event delegation pattern
+    const handleWhatsAppClick = () => {
+      window.open(url, "_blank", "noopener,noreferrer");
+    };
+    
+    // Remove any existing listener to avoid duplicates
+    whatsappBtn.replaceWith(whatsappBtn.cloneNode(true));
+    const freshWhatsappBtn = document.querySelector("#certificateModal #whatsappShareBtn");
+    freshWhatsappBtn.addEventListener("click", handleWhatsAppClick);
+    
+    console.log("WhatsApp share button enabled with scoped selector");
   }
 
   /* =============================
@@ -227,15 +245,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     BIN HANDLERS
+     BIN HANDLERS - FIXED CASE SENSITIVITY
   ============================== */
   document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.onclick = () => {
       if (!gameRunning || !currentItem) return;
 
-      const chosen = btn.dataset.bin;
+      // ✅ FIX: Normalize to lowercase for consistent comparison
+      const chosen = btn.dataset.bin.toLowerCase();
+      
+      // currentItem.bin is already lowercase from loadItems()
+      const correctBin = currentItem.bin;
 
-      if (chosen === currentItem.bin) {
+      if (chosen === correctBin) {
         score++;
         correct++;
         feedback.textContent = "✅ Correct!";
@@ -243,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         score = Math.max(0, score - 1);
         wrong++;
-        feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
+        feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin.charAt(0).toUpperCase() + currentItem.bin.slice(1)}`;
         feedback.style.color = "#ff5252";
       }
 
@@ -284,7 +306,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reset form when showing modal
     const nameInput = document.getElementById("playerNameInput");
     const errorText = document.getElementById("nameError");
-    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    
+    // ✅ IMPROVEMENT: Use scoped selector for WhatsApp button
+    const whatsappBtn = document.querySelector("#certificateModal #whatsappShareBtn");
     
     if (nameInput) nameInput.value = "";
     if (errorText) errorText.classList.add("hidden");
@@ -346,18 +370,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // 2. Show certificate with thank you message
+        // ✅ IMPROVEMENT: Use scoped selectors for certificate elements
         const certModal = document.getElementById("certificateModal");
-        const thankYouName = document.getElementById("thankYouName");
-        const certName = document.getElementById("certName");
-        const certScore = document.getElementById("certScore");
+        const thankYouName = document.querySelector("#certificateModal #thankYouName");
+        const certName = document.querySelector("#certificateModal #certName");
+        const certScore = document.querySelector("#certificateModal #certScore");
+        const certTime = document.querySelector("#certificateModal #certTime");
 
-        if (certModal && thankYouName && certName && certScore) {
+        if (certModal && thankYouName && certName && certScore && certTime) {
           // Set thank you message (user sees this first!)
           thankYouName.textContent = name;
           
           // Set certificate details
-          certName.textContent = name;
-          certScore.textContent = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
+          certName.textContent = name.toUpperCase(); // Capitalized for certificate feel
+          certScore.textContent = window.finalGameScore;
+          certTime.textContent = formatTime(totalTime);
+          
+          // Generate a simple certificate ID (timestamp-based)
+          const certId = Date.now().toString(36).toUpperCase();
+          const certIdElement = document.querySelector("#certificateModal #certId");
+          if (certIdElement) certIdElement.textContent = certId;
           
           // Show the certificate modal
           certModal.classList.remove("hidden");
@@ -374,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 4. Enable WhatsApp sharing (appears in certificate modal)
         setTimeout(() => {
           showWhatsAppShare(name, window.finalGameScore);
-          console.log("📤 WhatsApp share enabled");
+          console.log("📤 WhatsApp share enabled with scoped selector");
         }, 1000);
 
       } catch (error) {
@@ -404,9 +436,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     CERTIFICATE PDF DOWNLOAD
+     CERTIFICATE PDF DOWNLOAD - IMPROVED SCOPING
   ============================== */
-  const downloadCertBtn = document.getElementById("downloadCertBtn");
+  const downloadCertBtn = document.querySelector("#certificateModal #downloadCertBtn");
   
   if (downloadCertBtn) {
     downloadCertBtn.addEventListener("click", () => {
@@ -416,64 +448,121 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       
-      // Temporarily hide the download button so it doesn't appear in PDF
-      const downloadBtn = cert.querySelector("#downloadCertBtn");
-      const whatsappBtn = cert.querySelector("#whatsappShareBtn");
-      const closeBtn = cert.querySelector("#closeCertBtn");
+      // Store original styles
+      const originalWidth = cert.style.width;
+      const originalHeight = cert.style.height;
+      const originalMargin = cert.style.margin;
+      const originalPadding = cert.style.padding;
       
-      if (downloadBtn) downloadBtn.style.display = "none";
-      if (whatsappBtn) whatsappBtn.style.display = "none";
-      if (closeBtn) closeBtn.style.display = "none";
+      // Apply print-optimized styles
+      cert.style.width = '210mm';
+      cert.style.height = '297mm';
+      cert.style.margin = '0 auto';
+      cert.style.padding = '20mm';
+      
+      // Hide buttons for PDF
+      const buttonsContainer = cert.querySelector(".certificate-buttons");
+      if (buttonsContainer) buttonsContainer.style.display = "none";
+      
+      // Add current date for PDF
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      const dateElement = document.createElement('div');
+      dateElement.className = 'certificate-date';
+      dateElement.innerHTML = `<p style="text-align: center; margin: 10px 0; font-size: 14px; color: #666;"><strong>Date:</strong> ${currentDate}</p>`;
+      
+      const footer = cert.querySelector('.certificate-footer');
+      if (footer) {
+        const note = footer.querySelector('.certificate-note');
+        if (note) {
+          footer.insertBefore(dateElement, note);
+        } else {
+          footer.appendChild(dateElement);
+        }
+      }
       
       // Check if html2pdf is available
       if (typeof html2pdf === 'undefined') {
         console.error("html2pdf library not loaded");
         alert("PDF generation library not loaded. Please refresh the page.");
-        if (downloadBtn) downloadBtn.style.display = "";
-        if (whatsappBtn) whatsappBtn.style.display = "";
-        if (closeBtn) closeBtn.style.display = "";
+        restoreStyles();
         return;
       }
       
+      const playerName = document.querySelector("#certificateModal #thankYouName")?.textContent || "Player";
+      const filename = `Biomedical_Waste_Training_Certificate_${playerName.replace(/\s+/g, '_')}.pdf`;
+      
+      // Generate PDF
       html2pdf()
         .set({
-          margin: 10,
-          filename: "Biomedical_Waste_Training_Certificate.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          margin: [10, 10, 10, 10],
+          filename: filename,
+          image: { 
+            type: 'jpeg', 
+            quality: 1.0
+          },
+          html2canvas: { 
+            scale: 3,
+            useCORS: true,
+            logging: false,
+            width: 794,
+            height: 1123,
+            windowWidth: 794
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            compress: true
+          }
         })
         .from(cert)
         .save()
         .then(() => {
-          // Restore buttons after PDF generation
-          if (downloadBtn) downloadBtn.style.display = "";
-          if (whatsappBtn) whatsappBtn.style.display = "";
-          if (closeBtn) closeBtn.style.display = "";
+          console.log("✅ PDF certificate downloaded successfully");
         })
         .catch(err => {
           console.error("PDF generation error:", err);
           alert("Error generating PDF. Please try again.");
-          // Restore buttons even on error
-          if (downloadBtn) downloadBtn.style.display = "";
-          if (whatsappBtn) whatsappBtn.style.display = "";
-          if (closeBtn) closeBtn.style.display = "";
+        })
+        .finally(() => {
+          // Restore everything
+          restoreStyles();
+          
+          // Remove the date element
+          if (dateElement && dateElement.parentNode) {
+            dateElement.parentNode.removeChild(dateElement);
+          }
+          
+          // Show buttons again
+          if (buttonsContainer) buttonsContainer.style.display = "flex";
         });
+      
+      function restoreStyles() {
+        cert.style.width = originalWidth;
+        cert.style.height = originalHeight;
+        cert.style.margin = originalMargin;
+        cert.style.padding = originalPadding;
+      }
     });
   }
 
   /* =============================
-     CERTIFICATE MODAL CLOSE
+     CERTIFICATE MODAL CLOSE - IMPROVED SCOPING
   ============================== */
-  const closeCertBtn = document.getElementById("closeCertBtn");
+  const closeCertBtn = document.querySelector("#certificateModal #closeCertBtn");
   const certModal = document.getElementById("certificateModal");
   
   if (closeCertBtn && certModal) {
-    closeCertBtn.onclick = () => {
+    closeCertBtn.addEventListener("click", () => {
       certModal.classList.add("hidden");
       // Go back to start screen
       startScreen.classList.remove("hidden");
       gameContainer.classList.add("hidden");
-    };
+    });
   }
 });
