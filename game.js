@@ -327,10 +327,32 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // 🎉 CONFETTI CELEBRATION
+        // ✅ SUCCESS FLOW
+        
+        // 🎯 CRITICAL: Hide score submit modal BEFORE showing certificate
+        if (scoreSubmitModal) {
+          scoreSubmitModal.classList.add("hidden");
+        }
+
+        // 1. THANK YOU MESSAGE
+        feedback.textContent = `Thank you, ${name}! 🎉`;
+        feedback.style.color = "#4caf50";
+
+        // 2. SHOW CERTIFICATE
+        const certModal = document.getElementById("certificateModal");
+        const certName = document.getElementById("certName");
+        const certScore = document.getElementById("certScore");
+
+        if (certModal && certName && certScore) {
+          certName.textContent = name;
+          certScore.textContent = `Score: ${window.finalGameScore}`;
+          certModal.classList.remove("hidden");
+        }
+
+        // 3. CONFETTI
         launchConfetti();
 
-        // ✅ SUCCESS FLOW
+        // 4. WHATSAPP SHARE (after certificate is visible for better UX)
         showWhatsAppShare(name, window.finalGameScore);
 
       } catch (error) {
@@ -350,6 +372,75 @@ document.addEventListener("DOMContentLoaded", () => {
         scoreSubmitModal.classList.add("hidden");
       }
       // Optionally restart game or go to home
+      startScreen.classList.remove("hidden");
+      gameContainer.classList.add("hidden");
+    };
+  }
+
+  /* =============================
+     CERTIFICATE PDF DOWNLOAD
+  ============================== */
+  const downloadCertBtn = document.getElementById("downloadCertBtn");
+  
+  if (downloadCertBtn) {
+    downloadCertBtn.addEventListener("click", () => {
+      const cert = document.querySelector("#certificateModal .certificate");
+      if (!cert) {
+        console.error("Certificate element not found");
+        return;
+      }
+      
+      // Temporarily hide the download button so it doesn't appear in PDF
+      const downloadBtn = cert.querySelector("#downloadCertBtn");
+      const closeBtn = cert.querySelector("#closeCertBtn");
+      
+      if (downloadBtn) downloadBtn.style.display = "none";
+      if (closeBtn) closeBtn.style.display = "none";
+      
+      // Check if html2pdf is available
+      if (typeof html2pdf === 'undefined') {
+        console.error("html2pdf library not loaded");
+        alert("PDF generation library not loaded. Please refresh the page.");
+        if (downloadBtn) downloadBtn.style.display = "";
+        if (closeBtn) closeBtn.style.display = "";
+        return;
+      }
+      
+      html2pdf()
+        .set({
+          margin: 10,
+          filename: "Biomedical_Waste_Training_Certificate.pdf",
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(cert)
+        .save()
+        .then(() => {
+          // Restore buttons after PDF generation
+          if (downloadBtn) downloadBtn.style.display = "";
+          if (closeBtn) closeBtn.style.display = "";
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          alert("Error generating PDF. Please try again.");
+          // Restore buttons even on error
+          if (downloadBtn) downloadBtn.style.display = "";
+          if (closeBtn) closeBtn.style.display = "";
+        });
+    });
+  }
+
+  /* =============================
+     CERTIFICATE MODAL CLOSE
+  ============================== */
+  const closeCertBtn = document.getElementById("closeCertBtn");
+  const certModal = document.getElementById("certificateModal");
+  
+  if (closeCertBtn && certModal) {
+    closeCertBtn.onclick = () => {
+      certModal.classList.add("hidden");
+      // Optionally go back to start screen
       startScreen.classList.remove("hidden");
       gameContainer.classList.add("hidden");
     };
