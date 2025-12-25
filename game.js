@@ -100,7 +100,10 @@ document.addEventListener("DOMContentLoaded", () => {
   ============================== */
   function showWhatsAppShare(name, score) {
     const whatsappBtn = document.getElementById("whatsappShareBtn");
-    if (!whatsappBtn) return;
+    if (!whatsappBtn) {
+      console.error("WhatsApp button not found!");
+      return;
+    }
 
     const text =
       `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
@@ -113,6 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     whatsappBtn.classList.remove("hidden");
     whatsappBtn.onclick = () => window.open(url, "_blank");
+    
+    console.log("WhatsApp share button enabled");
   }
 
   /* =============================
@@ -315,6 +320,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       errorText.classList.add("hidden");
 
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving...";
+
       try {
         const saved = await saveScore(
           name,
@@ -324,40 +333,57 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (!saved) {
           alert("Error saving score. Please try again.");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Score";
           return;
         }
 
-        // ✅ SUCCESS FLOW
+        // ✅ SUCCESS - SHOW COMPLETION FLOW
         
-        // 🎯 CRITICAL: Hide score submit modal BEFORE showing certificate
+        // 1. Hide score submit modal
         if (scoreSubmitModal) {
           scoreSubmitModal.classList.add("hidden");
         }
 
-        // 1. THANK YOU MESSAGE
-        feedback.textContent = `Thank you, ${name}! 🎉`;
-        feedback.style.color = "#4caf50";
-
-        // 2. SHOW CERTIFICATE
+        // 2. Show certificate with thank you message
         const certModal = document.getElementById("certificateModal");
+        const thankYouName = document.getElementById("thankYouName");
         const certName = document.getElementById("certName");
         const certScore = document.getElementById("certScore");
 
-        if (certModal && certName && certScore) {
+        if (certModal && thankYouName && certName && certScore) {
+          // Set thank you message (user sees this first!)
+          thankYouName.textContent = name;
+          
+          // Set certificate details
           certName.textContent = name;
-          certScore.textContent = `Score: ${window.finalGameScore}`;
+          certScore.textContent = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
+          
+          // Show the certificate modal
           certModal.classList.remove("hidden");
+          console.log("🎉 Certificate modal shown with thank you message");
+        } else {
+          console.error("Certificate modal elements not found!");
+          // Fallback
+          alert(`🎉 Thank you, ${name}! Your score of ${window.finalGameScore} has been saved to the leaderboard.`);
         }
 
-        // 3. CONFETTI
-        launchConfetti();
+        // 3. Launch confetti celebration
+        setTimeout(() => launchConfetti(), 500);
 
-        // 4. WHATSAPP SHARE (after certificate is visible for better UX)
-        showWhatsAppShare(name, window.finalGameScore);
+        // 4. Enable WhatsApp sharing (appears in certificate modal)
+        setTimeout(() => {
+          showWhatsAppShare(name, window.finalGameScore);
+          console.log("📤 WhatsApp share enabled");
+        }, 1000);
 
       } catch (error) {
         console.error("Error submitting score:", error);
-        alert("Error saving score. Please check your connection and try again.");
+        alert("❌ Error saving score. Please check your connection and try again.");
+      } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Score";
       }
     };
   }
@@ -392,9 +418,11 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Temporarily hide the download button so it doesn't appear in PDF
       const downloadBtn = cert.querySelector("#downloadCertBtn");
+      const whatsappBtn = cert.querySelector("#whatsappShareBtn");
       const closeBtn = cert.querySelector("#closeCertBtn");
       
       if (downloadBtn) downloadBtn.style.display = "none";
+      if (whatsappBtn) whatsappBtn.style.display = "none";
       if (closeBtn) closeBtn.style.display = "none";
       
       // Check if html2pdf is available
@@ -402,6 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("html2pdf library not loaded");
         alert("PDF generation library not loaded. Please refresh the page.");
         if (downloadBtn) downloadBtn.style.display = "";
+        if (whatsappBtn) whatsappBtn.style.display = "";
         if (closeBtn) closeBtn.style.display = "";
         return;
       }
@@ -419,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(() => {
           // Restore buttons after PDF generation
           if (downloadBtn) downloadBtn.style.display = "";
+          if (whatsappBtn) whatsappBtn.style.display = "";
           if (closeBtn) closeBtn.style.display = "";
         })
         .catch(err => {
@@ -426,6 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alert("Error generating PDF. Please try again.");
           // Restore buttons even on error
           if (downloadBtn) downloadBtn.style.display = "";
+          if (whatsappBtn) whatsappBtn.style.display = "";
           if (closeBtn) closeBtn.style.display = "";
         });
     });
@@ -440,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeCertBtn && certModal) {
     closeCertBtn.onclick = () => {
       certModal.classList.add("hidden");
-      // Optionally go back to start screen
+      // Go back to start screen
       startScreen.classList.remove("hidden");
       gameContainer.classList.add("hidden");
     };
