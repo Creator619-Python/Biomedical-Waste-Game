@@ -74,10 +74,12 @@ async function loadAnalyticsData() {
     try {
         showLoadingState();
         
-        const querySnapshot = await db.collection("leaderboard")
-            .orderBy("score", "desc")
-            .limit(100)
-            .get();
+        const querySnapshot = await db
+  .collection("game_attempts")
+  .orderBy("createdAt", "desc")
+  .limit(50)
+  .get();
+
         
         allScores = [];
         querySnapshot.forEach((doc) => {
