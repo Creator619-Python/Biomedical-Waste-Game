@@ -47,13 +47,26 @@
   <div id="certificateModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content certificate">
-      <h2>🎉 Certificate of Completion</h2>
+      <!-- 🎉 THANK YOU SECTION -->
+      <div class="thank-you-section">
+        <h2>🎉 Congratulations!</h2>
+        <p>Thank you, <span id="thankYouName"></span>, for completing the training!</p>
+      </div>
+      
+      <h2>Certificate of Completion</h2>
       <p>This certifies that</p>
       <h3 id="certName"></h3>
       <p>has successfully completed the</p>
       <p><b>Biomedical Waste Segregation Training</b></p>
       <p id="certScore"></p>
-      <button class="primary-btn">Close</button>
+      
+      <button id="downloadCertBtn" class="secondary-btn">
+        📄 Download Certificate
+      </button>
+      <button id="whatsappShareBtn" class="secondary-btn hidden">
+        📤 Share on WhatsApp
+      </button>
+      <button id="closeCertBtn" class="primary-btn">Close</button>
     </div>
   </div>
 
@@ -182,17 +195,15 @@
       </p>
 
       <button id="submitScoreBtn" class="primary-btn">Submit Score</button>
-      <!-- 👇 ADD SHARE BUTTON HERE -->
-    <button id="whatsappShareBtn"
-            class="secondary-btn hidden">
-      📤 Share on WhatsApp
-    </button>
       <button id="cancelSubmitBtn" class="secondary-btn">Cancel</button>
     </div>
   </div>
 
   <!-- GAME LOGIC -->
   <script type="module" src="game.js?v=3"></script>
+  
+  <!-- PDF Library for Certificate Download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- INLINE UI + PWA LOGIC -->
   <script>
@@ -233,9 +244,43 @@
 
     observer.observe(scoreModal, { attributes: true });
   }
+
+  /* ---------- Fullscreen Toggle ---------- */
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  if (fullscreenBtn) {
+    fullscreenBtn.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+        fullscreenBtn.textContent = "⤢";
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+          fullscreenBtn.textContent = "⤢";
+        }
+      }
+    };
+  }
+
+  /* ---------- Leaderboard Modal ---------- */
+  const openLeaderboardBtn = document.getElementById("openLeaderboardBtn");
+  const leaderboardModal = document.getElementById("leaderboardModal");
+  const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
+  
+  if (openLeaderboardBtn && leaderboardModal) {
+    openLeaderboardBtn.onclick = () => {
+      leaderboardModal.classList.remove("hidden");
+    };
+  }
+  
+  if (closeLeaderboardBtn && leaderboardModal) {
+    closeLeaderboardBtn.onclick = () => {
+      leaderboardModal.classList.add("hidden");
+    };
+  }
 </script>
 
 
 </body>
 </html>
-
