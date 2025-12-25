@@ -111,4 +111,56 @@
     color: #333 !important;
   }
   
- 
+  .modal-content.certificate a {
+    color: #0066cc !important;
+    text-decoration: underline !important;
+  }
+  
+  /* Hide game UI elements */
+  #fullscreenBtn,
+  .app-wrapper,
+  #startScreen,
+  #gameContainer,
+  #scoreSubmitModal,
+  #leaderboardModal {
+    display: none !important;
+  }
+}
+
+/* ================================
+   CERTIFICATE BUTTONS - VISIBILITY FIX
+   ================================ */
+#downloadCertBtn {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: linear-gradient(135deg, #4caf50, #2196f3) !important;
+  color: white !important;
+  border: none !important;
+  padding: 12px 24px !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  margin: 10px !important;
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3) !important;
+}
+
+#downloadCertBtn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4) !important;
+  background: linear-gradient(135deg, #3d8b40, #1976d2) !important;
+}
+
+#downloadCertBtn:active {
+  transform: translateY(0) !important;
+}
+
+@media (max-width: 768px) {
+  #downloadCertBtn {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+    margin: 8px !important;
+  }
+}
