@@ -5,20 +5,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Biomedical Waste Segregation Game</title>
-  <!-- 🔹 GA4 START: Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-4DQYGRYMM7');
-</script>
-<!-- 🔹 GA4 END -->
-
+  <!-- 🔹 GA4 START -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4DQYGRYMM7');
+  </script>
+  <!-- 🔹 GA4 END -->
 
   <meta name="author" content="Gokul Krishna T.B">
-  <meta name="linkedin" content="https://www.linkedin.com/in/gokul-k-148624117/">
   <meta name="creator" content="Gokul Krishna T.B — Biomedical Waste Game Developer">
 
   <link rel="stylesheet" href="style.css" />
@@ -30,49 +28,17 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 
-<!-- GLOBAL MODALS TEMPLATE -->
-<template id="global-modals">
-
-  <!-- LEADERBOARD MODAL -->
-  <div id="leaderboardModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <h2>🏆 Global Leaderboard</h2>
-      <ul id="leaderboardList"></ul>
-      <button id="closeLeaderboardBtn" class="secondary-btn">Close</button>
-    </div>
-  </div>
-
-  <!-- CERTIFICATE MODAL -->
-  <div id="certificateModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content certificate">
-      <h2>🎉 Certificate of Completion</h2>
-      <p>This certifies that</p>
-      <h3 id="certName"></h3>
-      <p>has successfully completed the</p>
-      <p><b>Biomedical Waste Segregation Training</b></p>
-      <p id="certScore"></p>
-      <button class="primary-btn">Close</button>
-    </div>
-  </div>
-
-</template>
-
 <body>
 
-  <!-- Fullscreen Button -->
+  <!-- Fullscreen -->
   <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
-
-  <!-- Confetti -->
-  <div id="confettiContainer"></div>
 
   <div class="app-wrapper">
 
-    <!-- LEFT PANEL -->
+    <!-- START SCREEN -->
     <div class="left-panel" id="startScreen">
       <h1 class="title">Biomedical Waste Segregation Game</h1>
-      <p class="subtitle">Match each biomedical item to the correct color-coded bin.</p>
+      <p class="subtitle">Match each biomedical item to the correct bin.</p>
 
       <h2 class="section-title">Select Difficulty</h2>
 
@@ -95,43 +61,24 @@
         ▼ Show Instructions
       </button>
 
-      <p class="hint-text">ℹ️ New users should read instructions before starting</p>
-
       <div id="instructionsPanel" class="instructions hidden">
         <h3>How to Play</h3>
         <ul>
-          <li>You will see a biomedical waste item.</li>
-          <li>Select the correct color bin as per BMW Rules.</li>
-          <li>Correct answers increase score.</li>
-          <li>Wrong answers reduce accuracy.</li>
-          <li>Game ends when time runs out.</li>
-        </ul>
-
-        <h4>Bin Color Guide (India BMW Rules)</h4>
-        <ul>
-          <li><b>Yellow</b> – Human anatomical, soiled waste</li>
-          <li><b>Red</b> – Contaminated recyclable waste</li>
-          <li><b>White</b> – Sharps</li>
-          <li><b>Blue</b> – Glassware, metallic implants</li>
-          <li><b>Green</b> – General waste (non-BMW)</li>
+          <li>Select the correct bin for the item</li>
+          <li>Correct answers increase score</li>
+          <li>Wrong answers reduce accuracy</li>
+          <li>Game ends when time runs out</li>
         </ul>
       </div>
-
-      <footer class="footer-credit">
-        Made with ❤️ by <strong>Gokul Krishna T.B.</strong><br>
-        <a href="https://www.linkedin.com/in/gokul-k-148624117/" target="_blank">
-          Connect on LinkedIn
-        </a>
-      </footer>
     </div>
 
-    <!-- RIGHT PANEL -->
+    <!-- GAME PANEL -->
     <div class="right-panel hidden" id="gameContainer">
 
       <div class="top-bar">
         <div class="timer-box">
           <span class="label">Time</span>
-          <span id="timerValue" class="timer-value">00:60</span>
+          <span id="timerValue" class="timer-value">01:00</span>
           <div class="timer-progress">
             <div id="progressFill" class="progress-fill"></div>
           </div>
@@ -141,16 +88,15 @@
           <span class="label">Score</span>
           <span id="score" class="score-value">0</span>
         </div>
-
-        <button id="openLeaderboardBtn" class="leaderboard-btn">🏆</button>
       </div>
 
       <div class="item-area">
-        <img id="itemImage" class="item-image" alt="">
-        <div id="itemName" class="item-name"></div>
+        <div id="itemName" class="item-name">Item</div>
       </div>
 
-      <div id="feedback" class="feedback">Choose the correct bin</div>
+      <div id="feedback" class="feedback">
+        Choose the correct bin
+      </div>
 
       <div class="bins-row">
         <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow</button>
@@ -169,24 +115,13 @@
 
   <!-- SCORE SUBMISSION MODAL -->
   <div id="scoreSubmitModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
     <div class="modal-content">
       <h2>Submit Your Score</h2>
-      <p class="modal-small">Enter your name for the Global Leaderboard</p>
-
-      <input id="playerNameInput" class="name-input" maxlength="20"
-             placeholder="Enter your name">
-
+      <input id="playerNameInput" maxlength="20" placeholder="Your name">
       <p id="nameError" class="error-text hidden">
-        Please enter a valid name (3–20 letters only)
+        Enter 3–20 letters only
       </p>
-
       <button id="submitScoreBtn" class="primary-btn">Submit Score</button>
-      <!-- 👇 ADD SHARE BUTTON HERE -->
-    <button id="whatsappShareBtn"
-            class="secondary-btn hidden">
-      📤 Share on WhatsApp
-    </button>
       <button id="cancelSubmitBtn" class="secondary-btn">Cancel</button>
     </div>
   </div>
@@ -194,47 +129,47 @@
   <!-- GAME LOGIC -->
   <script type="module" src="game.js?v=3"></script>
 
-  <!-- INLINE UI + PWA LOGIC -->
+  <!-- UI LOGIC (ORIGINAL) -->
   <script>
-  /* ---------- Existing code (keep as-is) ---------- */
+    const toggleBtn = document.getElementById("toggleInstructions");
+    const instructions = document.getElementById("instructionsPanel");
 
-  const toggleBtn = document.getElementById("toggleInstructions");
-  const instructions = document.getElementById("instructionsPanel");
-
-  if (toggleBtn && instructions) {
-    toggleBtn.addEventListener("click", () => {
+    toggleBtn?.addEventListener("click", () => {
       instructions.classList.toggle("hidden");
       toggleBtn.innerText = instructions.classList.contains("hidden")
         ? "▼ Show Instructions"
         : "▲ Hide Instructions";
     });
-  }
 
-  const analyticsBtn = document.getElementById("analyticsBtn");
-  if (analyticsBtn) {
-    analyticsBtn.onclick = () => {
+    document.getElementById("analyticsBtn")?.addEventListener("click", () => {
       window.location.href = "analytics.html";
-    };
-  }
+    });
+  </script>
 
-  /* ---------- 🔹 PART 2: GA4 GAME COMPLETE ---------- */
+  <!-- 🔹 REQUIRED GAME START WIRING -->
+  <script>
+    let selectedDifficulty = "medium";
 
-  const scoreModal = document.getElementById("scoreSubmitModal");
-
-  if (scoreModal) {
-    const observer = new MutationObserver(() => {
-      if (!scoreModal.classList.contains("hidden")) {
-        if (window.gtag) {
-          gtag("event", "game_complete");
-          console.log("GA4: game_complete fired");
-        }
-      }
+    document.querySelectorAll(".difficulty-card").forEach(card => {
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".difficulty-card")
+          .forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedDifficulty = card.dataset.level;
+      });
     });
 
-    observer.observe(scoreModal, { attributes: true });
-  }
-</script>
+    document.getElementById("startGameBtn")?.addEventListener("click", () => {
+      document.getElementById("startScreen").classList.add("hidden");
+      document.getElementById("gameContainer").classList.remove("hidden");
 
+      if (window.startGame) {
+        window.startGame(selectedDifficulty);
+      } else {
+        console.error("startGame() not found in game.js");
+      }
+    });
+  </script>
 
 </body>
 </html>
