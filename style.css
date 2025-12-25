@@ -1338,3 +1338,10 @@ button:focus-visible {
     text-decoration: none !important;
   }
 }
+/* Force certificate game link visibility */
+.modal-content.certificate .game-link-section a {
+  color: #0d47a1 !important;
+  text-decoration: underline !important;
+  font-weight: 600;
+}
+
