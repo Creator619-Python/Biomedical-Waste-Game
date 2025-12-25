@@ -85,13 +85,14 @@ async function loadAnalyticsData() {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             allScores.push({
-                id: doc.id,
-                name: data.name || "Anonymous",
-                score: data.score || 0,
-                time: data.time || 0,
-                createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-                difficulty: data.difficulty || "medium"
-            });
+  id: doc.id,
+  name: data.name,
+  score: data.score,
+  createdAt: data.createdAt
+    ? data.createdAt.toDate()
+    : new Date()
+});
+
         });
         
         console.log(`Loaded ${allScores.length} scores from Firebase`);
