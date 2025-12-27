@@ -47,86 +47,26 @@
   <div id="certificateModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content certificate">
-      <!-- Header: Congratulations -->
-      <div class="certificate-header">
-        <div class="congrats">
-          <h1>🎉 Congratulations!</h1>
-          <p class="thank-you">Thank you, <span id="thankYouName"></span>, for completing the training!</p>
-        </div>
+      <!-- 🎉 THANK YOU SECTION -->
+      <div class="thank-you-section">
+        <h2>🎉 Congratulations!</h2>
+        <p>Thank you, <span id="thankYouName"></span>, for completing the training!</p>
       </div>
-
-      <!-- Body: Certificate Content -->
-      <div class="certificate-body">
-        <h2>Certificate of Completion</h2>
-        
-        <p class="certify-text">This certifies that</p>
-        
-        <h3 id="certName"></h3>
-        
-        <p class="certify-text">has successfully completed the</p>
-        
-        <div class="training-title" id="trainingTitle">
-          Biomedical Waste Segregation Training
-        </div>
-      </div>
-
-      <!-- Footer: Score, Time, Links, Credit -->
-      <div class="certificate-footer">
-        <!-- Score and Time -->
-        <div class="score-time-section">
-          <div class="score-box-cert">
-            <h4>Score</h4>
-            <p id="certScore"></p>
-          </div>
-          <div class="time-box-cert">
-            <h4>Time</h4>
-            <p id="certTime"></p>
-          </div>
-        </div>
-
-        <!-- Educational Disclaimer -->
-        <div class="disclaimer">
-          <p><strong>Note:</strong> This training module is for educational purposes only. 
-          Always refer to local biomedical waste management guidelines and regulations for professional practice.</p>
-        </div>
-
-        <!-- Game Link -->
-        <div class="game-link-section">
-          <p>Try the game yourself:</p>
-          <p>
-            <a href="https://creator619-python.github.io/Biomedical-Waste-Game/" 
-               target="_blank" 
-               rel="noopener noreferrer">
-              https://creator619-python.github.io/Biomedical-Waste-Game/
-            </a>
-          </p>
-        </div>
-
-        <!-- Creator Credit -->
-        <div class="creator-credit">
-          <p class="title">Training module designed & built by</p>
-          <p class="name">Gokul Krishna T.B.</p>
-          <p>
-            <a href="https://linkedin.com/in/gokul-k-148624117" 
-               target="_blank" 
-               rel="noopener noreferrer"
-               class="linkedin-link">
-              linkedin.com/in/gokul-k-148624117
-            </a>
-          </p>
-        </div>
-
-        <!-- Certificate Type Note -->
-        <p class="certificate-note">Self-paced digital training module • Certificate ID: <span id="certId"></span></p>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="certificate-buttons">
-        <button id="downloadCertBtn" class="primary-btn">
-          📄 Download PDF & Share on WhatsApp
-        </button>
-        <button id="closeCertBtn" class="secondary-btn">Close</button>
-      </div>
+      
+      <h2>Certificate of Completion</h2>
+      <p>This certifies that</p>
+      <h3 id="certName"></h3>
+      <p>has successfully completed the</p>
+      <p><b>Biomedical Waste Segregation Training</b></p>
+      <p id="certScore"></p>
+      
+      <button id="downloadCertBtn" class="secondary-btn">
+        📄 Download Certificate
+      </button>
+      <button id="whatsappShareBtn" class="secondary-btn hidden">
+        📤 Share on WhatsApp
+      </button>
+      <button id="closeCertBtn" class="primary-btn">Close</button>
     </div>
   </div>
 
@@ -267,7 +207,8 @@
 
   <!-- INLINE UI + PWA LOGIC -->
   <script>
-  /* ---------- Existing code ---------- */
+  /* ---------- Existing code (keep as-is) ---------- */
+
   const toggleBtn = document.getElementById("toggleInstructions");
   const instructions = document.getElementById("instructionsPanel");
 
@@ -287,8 +228,10 @@
     };
   }
 
-  /* ---------- 🔹 GA4 GAME COMPLETE ---------- */
+  /* ---------- 🔹 PART 2: GA4 GAME COMPLETE ---------- */
+
   const scoreModal = document.getElementById("scoreSubmitModal");
+
   if (scoreModal) {
     const observer = new MutationObserver(() => {
       if (!scoreModal.classList.contains("hidden")) {
@@ -298,6 +241,7 @@
         }
       }
     });
+
     observer.observe(scoreModal, { attributes: true });
   }
 
@@ -335,156 +279,8 @@
       leaderboardModal.classList.add("hidden");
     };
   }
-
-  /* ================================
-     PDF DOWNLOAD & SHARE FUNCTION
-  ================================ */
-  function downloadCertificatePDF() {
-    // Get player name for filename
-    const playerName = document.querySelector("#certificateModal #thankYouName")?.textContent || "Player";
-    const score = document.querySelector("#certificateModal #certScore")?.textContent || "0";
-    
-    // Format filename
-    const date = new Date().toISOString().split('T')[0];
-    const filename = `Biomedical_Waste_Certificate_${playerName}_${score}_${date}.pdf`;
-    
-    // Save original title
-    const originalTitle = document.title;
-    
-    // Set new title for PDF
-    document.title = `Biomedical Waste Certificate - ${playerName} (Score: ${score})`;
-    
-    // Temporarily hide buttons for clean PDF
-    const buttons = document.querySelectorAll('.certificate-buttons button');
-    const originalDisplay = [];
-    buttons.forEach(btn => {
-      originalDisplay.push(btn.style.display);
-      btn.style.display = 'none';
-    });
-    
-    // Add instructions for sharing
-    const instructions = document.createElement('div');
-    instructions.className = 'pdf-instructions';
-    instructions.innerHTML = `
-      <div style="text-align: center; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #4caf50;">
-        <p style="color: #333; font-weight: 600; margin-bottom: 10px;">
-          📱 <strong>How to Share on WhatsApp:</strong>
-        </p>
-        <ol style="text-align: left; color: #555; padding-left: 20px; margin: 0;">
-          <li>Save this PDF to your device</li>
-          <li>Open WhatsApp</li>
-          <li>Select contact or group</li>
-          <li>Attach this PDF file</li>
-          <li>Add your achievement message!</li>
-        </ol>
-      </div>
-    `;
-    
-    const footer = document.querySelector('.certificate-footer');
-    if (footer) {
-      const note = footer.querySelector('.certificate-note');
-      if (note) {
-        footer.insertBefore(instructions, note);
-      } else {
-        footer.appendChild(instructions);
-      }
-    }
-    
-    // Trigger print (which creates PDF)
-    window.print();
-    
-    // Cleanup after print dialog
-    setTimeout(() => {
-      // Restore title
-      document.title = originalTitle;
-      
-      // Restore buttons
-      buttons.forEach((btn, index) => {
-        btn.style.display = originalDisplay[index] || '';
-      });
-      
-      // Remove instructions
-      if (instructions.parentNode) {
-        instructions.parentNode.removeChild(instructions);
-      }
-      
-      // Show WhatsApp sharing guidance
-      showWhatsAppSharingGuide(playerName, score, filename);
-    }, 1000);
-  }
-
-  /* ================================
-     WHATSAPP SHARING GUIDE MODAL
-  ================================ */
-  function showWhatsAppSharingGuide(name, score, filename) {
-    // Create a simple modal with instructions
-    const message = `🏆 *Biomedical Waste Training Complete!*
-
-👤 Name: ${name}
-🎯 Score: ${score}/15
-📅 Certificate: ${filename}
-
-✅ I just completed the Biomedical Waste Segregation Training!
-Test your knowledge too:
-
-🔗 Play: https://creator619-python.github.io/Biomedical-Waste-Game/
-
-#HealthcareTraining #WasteManagement #Certificate`;
-    
-    // Create WhatsApp URL
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    
-    // Show instructions
-    const guideHTML = `
-      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; margin: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-          <h2 style="color: #25D366; margin-top: 0;">📤 Ready to Share on WhatsApp!</h2>
-          
-          <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #25D366;">
-            <p style="margin: 0; color: #333; font-weight: 600;">📱 <strong>Steps to Share:</strong></p>
-            <ol style="margin: 10px 0 0 0; padding-left: 20px; color: #555;">
-              <li><strong>PDF is now downloaded</strong> to your device</li>
-              <li><strong>Open WhatsApp</strong> (mobile or desktop)</li>
-              <li><strong>Select contact or group</strong></li>
-              <li><strong>Attach the PDF file</strong> from your downloads</li>
-              <li><strong>Add your achievement message</strong></li>
-            </ol>
-          </div>
-          
-          <p style="color: #666; margin: 15px 0;">Or share the link directly:</p>
-          
-          <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button onclick="window.open('${whatsappUrl}', '_blank')" style="flex: 1; background: #25D366; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer;">
-              📤 Open WhatsApp
-            </button>
-            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #f5f5f5; border: 1px solid #ddd; padding: 12px 20px; border-radius: 6px; cursor: pointer;">
-              Close
-            </button>
-          </div>
-          
-          <p style="font-size: 12px; color: #888; margin-top: 20px;">
-            Note: PDF must be attached manually in WhatsApp Web
-          </p>
-        </div>
-      </div>
-    `;
-    
-    // Add to page
-    const guideElement = document.createElement('div');
-    guideElement.innerHTML = guideHTML;
-    document.body.appendChild(guideElement.firstElementChild);
-  }
-
-  /* ================================
-     ATTACH PDF DOWNLOAD FUNCTION TO BUTTON
-  ================================ */
-  document.addEventListener('DOMContentLoaded', function() {
-    const downloadBtn = document.getElementById('downloadCertBtn');
-    if (downloadBtn) {
-      downloadBtn.addEventListener('click', downloadCertificatePDF);
-    }
-  });
 </script>
+
 
 </body>
 </html>
