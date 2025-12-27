@@ -659,3 +659,70 @@ button:focus-visible {
     color: black !important;
   }
 }
+/* =========================================
+   CERTIFICATE – PREMIUM (Certificate 1 Style)
+========================================= */
+
+.certificate-container {
+  background: linear-gradient(180deg, #0b1220, #020617);
+  color: #ffffff;
+  padding: 48px 40px;
+  border-radius: 18px;
+  max-width: 820px;
+  margin: auto;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.certificate-header {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.certificate-subheader {
+  color: #cbd5f5;
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.certificate-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.certificate-name {
+  font-size: 36px;
+  font-weight: 900;
+  color: #22c55e;
+  margin: 18px 0;
+  text-transform: uppercase;
+}
+
+.certificate-text {
+  font-size: 16px;
+  color: #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.certificate-footer {
+  margin-top: 32px;
+  padding: 18px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #facc15;
+}
+
+/* Score highlight */
+.certificate-footer span {
+  color: #22c55e;
+}
+
