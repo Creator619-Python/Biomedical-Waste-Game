@@ -585,11 +585,27 @@ button:focus-visible {
     margin-bottom: 10px;
   }
   
-  .modal-content {
+  .modal-content:not(.certificate) {
     padding: 20px;
     margin: 0;
   }
 }
+   /* ==============================
+   CERTIFICATE MODAL FIX
+============================== */
+
+.modal-content.certificate {
+  max-width: 850px;
+  width: 100%;
+  padding: 60px 50px;
+}
+
+.certificate-content {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
 
 @media (max-width: 480px) {
   .title {
