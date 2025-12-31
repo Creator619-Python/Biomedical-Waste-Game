@@ -664,14 +664,33 @@ button:focus-visible {
    PRINT STYLES
 ========================================= */
 @media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide game UI */
   .right-panel,
-  .modal,
   .fullscreen-btn {
     display: none !important;
   }
-  
-  .left-panel {
-    background: white !important;
-    color: black !important;
+
+  /* Show ONLY certificate modal */
+  .modal:not(#certificateModal) {
+    display: none !important;
+  }
+
+  #certificateModal {
+    position: static !important;
+    display: block !important;
+  }
+
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  .modal-content.certificate {
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
 }
