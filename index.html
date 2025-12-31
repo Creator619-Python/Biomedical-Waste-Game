@@ -1,286 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biomedical Waste Segregation Game</title>
+    <!-- 🔹 GA4 START: Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Biomedical Waste Segregation Game</title>
-  <!-- 🔹 GA4 START: Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4DQYGRYMM7"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+      gtag("config", "G-4DQYGRYMM7");
+    </script>
+    <!-- 🔹 GA4 END -->
 
-  gtag('config', 'G-4DQYGRYMM7');
-</script>
-<!-- 🔹 GA4 END -->
+    <meta name="author" content="Gokul Krishna T.B" />
+    <meta
+      name="linkedin"
+      content="https://www.linkedin.com/in/gokul-k-148624117/"
+    />
+    <meta
+      name="creator"
+      content="Gokul Krishna T.B — Biomedical Waste Game Developer"
+    />
 
+    <link rel="stylesheet" href="styles.css" />
 
-  <meta name="author" content="Gokul Krishna T.B">
-  <meta name="linkedin" content="https://www.linkedin.com/in/gokul-k-148624117/">
-  <meta name="creator" content="Gokul Krishna T.B — Biomedical Waste Game Developer">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+  </head>
 
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="icon-192.png">
-</head>
-
-<!-- GLOBAL MODALS TEMPLATE -->
-<template id="global-modals">
-
-  <!-- LEADERBOARD MODAL -->
-  <div id="leaderboardModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <h2>🏆 Global Leaderboard</h2>
-      <ul id="leaderboardList"></ul>
-      <button id="closeLeaderboardBtn" class="secondary-btn">Close</button>
-    </div>
-  </div>
-
-  <!-- CERTIFICATE MODAL -->
-  <div id="certificateModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content certificate">
-      <!-- 🎉 THANK YOU SECTION -->
-      <div class="thank-you-section">
-        <h2>🎉 Congratulations!</h2>
-        <p>Thank you, <span id="thankYouName"></span>, for completing the training!</p>
+  <!-- GLOBAL MODALS TEMPLATE -->
+  <template id="global-modals">
+    <!-- LEADERBOARD MODAL -->
+    <div id="leaderboardModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <h2>🏆 Global Leaderboard</h2>
+        <ul id="leaderboardList"></ul>
+        <button id="closeLeaderboardBtn" class="secondary-btn">Close</button>
       </div>
-      
-      <h2>Certificate of Completion</h2>
-      <p>This certifies that</p>
-      <h3 id="certName"></h3>
-      <p>has successfully completed the</p>
-      <p><b>Biomedical Waste Segregation Training</b></p>
-      <p id="certScore"></p>
-      
-      <button id="downloadCertBtn" class="secondary-btn">
-        📄 Download Certificate
-      </button>
-      <button id="whatsappShareBtn" class="secondary-btn hidden">
-        📤 Share on WhatsApp
-      </button>
-      <button id="closeCertBtn" class="primary-btn">Close</button>
-    </div>
-  </div>
-
-</template>
-
-<body>
-
-  <!-- Fullscreen Button -->
-  <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
-
-  <!-- Confetti -->
-  <div id="confettiContainer"></div>
-
-  <div class="app-wrapper">
-
-    <!-- LEFT PANEL -->
-    <div class="left-panel" id="startScreen">
-      <h1 class="title">Biomedical Waste Segregation Game</h1>
-      <p class="subtitle">Match each biomedical item to the correct color-coded bin.</p>
-
-      <h2 class="section-title">Select Difficulty</h2>
-
-      <div class="difficulty-grid">
-        <div class="difficulty-card" data-level="easy">
-          <h3>Easy</h3><p>90 seconds</p>
-        </div>
-        <div class="difficulty-card selected" data-level="medium">
-          <h3>Medium</h3><p>60 seconds</p>
-        </div>
-        <div class="difficulty-card" data-level="hard">
-          <h3>Hard</h3><p>30 seconds</p>
-        </div>
-      </div>
-
-      <button id="startGameBtn" class="primary-btn">Start Game</button>
-      <button id="analyticsBtn" class="secondary-btn">Training Analytics</button>
-
-      <button id="toggleInstructions" class="secondary-btn">
-        ▼ Show Instructions
-      </button>
-
-      <p class="hint-text">ℹ️ New users should read instructions before starting</p>
-
-      <div id="instructionsPanel" class="instructions hidden">
-        <h3>How to Play</h3>
-        <ul>
-          <li>You will see a biomedical waste item.</li>
-          <li>Select the correct color bin as per BMW Rules.</li>
-          <li>Correct answers increase score.</li>
-          <li>Wrong answers reduce accuracy.</li>
-          <li>Game ends when time runs out.</li>
-        </ul>
-
-        <h4>Bin Color Guide (India BMW Rules)</h4>
-        <ul>
-          <li><b>Yellow</b> – Human anatomical, soiled waste</li>
-          <li><b>Red</b> – Contaminated recyclable waste</li>
-          <li><b>White</b> – Sharps</li>
-          <li><b>Blue</b> – Glassware, metallic implants</li>
-          <li><b>Green</b> – General waste (non-BMW)</li>
-        </ul>
-      </div>
-
-      <footer class="footer-credit">
-        Made with ❤️ by <strong>Gokul Krishna T.B.</strong><br>
-        <a href="https://www.linkedin.com/in/gokul-k-148624117/" target="_blank">
-          Connect on LinkedIn
-        </a>
-      </footer>
     </div>
 
-    <!-- RIGHT PANEL -->
-    <div class="right-panel hidden" id="gameContainer">
+    <!-- CERTIFICATE MODAL -->
+    <div id="certificateModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content certificate">
+        <!-- 🎉 THANK YOU SECTION -->
+        <div class="thank-you-section">
+          <h2>🎉 Congratulations!</h2>
+          <p>
+            Thank you, <span id="thankYouName"></span>, for completing the
+            training!
+          </p>
+        </div>
 
-      <div class="top-bar">
-        <div class="timer-box">
-          <span class="label">Time</span>
-          <span id="timerValue" class="timer-value">00:60</span>
-          <div class="timer-progress">
-            <div id="progressFill" class="progress-fill"></div>
+        <h2>Certificate of Completion</h2>
+        <p>This certifies that</p>
+        <h3 id="certName"></h3>
+        <p>has successfully completed the</p>
+        <p><b>Biomedical Waste Segregation Training</b></p>
+        <p id="certScore"></p>
+
+        <button id="downloadCertBtn" class="secondary-btn">
+          📄 Download Certificate
+        </button>
+        <button id="whatsappShareBtn" class="secondary-btn hidden">
+          📤 Share on WhatsApp
+        </button>
+        <button id="closeCertBtn" class="primary-btn">Close</button>
+      </div>
+    </div>
+  </template>
+
+  <body>
+    <!-- Fullscreen Button -->
+    <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
+
+    <!-- Confetti -->
+    <div id="confettiContainer"></div>
+
+    <div class="app-wrapper">
+      <!-- LEFT PANEL -->
+      <div class="left-panel" id="startScreen">
+        <h1 class="title">Biomedical Waste Segregation Game</h1>
+        <p class="subtitle">
+          Match each biomedical item to the correct color-coded bin.
+        </p>
+
+        <h2 class="section-title">Select Difficulty</h2>
+
+        <div class="difficulty-grid">
+          <div class="difficulty-card" data-level="easy">
+            <h3>Easy</h3>
+            <p>90 seconds</p>
+          </div>
+          <div class="difficulty-card selected" data-level="medium">
+            <h3>Medium</h3>
+            <p>60 seconds</p>
+          </div>
+          <div class="difficulty-card" data-level="hard">
+            <h3>Hard</h3>
+            <p>30 seconds</p>
           </div>
         </div>
 
-        <div class="score-box">
-          <span class="label">Score</span>
-          <span id="score" class="score-value">0</span>
+        <button id="startGameBtn" class="primary-btn">Start Game</button>
+        <button id="analyticsBtn" class="secondary-btn">
+          Training Analytics
+        </button>
+
+        <button id="toggleInstructions" class="secondary-btn">
+          ▼ Show Instructions
+        </button>
+
+        <p class="hint-text">
+          ℹ️ New users should read instructions before starting
+        </p>
+
+        <div id="instructionsPanel" class="instructions hidden">
+          <h3>How to Play</h3>
+          <ul>
+            <li>You will see a biomedical waste item.</li>
+            <li>Select the correct color bin as per BMW Rules.</li>
+            <li>Correct answers increase score.</li>
+            <li>Wrong answers reduce accuracy.</li>
+            <li>Game ends when time runs out.</li>
+          </ul>
+
+          <h4>Bin Color Guide (India BMW Rules)</h4>
+          <ul>
+            <li><b>Yellow</b> – Human anatomical, soiled waste</li>
+            <li><b>Red</b> – Contaminated recyclable waste</li>
+            <li><b>White</b> – Sharps</li>
+            <li><b>Blue</b> – Glassware, metallic implants</li>
+            <li><b>Green</b> – General waste (non-BMW)</li>
+          </ul>
         </div>
 
-        <button id="openLeaderboardBtn" class="leaderboard-btn">🏆</button>
+        <footer class="footer-credit">
+          Made with ❤️ by <strong>Gokul Krishna T.B.</strong><br />
+          <a
+            href="https://www.linkedin.com/in/gokul-k-148624117/"
+            target="_blank"
+          >
+            Connect on LinkedIn
+          </a>
+        </footer>
       </div>
 
-      <div class="item-area">
-        <img id="itemImage" class="item-image" alt="">
-        <div id="itemName" class="item-name"></div>
+      <!-- RIGHT PANEL -->
+      <div class="right-panel hidden" id="gameContainer">
+        <div class="top-bar">
+          <div class="timer-box">
+            <span class="label">Time</span>
+            <span id="timerValue" class="timer-value">00:60</span>
+            <div class="timer-progress">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="score-box">
+            <span class="label">Score</span>
+            <span id="score" class="score-value">0</span>
+          </div>
+
+          <button id="openLeaderboardBtn" class="leaderboard-btn">🏆</button>
+        </div>
+
+        <div class="item-area">
+          <img id="itemImage" class="item-image" alt="" />
+          <div id="itemName" class="item-name"></div>
+        </div>
+
+        <div id="feedback" class="feedback">Choose the correct bin</div>
+
+        <div class="bins-row">
+          <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow</button>
+          <button class="bin-btn bin-red" data-bin="Red">Red</button>
+          <button class="bin-btn bin-white" data-bin="White">White</button>
+          <button class="bin-btn bin-blue" data-bin="Blue">Blue</button>
+          <button class="bin-btn bin-green" data-bin="Green">Green</button>
+        </div>
+
+        <div id="gameStats" class="game-stats">
+          Correct: 0 | Wrong: 0 | Accuracy: 0%
+        </div>
       </div>
-
-      <div id="feedback" class="feedback">Choose the correct bin</div>
-
-      <div class="bins-row">
-        <button class="bin-btn bin-yellow" data-bin="Yellow">Yellow</button>
-        <button class="bin-btn bin-red" data-bin="Red">Red</button>
-        <button class="bin-btn bin-white" data-bin="White">White</button>
-        <button class="bin-btn bin-blue" data-bin="Blue">Blue</button>
-        <button class="bin-btn bin-green" data-bin="Green">Green</button>
-      </div>
-
-      <div id="gameStats" class="game-stats">
-        Correct: 0 | Wrong: 0 | Accuracy: 0%
-      </div>
-
     </div>
-  </div>
 
-  <!-- SCORE SUBMISSION MODAL -->
-  <div id="scoreSubmitModal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <h2>Submit Your Score</h2>
-      <p class="modal-small">Enter your name for the Global Leaderboard</p>
+    <!-- SCORE SUBMISSION MODAL -->
+    <div id="scoreSubmitModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <h2>Submit Your Score</h2>
+        <p class="modal-small">Enter your name for the Global Leaderboard</p>
 
-      <input id="playerNameInput" class="name-input" maxlength="20"
-             placeholder="Enter your name">
+        <input
+          id="playerNameInput"
+          class="name-input"
+          maxlength="20"
+          placeholder="Enter your name"
+        />
 
-      <p id="nameError" class="error-text hidden">
-        Please enter a valid name (3–20 letters only)
-      </p>
+        <p id="nameError" class="error-text hidden">
+          Please enter a valid name (3–20 letters only)
+        </p>
 
-      <button id="submitScoreBtn" class="primary-btn">Submit Score</button>
-      <button id="cancelSubmitBtn" class="secondary-btn">Cancel</button>
+        <button id="submitScoreBtn" class="primary-btn">Submit Score</button>
+        <button id="cancelSubmitBtn" class="secondary-btn">Cancel</button>
+      </div>
     </div>
-  </div>
 
-  <!-- GAME LOGIC -->
-  <script type="module" src="game.js?v=3"></script>
-  
-  <!-- PDF Library for Certificate Download -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- GAME LOGIC -->
+    <script type="module" src="game.js?v=3"></script>
 
-  <!-- INLINE UI + PWA LOGIC -->
-  <script>
-  /* ---------- Existing code (keep as-is) ---------- */
+    <!-- PDF Library for Certificate Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  const toggleBtn = document.getElementById("toggleInstructions");
-  const instructions = document.getElementById("instructionsPanel");
+    <!-- INLINE UI + PWA LOGIC -->
+    <script>
+      /* ---------- Existing code (keep as-is) ---------- */
 
-  if (toggleBtn && instructions) {
-    toggleBtn.addEventListener("click", () => {
-      instructions.classList.toggle("hidden");
-      toggleBtn.innerText = instructions.classList.contains("hidden")
-        ? "▼ Show Instructions"
-        : "▲ Hide Instructions";
-    });
-  }
+      const toggleBtn = document.getElementById("toggleInstructions");
+      const instructions = document.getElementById("instructionsPanel");
 
-  const analyticsBtn = document.getElementById("analyticsBtn");
-  if (analyticsBtn) {
-    analyticsBtn.onclick = () => {
-      window.location.href = "analytics.html";
-    };
-  }
-
-  /* ---------- 🔹 PART 2: GA4 GAME COMPLETE ---------- */
-
-  const scoreModal = document.getElementById("scoreSubmitModal");
-
-  if (scoreModal) {
-    const observer = new MutationObserver(() => {
-      if (!scoreModal.classList.contains("hidden")) {
-        if (window.gtag) {
-          gtag("event", "game_complete");
-          console.log("GA4: game_complete fired");
-        }
-      }
-    });
-
-    observer.observe(scoreModal, { attributes: true });
-  }
-
-  /* ---------- Fullscreen Toggle ---------- */
-  const fullscreenBtn = document.getElementById("fullscreenBtn");
-  if (fullscreenBtn) {
-    fullscreenBtn.onclick = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      if (toggleBtn && instructions) {
+        toggleBtn.addEventListener("click", () => {
+          instructions.classList.toggle("hidden");
+          toggleBtn.innerText = instructions.classList.contains("hidden")
+            ? "▼ Show Instructions"
+            : "▲ Hide Instructions";
         });
-        fullscreenBtn.textContent = "⤢";
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-          fullscreenBtn.textContent = "⤢";
-        }
       }
-    };
-  }
 
-  /* ---------- Leaderboard Modal ---------- */
-  const openLeaderboardBtn = document.getElementById("openLeaderboardBtn");
-  const leaderboardModal = document.getElementById("leaderboardModal");
-  const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
-  
-  if (openLeaderboardBtn && leaderboardModal) {
-    openLeaderboardBtn.onclick = () => {
-      leaderboardModal.classList.remove("hidden");
-    };
-  }
-  
-  if (closeLeaderboardBtn && leaderboardModal) {
-    closeLeaderboardBtn.onclick = () => {
-      leaderboardModal.classList.add("hidden");
-    };
-  }
-</script>
+      const analyticsBtn = document.getElementById("analyticsBtn");
+      if (analyticsBtn) {
+        analyticsBtn.onclick = () => {
+          window.location.href = "analytics.html";
+        };
+      }
 
+      /* ---------- 🔹 PART 2: GA4 GAME COMPLETE ---------- */
 
-</body>
+      const scoreModal = document.getElementById("scoreSubmitModal");
+
+      if (scoreModal) {
+        const observer = new MutationObserver(() => {
+          if (!scoreModal.classList.contains("hidden")) {
+            if (window.gtag) {
+              gtag("event", "game_complete");
+              console.log("GA4: game_complete fired");
+            }
+          }
+        });
+
+        observer.observe(scoreModal, { attributes: true });
+      }
+
+      /* ---------- Fullscreen Toggle ---------- */
+      const fullscreenBtn = document.getElementById("fullscreenBtn");
+      if (fullscreenBtn) {
+        fullscreenBtn.onclick = () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+              console.error(
+                `Error attempting to enable fullscreen: ${err.message}`
+              );
+            });
+            fullscreenBtn.textContent = "⤢";
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+              fullscreenBtn.textContent = "⤢";
+            }
+          }
+        };
+      }
+
+      /* ---------- Leaderboard Modal ---------- */
+      const openLeaderboardBtn = document.getElementById("openLeaderboardBtn");
+      const leaderboardModal = document.getElementById("leaderboardModal");
+      const closeLeaderboardBtn = document.getElementById(
+        "closeLeaderboardBtn"
+      );
+
+      if (openLeaderboardBtn && leaderboardModal) {
+        openLeaderboardBtn.onclick = () => {
+          leaderboardModal.classList.remove("hidden");
+        };
+      }
+
+      if (closeLeaderboardBtn && leaderboardModal) {
+        closeLeaderboardBtn.onclick = () => {
+          leaderboardModal.classList.add("hidden");
+        };
+      }
+    </script>
+    <iframe id="certFrame" src="cert.html" style="display: none" hidden>
+    </iframe>
+  </body>
 </html>
