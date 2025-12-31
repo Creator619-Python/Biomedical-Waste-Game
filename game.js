@@ -57,7 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Failed to load items:", error);
       // Provide fallback items or show error to user
-      items = [{ name: "Sample Item", image: "fallback.jpg", bin: "yellow" }];
+      items = [
+        { name: "Sample Item", image: "fallback.jpg", bin: "yellow" }
+      ];
     }
   }
 
@@ -84,12 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
       piece.className = "confetti";
       piece.style.left = Math.random() * 100 + "vw";
       piece.style.animationDelay = Math.random() * 2 + "s";
-      piece.style.backgroundColor = [
-        "#ffd700",
-        "#4caf50",
-        "#2196f3",
-        "#ff5252",
-      ][Math.floor(Math.random() * 4)];
+      piece.style.backgroundColor =
+        ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
 
       container.appendChild(piece);
     }
@@ -118,18 +116,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     whatsappBtn.classList.remove("hidden");
     whatsappBtn.onclick = () => window.open(url, "_blank");
-
+    
     console.log("WhatsApp share button enabled");
   }
 
   /* =============================
      DIFFICULTY
   ============================== */
-  document.querySelectorAll(".difficulty-card").forEach((card) => {
+  document.querySelectorAll(".difficulty-card").forEach(card => {
     card.onclick = () => {
-      document
-        .querySelectorAll(".difficulty-card")
-        .forEach((c) => c.classList.remove("selected"));
+      document.querySelectorAll(".difficulty-card")
+        .forEach(c => c.classList.remove("selected"));
 
       card.classList.add("selected");
 
@@ -170,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       feedback.textContent = "Choose the correct bin";
       feedback.style.color = "";
 
-      document.querySelectorAll(".bin-btn").forEach((btn) => {
+      document.querySelectorAll(".bin-btn").forEach(btn => {
         btn.disabled = false;
       });
 
@@ -232,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =============================
      BIN HANDLERS
   ============================== */
-  document.querySelectorAll(".bin-btn").forEach((btn) => {
+  document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.onclick = () => {
       if (!gameRunning || !currentItem) return;
 
@@ -262,7 +259,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateStats() {
     const total = correct + wrong;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
-    gameStats.textContent = `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}%`;
+    gameStats.textContent =
+      `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}%`;
   }
 
   /* =============================
@@ -277,21 +275,21 @@ document.addEventListener("DOMContentLoaded", () => {
     feedback.textContent = "⏱️ Time's up!";
     feedback.style.color = "#ffd700";
 
-    document.querySelectorAll(".bin-btn").forEach((btn) => {
+    document.querySelectorAll(".bin-btn").forEach(btn => {
       btn.disabled = true;
     });
 
     window.finalGameScore = score;
-
+    
     // Reset form when showing modal
     const nameInput = document.getElementById("playerNameInput");
     const errorText = document.getElementById("nameError");
     const whatsappBtn = document.getElementById("whatsappShareBtn");
-
+    
     if (nameInput) nameInput.value = "";
     if (errorText) errorText.classList.add("hidden");
     if (whatsappBtn) whatsappBtn.classList.add("hidden");
-
+    
     if (scoreSubmitModal) {
       scoreSubmitModal.classList.remove("hidden");
     }
@@ -327,8 +325,12 @@ document.addEventListener("DOMContentLoaded", () => {
       submitBtn.textContent = "Saving...";
 
       try {
-        const saved = await saveScore(name, window.finalGameScore, totalTime);
-
+        const saved = await saveScore(
+          name,
+          window.finalGameScore,
+          totalTime
+        );
+        
         if (!saved) {
           alert("Error saving score. Please try again.");
           submitBtn.disabled = false;
@@ -337,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ✅ SUCCESS - SHOW COMPLETION FLOW
-
+        
         // 1. Hide score submit modal
         if (scoreSubmitModal) {
           scoreSubmitModal.classList.add("hidden");
@@ -352,22 +354,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (certModal && thankYouName && certName && certScore) {
           // Set thank you message (user sees this first!)
           thankYouName.textContent = name;
-
+          
           // Set certificate details
           certName.textContent = name;
-          certScore.textContent = `Score: ${
-            window.finalGameScore
-          } | Time: ${formatTime(totalTime)}`;
-
+          certScore.textContent = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
+          
           // Show the certificate modal
           certModal.classList.remove("hidden");
           console.log("🎉 Certificate modal shown with thank you message");
         } else {
           console.error("Certificate modal elements not found!");
           // Fallback
-          alert(
-            `🎉 Thank you, ${name}! Your score of ${window.finalGameScore} has been saved to the leaderboard.`
-          );
+          alert(`🎉 Thank you, ${name}! Your score of ${window.finalGameScore} has been saved to the leaderboard.`);
         }
 
         // 3. Launch confetti celebration
@@ -378,11 +376,10 @@ document.addEventListener("DOMContentLoaded", () => {
           showWhatsAppShare(name, window.finalGameScore);
           console.log("📤 WhatsApp share enabled");
         }, 1000);
+
       } catch (error) {
         console.error("Error submitting score:", error);
-        alert(
-          "❌ Error saving score. Please check your connection and try again."
-        );
+        alert("❌ Error saving score. Please check your connection and try again.");
       } finally {
         // Reset button state
         submitBtn.disabled = false;
@@ -407,125 +404,70 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-   CERTIFICATE PDF DOWNLOAD (FINAL – LANDSCAPE, ONE PAGE)
-============================== */
+     CERTIFICATE PDF DOWNLOAD
+  ============================== */
   const downloadCertBtn = document.getElementById("downloadCertBtn");
-
+  
   if (downloadCertBtn) {
     downloadCertBtn.addEventListener("click", () => {
-      const iframe = document.getElementById("certFrame");
-
-      if (!iframe || !iframe.contentWindow) {
-        alert("Certificate not loaded");
+      const cert = document.querySelector("#certificateModal .certificate");
+      if (!cert) {
+        console.error("Certificate element not found");
         return;
       }
-
-      const doc = iframe.contentWindow.document;
-
-      // Fill values
-      doc.getElementById("certThankName").innerText =
-        document.getElementById("certName").innerText;
-
-      doc.getElementById("certName").innerText =
-        document.getElementById("certName").innerText;
-
-      doc.getElementById("certScore").innerText = window.finalGameScore;
-      doc.getElementById("certTime").innerText = formatTime(totalTime);
-
-      const today = new Date().toLocaleDateString();
-      doc.getElementById(
-        "certFooter"
-      ).innerText = `Certificate ID: BWM-${Date.now()} | Date: ${today}`;
-
-      // Generate PDF
+      
+      // Temporarily hide the download button so it doesn't appear in PDF
+      const downloadBtn = cert.querySelector("#downloadCertBtn");
+      const whatsappBtn = cert.querySelector("#whatsappShareBtn");
+      const closeBtn = cert.querySelector("#closeCertBtn");
+      
+      if (downloadBtn) downloadBtn.style.display = "none";
+      if (whatsappBtn) whatsappBtn.style.display = "none";
+      if (closeBtn) closeBtn.style.display = "none";
+      
+      // Check if html2pdf is available
+      if (typeof html2pdf === 'undefined') {
+        console.error("html2pdf library not loaded");
+        alert("PDF generation library not loaded. Please refresh the page.");
+        if (downloadBtn) downloadBtn.style.display = "";
+        if (whatsappBtn) whatsappBtn.style.display = "";
+        if (closeBtn) closeBtn.style.display = "";
+        return;
+      }
+      
       html2pdf()
         .set({
-          margin: 0,
+          margin: 10,
           filename: "Biomedical_Waste_Training_Certificate.pdf",
-          image: { type: "jpeg", quality: 1 },
-          html2canvas: {
-            scale: 1,
-            scrollY: 0,
-            useCORS: true,
-            windowWidth: 1123,
-            windowHeight: 794,
-          },
-          jsPDF: {
-            unit: "px",
-            format: [1123, 794],
-            orientation: "landscape",
-          },
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
         })
-        .from(doc.getElementById("certificateRoot"))
-        .save();
+        .from(cert)
+        .save()
+        .then(() => {
+          // Restore buttons after PDF generation
+          if (downloadBtn) downloadBtn.style.display = "";
+          if (whatsappBtn) whatsappBtn.style.display = "";
+          if (closeBtn) closeBtn.style.display = "";
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          alert("Error generating PDF. Please try again.");
+          // Restore buttons even on error
+          if (downloadBtn) downloadBtn.style.display = "";
+          if (whatsappBtn) whatsappBtn.style.display = "";
+          if (closeBtn) closeBtn.style.display = "";
+        });
     });
   }
-
-
-  // if (downloadCertBtn) {
-  //   downloadCertBtn.addEventListener("click", () => {
-  //     const cert = document.querySelector("#certificateModal .certificate");
-  //     if (!cert) {
-  //       console.error("Certificate element not found");
-  //       return;
-  //     }
-
-  //     // Temporarily hide the download button so it doesn't appear in PDF
-  //     const downloadBtn = cert.querySelector("#downloadCertBtn");
-  //     const whatsappBtn = cert.querySelector("#whatsappShareBtn");
-  //     const closeBtn = cert.querySelector("#closeCertBtn");
-
-  //     if (downloadBtn) downloadBtn.style.display = "none";
-  //     if (whatsappBtn) whatsappBtn.style.display = "none";
-  //     if (closeBtn) closeBtn.style.display = "none";
-
-  //     // Check if html2pdf is available
-  //     if (typeof html2pdf === 'undefined') {
-  //       console.error("html2pdf library not loaded");
-  //       alert("PDF generation library not loaded. Please refresh the page.");
-  //       if (downloadBtn) downloadBtn.style.display = "";
-  //       if (whatsappBtn) whatsappBtn.style.display = "";
-  //       if (closeBtn) closeBtn.style.display = "";
-  //       return;
-  //     }
-
-  //     html2pdf()
-  //       .set({
-  //         margin: 10,
-  //         filename: "Biomedical_Waste_Training_Certificate.pdf",
-  //         image: { type: "jpeg", quality: 0.98 },
-  //         html2canvas: { scale: 2 },
-  //         jsPDF: {
-  //           unit: "mm",
-  //           format: "a4",
-  //           orientation: "landscape",
-  //         },
-  //       })
-  //       .from(cert)
-  //       .save()
-  //       .then(() => {
-  //         // Restore buttons after PDF generation
-  //         if (downloadBtn) downloadBtn.style.display = "";
-  //         if (whatsappBtn) whatsappBtn.style.display = "";
-  //         if (closeBtn) closeBtn.style.display = "";
-  //       })
-  //       .catch((err) => {
-  //         console.error("PDF generation error:", err);
-  //         alert("Error generating PDF. Please try again.");
-  //         // Restore buttons even on error
-  //         if (downloadBtn) downloadBtn.style.display = "";
-  //         if (whatsappBtn) whatsappBtn.style.display = "";
-  //         if (closeBtn) closeBtn.style.display = "";
-  //       });
-  //   });
-  // }
 
   /* =============================
      CERTIFICATE MODAL CLOSE
   ============================== */
   const closeCertBtn = document.getElementById("closeCertBtn");
   const certModal = document.getElementById("certificateModal");
-
+  
   if (closeCertBtn && certModal) {
     closeCertBtn.onclick = () => {
       certModal.classList.add("hidden");
