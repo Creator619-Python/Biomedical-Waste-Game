@@ -48,25 +48,45 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content certificate">
       <!-- 🎉 THANK YOU SECTION -->
-      <div class="thank-you-section">
-        <h2>🎉 Congratulations!</h2>
-        <p>Thank you, <span id="thankYouName"></span>, for completing the training!</p>
-      </div>
-      
-      <h2>Certificate of Completion</h2>
-      <p>This certifies that</p>
-      <h3 id="certName"></h3>
-      <p>has successfully completed the</p>
-      <p><b>Biomedical Waste Segregation Training</b></p>
-      <p id="certScore"></p>
-      
+      <div class="certificate-content">
+
+    <!-- 🎉 Header -->
+    <div class="cert-header">
+      <h2 class="cert-congrats">🎉 Congratulations!</h2>
+      <p class="cert-sub">
+        Thank you, <span id="thankYouName"></span>, for completing the training!
+      </p>
+    </div>
+
+    <!-- 📜 Certificate Body -->
+    <h1 class="cert-title">Certificate of Completion</h1>
+
+    <p class="cert-text">This is to certify that</p>
+
+    <div id="certName" class="cert-name"></div>
+
+    <p class="cert-text">has successfully completed the</p>
+
+    <div class="cert-training">
+      Biomedical Waste Segregation Training
+    </div>
+
+    <div id="certScore" class="cert-performance"></div>
+
+    <!-- 🎯 Actions -->
+    <div class="cert-actions">
       <button id="downloadCertBtn" class="secondary-btn">
         📄 Download Certificate
       </button>
+
       <button id="whatsappShareBtn" class="secondary-btn hidden">
         📤 Share on WhatsApp
       </button>
-      <button id="closeCertBtn" class="primary-btn">Close</button>
+
+      <button id="closeCertBtn" class="primary-btn">
+        Close
+      </button>
+    </div>
     </div>
   </div>
 
