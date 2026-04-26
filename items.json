@@ -22,5 +22,9 @@
   { "name": "Urine Bag", "image": "images/urine_bag.webp", "bin": "Red" },
   { "name": "Vacutainers", "image": "images/vacutainers.webp", "bin": "Red" },
   { "name": "Vial", "image": "images/vial.jpg", "bin": "Blue" },
-  { "name": "Wound Dressing", "image": "images/wound_dressing.webp", "bin": "Yellow" }
+  { "name": "Wound Dressing", "image": "images/wound_dressing.webp", "bin": "Yellow" },
+  { "name": "Cardboard Box (Clean)", "image": "images/greenbin.png", "bin": "Green" },
+  { "name": "Newspaper / Paper Waste", "image": "images/greenbin.png", "bin": "Green" },
+  { "name": "Food Waste (Canteen)", "image": "images/greenbin.png", "bin": "Green" },
+  { "name": "Plastic Water Bottle (Uncontaminated)", "image": "images/greenbin.png", "bin": "Green" }
 ]

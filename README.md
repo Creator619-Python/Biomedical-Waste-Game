@@ -103,7 +103,7 @@ biomedical-waste-game/
 │
 ├── index.html        # Main game interface
 ├── style.css         # Game styling
-├── script.js         # Game logic
+├── game.js           # Game logic (was incorrectly listed as script.js)
 ├── assets/           # Images, icons, sounds
 └── README.md         # Project documentation
 

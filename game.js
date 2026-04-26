@@ -7,8 +7,10 @@ import { saveScore } from "./firebase.js";
 // DOM READY
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
+
   /* =============================
-     INJECT GLOBAL MODALS
+     INJECT GLOBAL MODALS FIRST
+     FIX: template must be injected before any querySelector calls
   ============================== */
   const modalTemplate = document.getElementById("global-modals");
   if (modalTemplate) {
@@ -27,24 +29,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let timer = null;
   let totalTime = 60;
-  let gameRunning = false; // ✅ single source of truth
+  let gameRunning = false;
 
   /* =============================
      DOM ELEMENTS
+     FIX: all modal elements queried AFTER template injection
   ============================== */
-  const startScreen = document.getElementById("startScreen");
-  const gameContainer = document.getElementById("gameContainer");
+  const startScreen    = document.getElementById("startScreen");
+  const gameContainer  = document.getElementById("gameContainer");
 
-  const scoreDisplay = document.getElementById("score");
-  const itemImage = document.getElementById("itemImage");
-  const itemName = document.getElementById("itemName");
-  const feedback = document.getElementById("feedback");
+  const scoreDisplay   = document.getElementById("score");
+  const itemImage      = document.getElementById("itemImage");
+  const itemName       = document.getElementById("itemName");
+  const feedback       = document.getElementById("feedback");
 
-  const timerValue = document.getElementById("timerValue");
-  const progressFill = document.getElementById("progressFill");
-  const gameStats = document.getElementById("gameStats");
+  const timerValue     = document.getElementById("timerValue");
+  const progressFill   = document.getElementById("progressFill");
+  const gameStats      = document.getElementById("gameStats");
 
+  // Modals — queried after template injection so they exist in DOM
   const scoreSubmitModal = document.getElementById("scoreSubmitModal");
+  const certModal        = document.getElementById("certificateModal");
+  const leaderboardModal = document.getElementById("leaderboardModal");
 
   /* =============================
      LOAD ITEMS (NO CACHE)
@@ -56,10 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       items = await res.json();
     } catch (error) {
       console.error("Failed to load items:", error);
-      // Provide fallback items or show error to user
-      items = [
-        { name: "Sample Item", image: "fallback.jpg", bin: "yellow" }
-      ];
+      items = [{ name: "Sample Item", image: "fallback.jpg", bin: "Yellow" }];
     }
   }
 
@@ -78,9 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function launchConfetti() {
     const container = document.getElementById("confettiContainer");
     if (!container) return;
-
     container.innerHTML = "";
-
     for (let i = 0; i < 80; i++) {
       const piece = document.createElement("div");
       piece.className = "confetti";
@@ -88,10 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
       piece.style.animationDelay = Math.random() * 2 + "s";
       piece.style.backgroundColor =
         ["#ffd700", "#4caf50", "#2196f3", "#ff5252"][Math.floor(Math.random() * 4)];
-
       container.appendChild(piece);
     }
-
     setTimeout(() => (container.innerHTML = ""), 5000);
   }
 
@@ -100,10 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ============================== */
   function showWhatsAppShare(name, score) {
     const whatsappBtn = document.getElementById("whatsappShareBtn");
-    if (!whatsappBtn) {
-      console.error("WhatsApp button not found!");
-      return;
-    }
+    if (!whatsappBtn) return;
 
     const text =
       `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
@@ -112,12 +108,8 @@ document.addEventListener("DOMContentLoaded", () => {
       `Try it yourself 👇\n` +
       `https://creator619-python.github.io/Biomedical-Waste-Game/`;
 
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-
     whatsappBtn.classList.remove("hidden");
-    whatsappBtn.onclick = () => window.open(url, "_blank");
-    
-    console.log("WhatsApp share button enabled");
+    whatsappBtn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   /* =============================
@@ -127,20 +119,19 @@ document.addEventListener("DOMContentLoaded", () => {
     card.onclick = () => {
       document.querySelectorAll(".difficulty-card")
         .forEach(c => c.classList.remove("selected"));
-
       card.classList.add("selected");
 
       const level = card.dataset.level;
-      if (level === "easy") totalTime = 90;
+      if (level === "easy")   totalTime = 90;
       if (level === "medium") totalTime = 60;
-      if (level === "hard") totalTime = 30;
+      if (level === "hard")   totalTime = 30;
 
       timerValue.textContent = formatTime(totalTime);
     };
   });
 
   /* =============================
-     START GAME (SAFE)
+     START GAME
   ============================== */
   const startGameBtn = document.getElementById("startGameBtn");
 
@@ -155,32 +146,27 @@ document.addEventListener("DOMContentLoaded", () => {
       startScreen.classList.add("hidden");
       gameContainer.classList.remove("hidden");
 
-      // reset state
-      score = 0;
-      correct = 0;
-      wrong = 0;
-      currentItem = null;
+      score = 0; correct = 0; wrong = 0; currentItem = null;
       gameRunning = true;
 
-      // reset UI
       scoreDisplay.textContent = score;
       feedback.textContent = "Choose the correct bin";
       feedback.style.color = "";
 
       document.querySelectorAll(".bin-btn").forEach(btn => {
         btn.disabled = false;
+        btn.style.outline = "";
+        btn.style.transform = "";
       });
 
       updateStats();
       startTimer();
       loadNewItem();
     };
-  } else {
-    console.error("startGameBtn not found in DOM");
   }
 
   /* =============================
-     TIMER (HARD STOP)
+     TIMER
   ============================== */
   function startTimer() {
     let timeLeft = totalTime;
@@ -189,45 +175,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
     clearInterval(timer);
     timer = setInterval(() => {
-      if (!gameRunning) {
-        clearInterval(timer);
-        return;
-      }
+      if (!gameRunning) { clearInterval(timer); return; }
 
       timeLeft--;
       timerValue.textContent = formatTime(timeLeft);
       progressFill.style.width = `${(timeLeft / totalTime) * 100}%`;
 
-      if (timeLeft <= 0) {
-        gameOver();
-      }
+      if (timeLeft <= 0) gameOver();
     }, 1000);
   }
 
   /* =============================
-     LOAD ITEM (IMAGE FIX ✅)
+     LOAD ITEM
   ============================== */
   function loadNewItem() {
     if (!gameRunning || items.length === 0) return;
 
     currentItem = items[Math.floor(Math.random() * items.length)];
 
-    // 🚀 CRITICAL FIX FOR GITHUB PAGES
     try {
       itemImage.src = new URL(currentItem.image, window.location.href).href;
       itemImage.alt = currentItem.name;
     } catch (error) {
-      console.error("Error loading image:", error);
       itemImage.src = "fallback.jpg";
     }
 
     itemName.textContent = currentItem.name;
     feedback.textContent = "Choose the correct bin";
     feedback.style.color = "";
+
+    // FIX: clear any bin highlights from previous answer
+    document.querySelectorAll(".bin-btn").forEach(btn => {
+      btn.style.outline = "";
+      btn.style.boxShadow = "";
+    });
   }
 
   /* =============================
      BIN HANDLERS
+     FIX: highlight correct bin on wrong answer
   ============================== */
   document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.onclick = () => {
@@ -240,16 +226,32 @@ document.addEventListener("DOMContentLoaded", () => {
         correct++;
         feedback.textContent = "✅ Correct!";
         feedback.style.color = "#4caf50";
+        // Brief green pulse on the correct button
+        btn.style.outline = "3px solid #4caf50";
+        btn.style.boxShadow = "0 0 12px #4caf50";
       } else {
         score = Math.max(0, score - 1);
         wrong++;
         feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
         feedback.style.color = "#ff5252";
+
+        // FIX: visually highlight the correct bin so players learn
+        document.querySelectorAll(".bin-btn").forEach(b => {
+          if (b.dataset.bin === currentItem.bin) {
+            b.style.outline = "3px solid #4caf50";
+            b.style.boxShadow = "0 0 12px #4caf50";
+          }
+        });
+        // Highlight wrong button in red
+        btn.style.outline = "3px solid #ff5252";
+        btn.style.boxShadow = "0 0 12px #ff5252";
       }
 
       scoreDisplay.textContent = score;
       updateStats();
-      loadNewItem();
+
+      // Small delay so player sees the highlight before next item
+      setTimeout(() => loadNewItem(), 600);
     };
   });
 
@@ -277,26 +279,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".bin-btn").forEach(btn => {
       btn.disabled = true;
+      btn.style.outline = "";
+      btn.style.boxShadow = "";
     });
 
     window.finalGameScore = score;
-    
-    // Reset form when showing modal
-    const nameInput = document.getElementById("playerNameInput");
-    const errorText = document.getElementById("nameError");
+
+    // Show Play Again button
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    if (playAgainBtn) playAgainBtn.style.display = "block";
+
+    const nameInput  = document.getElementById("playerNameInput");
+    const errorText  = document.getElementById("nameError");
     const whatsappBtn = document.getElementById("whatsappShareBtn");
-    
-    if (nameInput) nameInput.value = "";
-    if (errorText) errorText.classList.add("hidden");
-    if (whatsappBtn) whatsappBtn.classList.add("hidden");
-    
-    if (scoreSubmitModal) {
-      scoreSubmitModal.classList.remove("hidden");
-    }
+
+    if (nameInput)    nameInput.value = "";
+    if (errorText)    errorText.classList.add("hidden");
+    if (whatsappBtn)  whatsappBtn.classList.add("hidden");
+
+    if (scoreSubmitModal) scoreSubmitModal.classList.remove("hidden");
   }
 
   /* =============================
-     SCORE SUBMIT (SAFE)
+     SCORE SUBMIT
   ============================== */
   const submitBtn = document.getElementById("submitScoreBtn");
 
@@ -305,11 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nameInput = document.getElementById("playerNameInput");
       const errorText = document.getElementById("nameError");
 
-      // 🚨 HARD GUARD — prevents crash
-      if (!nameInput || !errorText) {
-        console.error("Score submit elements not found in DOM");
-        return;
-      }
+      if (!nameInput || !errorText) return;
 
       const name = nameInput.value.trim();
 
@@ -319,18 +320,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       errorText.classList.add("hidden");
-
-      // Show loading state
       submitBtn.disabled = true;
       submitBtn.textContent = "Saving...";
 
       try {
-        const saved = await saveScore(
-          name,
-          window.finalGameScore,
-          totalTime
-        );
-        
+        const saved = await saveScore(name, window.finalGameScore, totalTime);
+
         if (!saved) {
           alert("Error saving score. Please try again.");
           submitBtn.disabled = false;
@@ -338,50 +333,28 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // ✅ SUCCESS - SHOW COMPLETION FLOW
-        
-        // 1. Hide score submit modal
-        if (scoreSubmitModal) {
-          scoreSubmitModal.classList.add("hidden");
-        }
+        if (scoreSubmitModal) scoreSubmitModal.classList.add("hidden");
 
-        // 2. Show certificate with thank you message
-        const certModal = document.getElementById("certificateModal");
         const thankYouName = document.getElementById("thankYouName");
-        const certName = document.getElementById("certName");
-        const certScore = document.getElementById("certScore");
+        const certName     = document.getElementById("certName");
+        const certScore    = document.getElementById("certScore");
 
         if (certModal && thankYouName && certName && certScore) {
-          // Set thank you message (user sees this first!)
           thankYouName.textContent = name;
-          
-          // Set certificate details
-          certName.textContent = name;
-          certScore.textContent = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
-          
-          // Show the certificate modal
+          certName.textContent     = name;
+          certScore.textContent    = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
           certModal.classList.remove("hidden");
-          console.log("🎉 Certificate modal shown with thank you message");
         } else {
-          console.error("Certificate modal elements not found!");
-          // Fallback
-          alert(`🎉 Thank you, ${name}! Your score of ${window.finalGameScore} has been saved to the leaderboard.`);
+          alert(`🎉 Thank you, ${name}! Score of ${window.finalGameScore} saved.`);
         }
 
-        // 3. Launch confetti celebration
         setTimeout(() => launchConfetti(), 500);
-
-        // 4. Enable WhatsApp sharing (appears in certificate modal)
-        setTimeout(() => {
-          showWhatsAppShare(name, window.finalGameScore);
-          console.log("📤 WhatsApp share enabled");
-        }, 1000);
+        setTimeout(() => showWhatsAppShare(name, window.finalGameScore), 1000);
 
       } catch (error) {
         console.error("Error submitting score:", error);
         alert("❌ Error saving score. Please check your connection and try again.");
       } finally {
-        // Reset button state
         submitBtn.disabled = false;
         submitBtn.textContent = "Submit Score";
       }
@@ -394,86 +367,215 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = document.getElementById("cancelSubmitBtn");
   if (cancelBtn) {
     cancelBtn.onclick = () => {
-      if (scoreSubmitModal) {
-        scoreSubmitModal.classList.add("hidden");
-      }
-      // Optionally restart game or go to home
-      startScreen.classList.remove("hidden");
-      gameContainer.classList.add("hidden");
+      if (scoreSubmitModal) scoreSubmitModal.classList.add("hidden");
+      returnToStart();
     };
+  }
+
+  /* =============================
+     CERTIFICATE CLOSE
+     FIX: was broken because certModal was null at query time
+  ============================== */
+  const closeCertBtn = document.getElementById("closeCertBtn");
+  if (closeCertBtn && certModal) {
+    closeCertBtn.onclick = () => {
+      certModal.classList.add("hidden");
+      returnToStart();
+    };
+  }
+
+  /* =============================
+     FIX: shared return-to-start + play again logic
+  ============================== */
+  function returnToStart() {
+    startScreen.classList.remove("hidden");
+    gameContainer.classList.add("hidden");
+    const playAgainBtn = document.getElementById("playAgainBtn");
+    if (playAgainBtn) playAgainBtn.style.display = "none";
+  }
+
+  // Play Again — restarts without going to start screen
+  const playAgainBtn = document.getElementById("playAgainBtn");
+  if (playAgainBtn) {
+    playAgainBtn.onclick = async () => {
+      score = 0; correct = 0; wrong = 0; currentItem = null;
+      gameRunning = true;
+
+      scoreDisplay.textContent = score;
+      feedback.textContent = "Choose the correct bin";
+      feedback.style.color = "";
+      playAgainBtn.style.display = "none";
+
+      document.querySelectorAll(".bin-btn").forEach(btn => {
+        btn.disabled = false;
+        btn.style.outline = "";
+        btn.style.boxShadow = "";
+      });
+
+      updateStats();
+      startTimer();
+      loadNewItem();
+    };
+  }
+
+  /* =============================
+     LEADERBOARD MODAL — populate with Firebase data
+     FIX: was wired up in HTML but never populated
+  ============================== */
+  const openLeaderboardBtn  = document.getElementById("openLeaderboardBtn");
+  const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
+
+  if (openLeaderboardBtn && leaderboardModal) {
+    openLeaderboardBtn.onclick = () => {
+      leaderboardModal.classList.remove("hidden");
+      populateLeaderboardModal();
+    };
+  }
+
+  if (closeLeaderboardBtn && leaderboardModal) {
+    closeLeaderboardBtn.onclick = () => leaderboardModal.classList.add("hidden");
+  }
+
+  async function populateLeaderboardModal() {
+    const list = document.getElementById("leaderboardList");
+    if (!list) return;
+
+    list.innerHTML = "<li style='color:#9aa0a6;text-align:center;padding:12px'>Loading...</li>";
+
+    try {
+      // Dynamically import Firebase to fetch leaderboard scores
+      const { initializeApp, getApps } = await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"
+      );
+      const { getFirestore, collection, query, orderBy, limit, getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+      );
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
+        authDomain: "biomedicalwastegame.firebaseapp.com",
+        projectId: "biomedicalwastegame",
+        storageBucket: "biomedicalwastegame.firebasestorage.app",
+        messagingSenderId: "502355834534",
+        appId: "1:502355834534:web:e7cd3369f7a4b174f3e667"
+      };
+
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const db  = getFirestore(app);
+
+      const q        = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
+      const snapshot = await getDocs(q);
+
+      list.innerHTML = "";
+
+      if (snapshot.empty) {
+        list.innerHTML = "<li style='color:#9aa0a6;text-align:center;padding:12px'>No scores yet. Be the first! 🎯</li>";
+        return;
+      }
+
+      const medals = ["🥇", "🥈", "🥉"];
+      snapshot.forEach((doc, i) => {
+        const { name, score } = doc.data();
+        const rank = medals[i] || `#${i + 1}`;
+        const li = document.createElement("li");
+        li.style.cssText = "display:flex;justify-content:space-between;padding:10px 12px;background:#1f242c;border-radius:8px;margin-bottom:8px;list-style:none;";
+        li.innerHTML = `<span>${rank} ${name}</span><span style="color:#2ea043;font-weight:bold">${score} pts</span>`;
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.error("Leaderboard modal error:", err);
+      list.innerHTML = "<li style='color:#ff5252;text-align:center;padding:12px'>Could not load scores.</li>";
+    }
   }
 
   /* =============================
      CERTIFICATE PDF DOWNLOAD
   ============================== */
   const downloadCertBtn = document.getElementById("downloadCertBtn");
-  
+
   if (downloadCertBtn) {
     downloadCertBtn.addEventListener("click", () => {
-      const cert = document.querySelector("#certificateModal .certificate");
-      if (!cert) {
-        console.error("Certificate element not found");
+      // FIX 1: was grabbing .certificate (the outer modal-content div with overflow:hidden
+      // and dark background) — now grabs .certificate-content (the inner printable area only)
+      const cert = document.querySelector("#certificateModal .certificate-content");
+      if (!cert) { console.error("Certificate content element not found"); return; }
+
+      // Hide action buttons so they don't appear in the PDF
+      const actions = cert.querySelector(".cert-actions");
+      if (actions) actions.style.display = "none";
+
+      if (typeof html2pdf === "undefined") {
+        alert("PDF library not loaded. Please refresh the page.");
+        if (actions) actions.style.display = "";
         return;
       }
-      
-      // Temporarily hide the download button so it doesn't appear in PDF
-      const downloadBtn = cert.querySelector("#downloadCertBtn");
-      const whatsappBtn = cert.querySelector("#whatsappShareBtn");
-      const closeBtn = cert.querySelector("#closeCertBtn");
-      
-      if (downloadBtn) downloadBtn.style.display = "none";
-      if (whatsappBtn) whatsappBtn.style.display = "none";
-      if (closeBtn) closeBtn.style.display = "none";
-      
-      // Check if html2pdf is available
-      if (typeof html2pdf === 'undefined') {
-        console.error("html2pdf library not loaded");
-        alert("PDF generation library not loaded. Please refresh the page.");
-        if (downloadBtn) downloadBtn.style.display = "";
-        if (whatsappBtn) whatsappBtn.style.display = "";
-        if (closeBtn) closeBtn.style.display = "";
-        return;
-      }
-      
+
+      // FIX 2: set an explicit white background and padding so the PDF
+      // doesn't inherit the dark modal styling or get clipped
+      const originalStyle = cert.getAttribute("style") || "";
+      cert.style.cssText += ";background:#ffffff;color:#111111;padding:40px;max-width:none;";
+
+      // Also temporarily make all text dark for print readability
+      cert.querySelectorAll(".cert-title, .cert-name, .cert-training, .cert-congrats").forEach(el => {
+        el.dataset.origColor = el.style.color;
+        if (el.classList.contains("cert-name"))      el.style.color = "#1a7a34";
+        else if (el.classList.contains("cert-congrats")) el.style.color = "#b8860b";
+        else                                          el.style.color = "#111111";
+      });
+      cert.querySelectorAll(".cert-text, .cert-sub, .cert-performance").forEach(el => {
+        el.dataset.origColor = el.style.color;
+        el.style.color = "#444444";
+      });
+      cert.querySelectorAll(".cert-training").forEach(el => {
+        el.style.background = "#f0f9f4";
+        el.style.color = "#111111";
+      });
+      cert.querySelectorAll(".cert-performance").forEach(el => {
+        el.style.background = "#f0f9f4";
+        el.style.color = "#1a7a34";
+        el.style.borderColor = "#2ea043";
+      });
+
       html2pdf()
         .set({
-          margin: 10,
+          margin:   [15, 20, 15, 20],
           filename: "Biomedical_Waste_Training_Certificate.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+          image:    { type: "jpeg", quality: 0.98 },
+          // FIX 3: useCORS + logging=false prevents blank output on some browsers
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff" },
+          jsPDF:    { unit: "mm", format: "a4", orientation: "landscape" }
         })
         .from(cert)
         .save()
         .then(() => {
-          // Restore buttons after PDF generation
-          if (downloadBtn) downloadBtn.style.display = "";
-          if (whatsappBtn) whatsappBtn.style.display = "";
-          if (closeBtn) closeBtn.style.display = "";
+          restoreCert(cert, originalStyle, actions);
         })
         .catch(err => {
-          console.error("PDF generation error:", err);
+          console.error("PDF error:", err);
           alert("Error generating PDF. Please try again.");
-          // Restore buttons even on error
-          if (downloadBtn) downloadBtn.style.display = "";
-          if (whatsappBtn) whatsappBtn.style.display = "";
-          if (closeBtn) closeBtn.style.display = "";
+          restoreCert(cert, originalStyle, actions);
         });
     });
   }
 
-  /* =============================
-     CERTIFICATE MODAL CLOSE
-  ============================== */
-  const closeCertBtn = document.getElementById("closeCertBtn");
-  const certModal = document.getElementById("certificateModal");
-  
-  if (closeCertBtn && certModal) {
-    closeCertBtn.onclick = () => {
-      certModal.classList.add("hidden");
-      // Go back to start screen
-      startScreen.classList.remove("hidden");
-      gameContainer.classList.add("hidden");
-    };
+  function restoreCert(cert, originalStyle, actions) {
+    cert.setAttribute("style", originalStyle);
+    if (actions) actions.style.display = "";
+    cert.querySelectorAll("[data-orig-color]").forEach(el => {
+      el.style.color = el.dataset.origColor;
+      delete el.dataset.origColor;
+    });
+    cert.querySelectorAll(".cert-training").forEach(el => {
+      el.style.background = "";
+    });
+    cert.querySelectorAll(".cert-performance").forEach(el => {
+      el.style.background = "";
+      el.style.borderColor = "";
+    });
   }
+
+  /* =============================
+     INITIAL LOAD
+  ============================== */
+  loadItems();
 });

@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Leaderboard</title>
-
+    <title>Leaderboard — Biomedical Waste Game</title>
     <link rel="stylesheet" href="leaderboard.css">
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+    <!-- Firebase COMPAT SDK (matches leaderboard.js) — fixed from 10.8.0 module imports -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-
     <div class="leaderboard-container">
-        <h1 class="title">🌍 Global Leaderboard</h1>
+        <h1 class="title">🏆 Global Leaderboard</h1>
         <p class="subtitle">Top Players Worldwide</p>
 
         <div id="leaderboardList" class="leaderboard-list">
@@ -25,7 +23,6 @@
         <button class="back-btn" onclick="window.location.href='index.html'">
             ⬅ Back to Game
         </button>
-
     </div>
 
     <script src="leaderboard.js"></script>
