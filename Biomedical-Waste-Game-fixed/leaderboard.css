@@ -1,0 +1,92 @@
+body {
+    margin: 0;
+    background: #0d1117;
+    font-family: "Segoe UI", sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.leaderboard-container {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.subtitle {
+    color: #9aa0a6;
+    margin-top: -10px;
+}
+
+.leaderboard-list {
+    margin-top: 25px;
+    background: #161b22;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+/* Fixed: new row structure with rank/name/score spans */
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1f242c;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.leaderboard-row:first-child { border-left: 4px solid gold; }
+.leaderboard-row:nth-child(2) { border-left: 4px solid silver; }
+.leaderboard-row:nth-child(3) { border-left: 4px solid #cd7f32; }
+
+.rank {
+    font-size: 22px;
+    min-width: 36px;
+    text-align: left;
+}
+
+.player-name {
+    flex: 1;
+    text-align: left;
+    padding-left: 12px;
+    font-weight: 500;
+}
+
+.player-score {
+    font-weight: bold;
+    color: #2ea043;
+}
+
+.no-scores {
+    color: #9aa0a6;
+    padding: 20px;
+}
+
+.loading {
+    color: #9aa0a6;
+    padding: 20px;
+}
+
+.back-btn {
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #238636;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.back-btn:hover {
+    background: #2ea043;
+}
