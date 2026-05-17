@@ -73,14 +73,19 @@
 
     <div id="certScore" class="cert-performance"></div>
 
+    <div class="cert-date-row">
+      <span class="cert-date-label">Date of Completion:</span>
+      <span id="certDate" class="cert-date-value"></span>
+    </div>
+
     <!-- 🎯 Actions -->
     <div class="cert-actions">
       <button id="downloadCertBtn" class="secondary-btn">
         📄 Download Certificate
       </button>
 
-      <button id="whatsappShareBtn" class="secondary-btn hidden">
-        📤 Share on WhatsApp
+      <button id="downloadTrainerReportBtn" class="secondary-btn">
+        📊 Trainer Report (CSV)
       </button>
 
       <button id="closeCertBtn" class="primary-btn">
@@ -202,7 +207,22 @@
     </div>
   </div>
 
-  <!-- SCORE SUBMISSION MODAL -->
+  <!-- WIN CARD MODAL -->
+  <div id="winCardModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content win-card-modal">
+      <div id="winCardImprovementBadge" class="wc-improvement-badge hidden">
+        <span id="winCardDelta"></span>
+      </div>
+      <canvas id="winCardCanvas" width="600" height="340"></canvas>
+      <div class="wc-actions">
+        <button id="winCardWhatsApp" class="wc-btn wc-btn-green">📲 Share on WhatsApp</button>
+        <button id="winCardDownload" class="wc-btn wc-btn-outline">⬇️ Save Image</button>
+        <button id="winCardContinue" class="wc-btn wc-btn-ghost">Get Certificate →</button>
+      </div>
+    </div>
+  </div>
+
   <div id="scoreSubmitModal" class="modal hidden">
     <div class="modal-backdrop"></div>
     <div class="modal-content">
@@ -285,22 +305,7 @@
     };
   }
 
-  /* ---------- Leaderboard Modal ---------- */
-  const openLeaderboardBtn = document.getElementById("openLeaderboardBtn");
-  const leaderboardModal = document.getElementById("leaderboardModal");
-  const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
-  
-  if (openLeaderboardBtn && leaderboardModal) {
-    openLeaderboardBtn.onclick = () => {
-      leaderboardModal.classList.remove("hidden");
-    };
-  }
-  
-  if (closeLeaderboardBtn && leaderboardModal) {
-    closeLeaderboardBtn.onclick = () => {
-      leaderboardModal.classList.add("hidden");
-    };
-  }
+  // Leaderboard wiring handled in game.js after template injection
 </script>
 
 

@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* =============================
      INJECT GLOBAL MODALS FIRST
-     FIX: template must be injected before any querySelector calls
   ============================== */
   const modalTemplate = document.getElementById("global-modals");
   if (modalTemplate) {
@@ -20,40 +19,43 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =============================
      GLOBAL STATE
   ============================== */
-  let items = [];
-  let currentItem = null;
+  let items        = [];
+  let shuffleQueue = [];   // FEATURE: shuffle queue — no close repeats
+  let currentItem  = null;
 
-  let score = 0;
+  let score   = 0;
   let correct = 0;
-  let wrong = 0;
+  let wrong   = 0;
 
-  let timer = null;
-  let totalTime = 60;
+  let timer      = null;
+  let totalTime  = 60;
+  let timeUsed   = 0;
   let gameRunning = false;
+
+  // FEATURE: item-level attempt log for trainer CSV
+  let attemptLog = [];
 
   /* =============================
      DOM ELEMENTS
-     FIX: all modal elements queried AFTER template injection
   ============================== */
-  const startScreen    = document.getElementById("startScreen");
-  const gameContainer  = document.getElementById("gameContainer");
+  const startScreen   = document.getElementById("startScreen");
+  const gameContainer = document.getElementById("gameContainer");
 
-  const scoreDisplay   = document.getElementById("score");
-  const itemImage      = document.getElementById("itemImage");
-  const itemName       = document.getElementById("itemName");
-  const feedback       = document.getElementById("feedback");
+  const scoreDisplay  = document.getElementById("score");
+  const itemImage     = document.getElementById("itemImage");
+  const itemName      = document.getElementById("itemName");
+  const feedback      = document.getElementById("feedback");
 
-  const timerValue     = document.getElementById("timerValue");
-  const progressFill   = document.getElementById("progressFill");
-  const gameStats      = document.getElementById("gameStats");
+  const timerValue    = document.getElementById("timerValue");
+  const progressFill  = document.getElementById("progressFill");
+  const gameStats     = document.getElementById("gameStats");
 
-  // Modals — queried after template injection so they exist in DOM
   const scoreSubmitModal = document.getElementById("scoreSubmitModal");
   const certModal        = document.getElementById("certificateModal");
   const leaderboardModal = document.getElementById("leaderboardModal");
 
   /* =============================
-     LOAD ITEMS (NO CACHE)
+     LOAD ITEMS
   ============================== */
   async function loadItems() {
     try {
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     CONFETTI ANIMATION
+     CONFETTI
   ============================== */
   function launchConfetti() {
     const container = document.getElementById("confettiContainer");
@@ -95,26 +97,290 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     WHATSAPP SHARE
+     SHUFFLE QUEUE
+     Cycles through all items in random order.
+     Only reshuffles once the full set is exhausted —
+     guarantees no close repeats and full coverage.
   ============================== */
-  function showWhatsAppShare(name, score) {
-    const whatsappBtn = document.getElementById("whatsappShareBtn");
-    if (!whatsappBtn) return;
+  function refillQueue() {
+    shuffleQueue = [...items].sort(() => Math.random() - 0.5);
+  }
 
-    const text =
-      `🎉 I just completed the Biomedical Waste Segregation Game!\n\n` +
-      `👤 Name: ${name}\n` +
-      `🏆 Score: ${score}\n\n` +
-      `Try it yourself 👇\n` +
-      `https://creator619-python.github.io/Biomedical-Waste-Game/`;
+  function nextItem() {
+    if (shuffleQueue.length === 0) refillQueue();
+    return shuffleQueue.pop();
+  }
 
-    whatsappBtn.classList.remove("hidden");
-    whatsappBtn.onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+  /* =============================
+     WIN CARD + SHARE SYSTEM
+  ============================== */
+  const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
+  const LS_KEY   = "bmwg_last_score";
+
+  function getPreviousScore() {
+    try {
+      const val = localStorage.getItem(LS_KEY);
+      return val !== null ? parseInt(val) : null;
+    } catch { return null; }
+  }
+
+  function saveLastScore(s) {
+    try { localStorage.setItem(LS_KEY, s); } catch {}
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, r);
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+  }
+
+  function drawWinCard(canvas, name, cardScore, prevScore) {
+    const ctx = canvas.getContext("2d");
+    const W   = canvas.width;
+    const H   = canvas.height;
+
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, "#0d1117");
+    bg.addColorStop(1, "#161b22");
+    ctx.fillStyle = bg;
+    roundRectPath(ctx, 0, 0, W, H, 16);
+    ctx.fill();
+
+    ctx.fillStyle = "#2ea043";
+    ctx.fillRect(0, 0, W, 5);
+
+    ctx.strokeStyle = "rgba(46,160,67,0.07)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    ctx.fillStyle = "#9aa0a6";
+    ctx.font = "500 14px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("BIOMEDICAL WASTE SEGREGATION GAME", W / 2, 44);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 28px system-ui, sans-serif";
+    ctx.fillText(name, W / 2, 90);
+
+    if (prevScore !== null) {
+      const delta    = cardScore - prevScore;
+      const improved = delta > 0;
+
+      ctx.fillStyle = "#9aa0a6";
+      ctx.font      = "500 13px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("LAST TIME", W / 2 - 110, 130);
+      ctx.fillText("THIS TIME", W / 2 + 110, 130);
+
+      ctx.fillStyle   = "rgba(255,255,255,0.05)";
+      ctx.strokeStyle = "#30363d";
+      ctx.lineWidth   = 1;
+      roundRectPath(ctx, W / 2 - 190, 140, 150, 90, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#9aa0a6";
+      ctx.font      = "700 42px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(prevScore, W / 2 - 115, 200);
+
+      ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
+      ctx.font      = "700 28px system-ui, sans-serif";
+      ctx.fillText("→", W / 2, 192);
+
+      ctx.fillStyle   = improved ? "rgba(46,160,67,0.15)" : "rgba(224,93,68,0.12)";
+      ctx.strokeStyle = improved ? "#2ea043" : "#e05d44";
+      ctx.lineWidth   = 2;
+      roundRectPath(ctx, W / 2 + 40, 140, 150, 90, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
+      ctx.font      = "700 48px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(cardScore, W / 2 + 115, 202);
+
+      const deltaText = `${improved ? "▲" : "▼"} ${Math.abs(delta)} pts`;
+      ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
+      ctx.font      = "700 18px system-ui, sans-serif";
+      ctx.fillText(deltaText, W / 2 + 115, 246);
+
+      const msg = improved
+        ? "🏆 New personal best! Keep going!"
+        : delta === 0
+          ? "Consistent! Can you push higher?"
+          : "Every attempt builds knowledge 💪";
+      ctx.fillStyle = "#9aa0a6";
+      ctx.font      = "500 14px system-ui, sans-serif";
+      ctx.fillText(msg, W / 2, 290);
+
+    } else {
+      ctx.fillStyle   = "rgba(46,160,67,0.12)";
+      ctx.strokeStyle = "#2ea043";
+      ctx.lineWidth   = 2;
+      roundRectPath(ctx, W / 2 - 90, 110, 180, 110, 14);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#2ea043";
+      ctx.font      = "700 64px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(cardScore, W / 2, 192);
+
+      ctx.fillStyle = "#9aa0a6";
+      ctx.font      = "500 14px system-ui, sans-serif";
+      ctx.fillText("🎉 First attempt complete! Can you beat this?", W / 2, 252);
+
+      ctx.fillStyle = "#9aa0a6";
+      ctx.font      = "500 13px system-ui, sans-serif";
+      ctx.fillText("Score out of 100", W / 2, 278);
+    }
+
+    ctx.fillStyle = "rgba(46,160,67,0.6)";
+    ctx.font      = "500 13px system-ui, sans-serif";
+    ctx.fillText("Can you beat this? → " + GAME_URL, W / 2, H - 18);
+
+    ctx.fillStyle = "#2ea043";
+    ctx.fillRect(0, H - 4, W, 4);
+  }
+
+  function showWinCard(name, cardScore, onContinue) {
+    const prevScore = getPreviousScore();
+    saveLastScore(cardScore);
+
+    const modal   = document.getElementById("winCardModal");
+    const canvas  = document.getElementById("winCardCanvas");
+    const badge   = document.getElementById("winCardImprovementBadge");
+    const deltaEl = document.getElementById("winCardDelta");
+    if (!modal || !canvas) return;
+
+    // Resize canvas for small screens
+    const maxW = Math.min(600, window.innerWidth - 48);
+    canvas.width  = maxW;
+    canvas.height = Math.round(maxW * (340 / 600));
+
+    drawWinCard(canvas, name, cardScore, prevScore);
+
+    if (prevScore !== null) {
+      const diff     = cardScore - prevScore;
+      const improved = diff > 0;
+      badge.classList.remove("hidden");
+      badge.style.background = improved
+        ? "linear-gradient(135deg,#2ea043,#1a7a34)"
+        : diff === 0
+          ? "linear-gradient(135deg,#555,#333)"
+          : "linear-gradient(135deg,#e05d44,#b03a2a)";
+      deltaEl.textContent = improved
+        ? `▲ +${diff} pts from last time!`
+        : diff === 0
+          ? "Same as last time"
+          : `▼ ${Math.abs(diff)} pts from last time`;
+    } else {
+      badge.classList.add("hidden");
+    }
+
+    modal.classList.remove("hidden");
+
+    document.getElementById("winCardWhatsApp").onclick = () => {
+      const diff = prevScore !== null ? cardScore - prevScore : null;
+      const text = diff !== null && diff > 0
+        ? `🏆 I improved my Biomedical Waste score from ${prevScore} → ${cardScore} (+${diff} pts)!\n\nThink you can beat me? Try it 👇\n${GAME_URL}`
+        : diff !== null && diff === 0
+          ? `🎯 I scored ${cardScore} again in the Biomedical Waste Segregation Game!\n\nCan you beat ${cardScore}? Try it 👇\n${GAME_URL}`
+          : `🎉 I scored ${cardScore} in the Biomedical Waste Segregation Game!\n\nCan you beat this? Try it 👇\n${GAME_URL}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    };
+
+    document.getElementById("winCardDownload").onclick = () => {
+      const link    = document.createElement("a");
+      link.download = `BMW_Score_${name}_${cardScore}.png`;
+      link.href     = canvas.toDataURL("image/png");
+      link.click();
+    };
+
+    document.getElementById("winCardContinue").onclick = () => {
+      modal.classList.add("hidden");
+      if (typeof onContinue === "function") onContinue();
+    };
+  }
+
+  /* =============================
+     TRAINER CSV REPORT
+  ============================== */
+  function generateTrainerCSV(name, cardScore, difficulty, dateTaken) {
+    const rows = [];
+
+    // Header block
+    rows.push(["BIOMEDICAL WASTE SEGREGATION TRAINING — TRAINER REPORT"]);
+    rows.push([]);
+    rows.push(["Trainee Name", name]);
+    rows.push(["Final Score",  cardScore]);
+    rows.push(["Difficulty",   difficulty]);
+    rows.push(["Date",         dateTaken]);
+    rows.push(["Total Attempts", attemptLog.length]);
+    rows.push(["Correct",      attemptLog.filter(a => a.result === "Correct").length]);
+    rows.push(["Wrong",        attemptLog.filter(a => a.result === "Wrong").length]);
+    rows.push([]);
+
+    // Item detail header
+    rows.push(["#", "Item", "Correct Bin", "Selected Bin", "Result"]);
+
+    attemptLog.forEach((a, i) => {
+      rows.push([i + 1, a.item, a.correctBin, a.chosenBin, a.result]);
+    });
+
+    rows.push([]);
+
+    // Wrong answer summary
+    const wrongOnes = attemptLog.filter(a => a.result === "Wrong");
+    if (wrongOnes.length > 0) {
+      rows.push(["ITEMS NEEDING REINFORCEMENT"]);
+      rows.push(["Item", "Correct Bin", "Was Selected"]);
+      wrongOnes.forEach(a => {
+        rows.push([a.item, a.correctBin, a.chosenBin]);
+      });
+    }
+
+    // Convert to CSV string
+    return rows.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+    ).join("\n");
+  }
+
+  function downloadTrainerCSV(name, cardScore, difficulty, dateTaken) {
+    const csv  = generateTrainerCSV(name, cardScore, difficulty, dateTaken);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href     = url;
+    link.download = `BMW_TrainerReport_${name}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   /* =============================
      DIFFICULTY
   ============================== */
+  function currentDifficulty() {
+    const sel = document.querySelector(".difficulty-card.selected");
+    return sel ? sel.dataset.level : "medium";
+  }
+
   document.querySelectorAll(".difficulty-card").forEach(card => {
     card.onclick = () => {
       document.querySelectorAll(".difficulty-card")
@@ -146,7 +412,10 @@ document.addEventListener("DOMContentLoaded", () => {
       startScreen.classList.add("hidden");
       gameContainer.classList.remove("hidden");
 
-      score = 0; correct = 0; wrong = 0; currentItem = null;
+      score = 0; correct = 0; wrong = 0;
+      currentItem = null;
+      attemptLog  = [];   // reset attempt log for new game
+      refillQueue();      // fresh shuffle queue
       gameRunning = true;
 
       scoreDisplay.textContent = score;
@@ -170,6 +439,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ============================== */
   function startTimer() {
     let timeLeft = totalTime;
+    timeUsed = 0;
     timerValue.textContent = formatTime(timeLeft);
     progressFill.style.width = "100%";
 
@@ -178,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!gameRunning) { clearInterval(timer); return; }
 
       timeLeft--;
+      timeUsed++;
       timerValue.textContent = formatTime(timeLeft);
       progressFill.style.width = `${(timeLeft / totalTime) * 100}%`;
 
@@ -186,17 +457,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     LOAD ITEM
+     LOAD ITEM — uses shuffle queue
   ============================== */
   function loadNewItem() {
     if (!gameRunning || items.length === 0) return;
 
-    currentItem = items[Math.floor(Math.random() * items.length)];
+    currentItem = nextItem();  // FEATURE: shuffle queue
 
     try {
       itemImage.src = new URL(currentItem.image, window.location.href).href;
       itemImage.alt = currentItem.name;
-    } catch (error) {
+    } catch {
       itemImage.src = "fallback.jpg";
     }
 
@@ -204,30 +475,28 @@ document.addEventListener("DOMContentLoaded", () => {
     feedback.textContent = "Choose the correct bin";
     feedback.style.color = "";
 
-    // FIX: clear any bin highlights from previous answer
     document.querySelectorAll(".bin-btn").forEach(btn => {
-      btn.style.outline = "";
+      btn.style.outline   = "";
       btn.style.boxShadow = "";
     });
   }
 
   /* =============================
      BIN HANDLERS
-     FIX: highlight correct bin on wrong answer
   ============================== */
   document.querySelectorAll(".bin-btn").forEach(btn => {
     btn.onclick = () => {
       if (!gameRunning || !currentItem) return;
 
-      const chosen = btn.dataset.bin;
+      const chosen    = btn.dataset.bin;
+      const isCorrect = chosen === currentItem.bin;
 
-      if (chosen === currentItem.bin) {
+      if (isCorrect) {
         score++;
         correct++;
         feedback.textContent = "✅ Correct!";
         feedback.style.color = "#4caf50";
-        // Brief green pulse on the correct button
-        btn.style.outline = "3px solid #4caf50";
+        btn.style.outline   = "3px solid #4caf50";
         btn.style.boxShadow = "0 0 12px #4caf50";
       } else {
         score = Math.max(0, score - 1);
@@ -235,22 +504,26 @@ document.addEventListener("DOMContentLoaded", () => {
         feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
         feedback.style.color = "#ff5252";
 
-        // FIX: visually highlight the correct bin so players learn
         document.querySelectorAll(".bin-btn").forEach(b => {
           if (b.dataset.bin === currentItem.bin) {
-            b.style.outline = "3px solid #4caf50";
+            b.style.outline   = "3px solid #4caf50";
             b.style.boxShadow = "0 0 12px #4caf50";
           }
         });
-        // Highlight wrong button in red
-        btn.style.outline = "3px solid #ff5252";
+        btn.style.outline   = "3px solid #ff5252";
         btn.style.boxShadow = "0 0 12px #ff5252";
       }
 
+      // FEATURE: log every attempt for trainer report
+      attemptLog.push({
+        item:       currentItem.name,
+        correctBin: currentItem.bin,
+        chosenBin:  chosen,
+        result:     isCorrect ? "Correct" : "Wrong"
+      });
+
       scoreDisplay.textContent = score;
       updateStats();
-
-      // Small delay so player sees the highlight before next item
       setTimeout(() => loadNewItem(), 600);
     };
   });
@@ -259,7 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
      STATS
   ============================== */
   function updateStats() {
-    const total = correct + wrong;
+    const total    = correct + wrong;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
     gameStats.textContent =
       `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}%`;
@@ -278,24 +551,21 @@ document.addEventListener("DOMContentLoaded", () => {
     feedback.style.color = "#ffd700";
 
     document.querySelectorAll(".bin-btn").forEach(btn => {
-      btn.disabled = true;
-      btn.style.outline = "";
+      btn.disabled        = true;
+      btn.style.outline   = "";
       btn.style.boxShadow = "";
     });
 
     window.finalGameScore = score;
 
-    // Show Play Again button
     const playAgainBtn = document.getElementById("playAgainBtn");
     if (playAgainBtn) playAgainBtn.style.display = "block";
 
-    const nameInput  = document.getElementById("playerNameInput");
-    const errorText  = document.getElementById("nameError");
-    const whatsappBtn = document.getElementById("whatsappShareBtn");
+    const nameInput = document.getElementById("playerNameInput");
+    const errorText = document.getElementById("nameError");
 
-    if (nameInput)    nameInput.value = "";
-    if (errorText)    errorText.classList.add("hidden");
-    if (whatsappBtn)  whatsappBtn.classList.add("hidden");
+    if (nameInput) nameInput.value = "";
+    if (errorText) errorText.classList.add("hidden");
 
     if (scoreSubmitModal) scoreSubmitModal.classList.remove("hidden");
   }
@@ -320,42 +590,62 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       errorText.classList.add("hidden");
-      submitBtn.disabled = true;
+      submitBtn.disabled    = true;
       submitBtn.textContent = "Saving...";
 
+      try { localStorage.setItem("playerName", name); } catch {}
+
+      const difficulty = currentDifficulty();
+      const now        = new Date();
+      const dateTaken  = now.toLocaleDateString("en-IN", {
+        day: "2-digit", month: "long", year: "numeric"
+      });
+
       try {
-        const saved = await saveScore(name, window.finalGameScore, totalTime);
+        const saved = await saveScore(name, window.finalGameScore, timeUsed, difficulty);
 
         if (!saved) {
           alert("Error saving score. Please try again.");
-          submitBtn.disabled = false;
+          submitBtn.disabled    = false;
           submitBtn.textContent = "Submit Score";
           return;
         }
 
         if (scoreSubmitModal) scoreSubmitModal.classList.add("hidden");
 
+        // Pre-populate certificate fields
         const thankYouName = document.getElementById("thankYouName");
         const certName     = document.getElementById("certName");
         const certScore    = document.getElementById("certScore");
+        const certDateEl   = document.getElementById("certDate");
 
-        if (certModal && thankYouName && certName && certScore) {
-          thankYouName.textContent = name;
-          certName.textContent     = name;
-          certScore.textContent    = `Score: ${window.finalGameScore} | Time: ${formatTime(totalTime)}`;
-          certModal.classList.remove("hidden");
-        } else {
-          alert(`🎉 Thank you, ${name}! Score of ${window.finalGameScore} saved.`);
+        if (thankYouName) thankYouName.textContent = name;
+        if (certName)     certName.textContent     = name;
+        if (certScore)    certScore.textContent    = `Score: ${window.finalGameScore} | Time: ${formatTime(timeUsed)}`;
+        if (certDateEl)   certDateEl.textContent   = dateTaken;
+
+        // Wire trainer CSV download button
+        const trainerBtn = document.getElementById("downloadTrainerReportBtn");
+        if (trainerBtn) {
+          trainerBtn.onclick = () =>
+            downloadTrainerCSV(name, window.finalGameScore, difficulty, dateTaken);
         }
 
-        setTimeout(() => launchConfetti(), 500);
-        setTimeout(() => showWhatsAppShare(name, window.finalGameScore), 1000);
+        // Show Win Card first, then certificate
+        setTimeout(() => {
+          showWinCard(name, window.finalGameScore, () => {
+            if (certModal) {
+              certModal.classList.remove("hidden");
+              setTimeout(() => launchConfetti(), 300);
+            }
+          });
+        }, 600);
 
       } catch (error) {
         console.error("Error submitting score:", error);
         alert("❌ Error saving score. Please check your connection and try again.");
       } finally {
-        submitBtn.disabled = false;
+        submitBtn.disabled    = false;
         submitBtn.textContent = "Submit Score";
       }
     };
@@ -374,7 +664,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* =============================
      CERTIFICATE CLOSE
-     FIX: was broken because certModal was null at query time
   ============================== */
   const closeCertBtn = document.getElementById("closeCertBtn");
   if (closeCertBtn && certModal) {
@@ -385,7 +674,99 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     FIX: shared return-to-start + play again logic
+     CERTIFICATE PDF DOWNLOAD — named after user
+  ============================== */
+  const downloadCertBtn = document.getElementById("downloadCertBtn");
+
+  if (downloadCertBtn) {
+    downloadCertBtn.addEventListener("click", () => {
+      const cert = document.querySelector("#certificateModal .certificate-content");
+      if (!cert) { console.error("Certificate content element not found"); return; }
+
+      const actions = cert.querySelector(".cert-actions");
+      if (actions) actions.style.display = "none";
+
+      if (typeof html2pdf === "undefined") {
+        alert("PDF library not loaded. Please refresh the page.");
+        if (actions) actions.style.display = "";
+        return;
+      }
+
+      // FEATURE: filename uses trainee name
+      const nameEl    = document.getElementById("certName");
+      const traineeName = nameEl ? nameEl.textContent.trim().replace(/\s+/g, "_") : "Trainee";
+      const filename  = `BMW_Certificate_${traineeName}.pdf`;
+
+      const originalStyle = cert.getAttribute("style") || "";
+      cert.style.cssText += ";background:#ffffff;color:#111111;padding:40px;max-width:none;";
+
+      cert.querySelectorAll(".cert-title, .cert-name, .cert-training, .cert-congrats").forEach(el => {
+        el.dataset.origColor = el.style.color;
+        if (el.classList.contains("cert-name"))          el.style.color = "#1a7a34";
+        else if (el.classList.contains("cert-congrats")) el.style.color = "#b8860b";
+        else                                             el.style.color = "#111111";
+      });
+      cert.querySelectorAll(".cert-text, .cert-sub, .cert-performance").forEach(el => {
+        el.dataset.origColor = el.style.color;
+        el.style.color = "#444444";
+      });
+      cert.querySelectorAll(".cert-training").forEach(el => {
+        el.style.background = "#f0f9f4";
+        el.style.color      = "#111111";
+      });
+      cert.querySelectorAll(".cert-performance").forEach(el => {
+        el.style.background  = "#f0f9f4";
+        el.style.color       = "#1a7a34";
+        el.style.borderColor = "#2ea043";
+        el.style.display     = "block";
+        el.style.minHeight   = "44px";
+      });
+      cert.querySelectorAll(".cert-date-row").forEach(el => {
+        el.style.color = "#444444";
+      });
+
+      html2pdf()
+        .set({
+          margin:      [15, 20, 15, 20],
+          filename,
+          image:       { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff" },
+          jsPDF:       { unit: "mm", format: "a4", orientation: "landscape" }
+        })
+        .from(cert)
+        .save()
+        .then(() => restoreCert(cert, originalStyle, actions))
+        .catch(err => {
+          console.error("PDF error:", err);
+          alert("Error generating PDF. Please try again.");
+          restoreCert(cert, originalStyle, actions);
+        });
+    });
+  }
+
+  function restoreCert(cert, originalStyle, actions) {
+    cert.setAttribute("style", originalStyle);
+    if (actions) actions.style.display = "";
+    cert.querySelectorAll("[data-orig-color]").forEach(el => {
+      el.style.color = el.dataset.origColor;
+      delete el.dataset.origColor;
+    });
+    cert.querySelectorAll(".cert-training").forEach(el => {
+      el.style.background = "";
+    });
+    cert.querySelectorAll(".cert-performance").forEach(el => {
+      el.style.background  = "";
+      el.style.borderColor = "";
+      el.style.display     = "";
+      el.style.minHeight   = "";
+    });
+    cert.querySelectorAll(".cert-date-row").forEach(el => {
+      el.style.color = "";
+    });
+  }
+
+  /* =============================
+     RETURN TO START
   ============================== */
   function returnToStart() {
     startScreen.classList.remove("hidden");
@@ -394,21 +775,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (playAgainBtn) playAgainBtn.style.display = "none";
   }
 
-  // Play Again — restarts without going to start screen
   const playAgainBtn = document.getElementById("playAgainBtn");
   if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
-      score = 0; correct = 0; wrong = 0; currentItem = null;
+      score = 0; correct = 0; wrong = 0;
+      currentItem = null;
+      attemptLog  = [];
+      refillQueue();
       gameRunning = true;
 
       scoreDisplay.textContent = score;
-      feedback.textContent = "Choose the correct bin";
-      feedback.style.color = "";
+      feedback.textContent     = "Choose the correct bin";
+      feedback.style.color     = "";
       playAgainBtn.style.display = "none";
 
       document.querySelectorAll(".bin-btn").forEach(btn => {
-        btn.disabled = false;
-        btn.style.outline = "";
+        btn.disabled        = false;
+        btn.style.outline   = "";
         btn.style.boxShadow = "";
       });
 
@@ -419,8 +802,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     LEADERBOARD MODAL — populate with Firebase data
-     FIX: was wired up in HTML but never populated
+     LEADERBOARD
   ============================== */
   const openLeaderboardBtn  = document.getElementById("openLeaderboardBtn");
   const closeLeaderboardBtn = document.getElementById("closeLeaderboardBtn");
@@ -443,7 +825,6 @@ document.addEventListener("DOMContentLoaded", () => {
     list.innerHTML = "<li style='color:#9aa0a6;text-align:center;padding:12px'>Loading...</li>";
 
     try {
-      // Dynamically import Firebase to fetch leaderboard scores
       const { initializeApp, getApps } = await import(
         "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"
       );
@@ -452,12 +833,12 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       const firebaseConfig = {
-        apiKey: "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
-        authDomain: "biomedicalwastegame.firebaseapp.com",
-        projectId: "biomedicalwastegame",
-        storageBucket: "biomedicalwastegame.firebasestorage.app",
+        apiKey:            "AIzaSyBoVl_bc3V-DzSzza-1Ymuh13FROKaLxAM",
+        authDomain:        "biomedicalwastegame.firebaseapp.com",
+        projectId:         "biomedicalwastegame",
+        storageBucket:     "biomedicalwastegame.firebasestorage.app",
         messagingSenderId: "502355834534",
-        appId: "1:502355834534:web:e7cd3369f7a4b174f3e667"
+        appId:             "1:502355834534:web:e7cd3369f7a4b174f3e667"
       };
 
       const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
@@ -474,104 +855,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const medals = ["🥇", "🥈", "🥉"];
-      snapshot.forEach((doc, i) => {
-        const { name, score } = doc.data();
+      let i = 0;
+      snapshot.forEach(doc => {
+        const { name, score: s } = doc.data();
         const rank = medals[i] || `#${i + 1}`;
-        const li = document.createElement("li");
+        const li   = document.createElement("li");
         li.style.cssText = "display:flex;justify-content:space-between;padding:10px 12px;background:#1f242c;border-radius:8px;margin-bottom:8px;list-style:none;";
-        li.innerHTML = `<span>${rank} ${name}</span><span style="color:#2ea043;font-weight:bold">${score} pts</span>`;
+        li.innerHTML = `<span>${rank} ${name}</span><span style="color:#2ea043;font-weight:bold">${s} pts</span>`;
         list.appendChild(li);
+        i++;
       });
     } catch (err) {
-      console.error("Leaderboard modal error:", err);
+      console.error("Leaderboard error:", err);
       list.innerHTML = "<li style='color:#ff5252;text-align:center;padding:12px'>Could not load scores.</li>";
     }
-  }
-
-  /* =============================
-     CERTIFICATE PDF DOWNLOAD
-  ============================== */
-  const downloadCertBtn = document.getElementById("downloadCertBtn");
-
-  if (downloadCertBtn) {
-    downloadCertBtn.addEventListener("click", () => {
-      // FIX 1: was grabbing .certificate (the outer modal-content div with overflow:hidden
-      // and dark background) — now grabs .certificate-content (the inner printable area only)
-      const cert = document.querySelector("#certificateModal .certificate-content");
-      if (!cert) { console.error("Certificate content element not found"); return; }
-
-      // Hide action buttons so they don't appear in the PDF
-      const actions = cert.querySelector(".cert-actions");
-      if (actions) actions.style.display = "none";
-
-      if (typeof html2pdf === "undefined") {
-        alert("PDF library not loaded. Please refresh the page.");
-        if (actions) actions.style.display = "";
-        return;
-      }
-
-      // FIX 2: set an explicit white background and padding so the PDF
-      // doesn't inherit the dark modal styling or get clipped
-      const originalStyle = cert.getAttribute("style") || "";
-      cert.style.cssText += ";background:#ffffff;color:#111111;padding:40px;max-width:none;";
-
-      // Also temporarily make all text dark for print readability
-      cert.querySelectorAll(".cert-title, .cert-name, .cert-training, .cert-congrats").forEach(el => {
-        el.dataset.origColor = el.style.color;
-        if (el.classList.contains("cert-name"))      el.style.color = "#1a7a34";
-        else if (el.classList.contains("cert-congrats")) el.style.color = "#b8860b";
-        else                                          el.style.color = "#111111";
-      });
-      cert.querySelectorAll(".cert-text, .cert-sub, .cert-performance").forEach(el => {
-        el.dataset.origColor = el.style.color;
-        el.style.color = "#444444";
-      });
-      cert.querySelectorAll(".cert-training").forEach(el => {
-        el.style.background = "#f0f9f4";
-        el.style.color = "#111111";
-      });
-      cert.querySelectorAll(".cert-performance").forEach(el => {
-        el.style.background = "#f0f9f4";
-        el.style.color = "#1a7a34";
-        el.style.borderColor = "#2ea043";
-      });
-
-      html2pdf()
-        .set({
-          margin:   [15, 20, 15, 20],
-          filename: "Biomedical_Waste_Training_Certificate.pdf",
-          image:    { type: "jpeg", quality: 0.98 },
-          // FIX 3: useCORS + logging=false prevents blank output on some browsers
-          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff" },
-          jsPDF:    { unit: "mm", format: "a4", orientation: "landscape" }
-        })
-        .from(cert)
-        .save()
-        .then(() => {
-          restoreCert(cert, originalStyle, actions);
-        })
-        .catch(err => {
-          console.error("PDF error:", err);
-          alert("Error generating PDF. Please try again.");
-          restoreCert(cert, originalStyle, actions);
-        });
-    });
-  }
-
-  function restoreCert(cert, originalStyle, actions) {
-    cert.setAttribute("style", originalStyle);
-    if (actions) actions.style.display = "";
-    cert.querySelectorAll("[data-orig-color]").forEach(el => {
-      el.style.color = el.dataset.origColor;
-      delete el.dataset.origColor;
-    });
-    cert.querySelectorAll(".cert-training").forEach(el => {
-      el.style.background = "";
-    });
-    cert.querySelectorAll(".cert-performance").forEach(el => {
-      el.style.background = "";
-      el.style.borderColor = "";
-    });
   }
 
   /* =============================

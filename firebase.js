@@ -23,13 +23,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function saveScore(name, score, timeTaken = 0) {
+export async function saveScore(name, score, timeTaken = 0, difficulty = "medium") {
   try {
     await addDoc(collection(db, "leaderboard"), {
-      name: name,
-      score: score,
-      time: timeTaken,              // ✅ REQUIRED
-      createdAt: serverTimestamp()
+      name:       name,
+      score:      score,
+      time:       timeTaken,
+      difficulty: difficulty,
+      createdAt:  serverTimestamp()
     });
     return true;
   } catch (err) {

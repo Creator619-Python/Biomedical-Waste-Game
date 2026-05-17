@@ -786,3 +786,318 @@ button:focus-visible {
   overflow-y: auto;
   max-height: 90vh;
 }
+
+/* =========================================
+   CERTIFICATE — Date & Signature additions
+========================================= */
+
+.cert-date-row {
+  margin: 16px 0 24px;
+  font-size: 15px;
+  color: #9aa0a6;
+}
+
+.cert-date-label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.cert-date-value {
+  color: #cccccc;
+}
+
+.cert-footer {
+  margin-top: 32px;
+  border-top: 1px solid rgba(46, 160, 67, 0.3);
+  padding-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 40px;
+}
+
+.cert-sig-block {
+  text-align: center;
+  width: 200px;
+}
+
+.cert-sig-line {
+  border-top: 1px solid #555;
+  margin-bottom: 8px;
+}
+
+.cert-sig-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cccccc;
+}
+
+.cert-sig-org {
+  font-size: 12px;
+  color: #9aa0a6;
+  margin-top: 2px;
+}
+
+/* =========================================
+   WIN CARD MODAL
+========================================= */
+
+.win-card-modal {
+  background: #0d1117;
+  border: 1px solid #2ea043;
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  max-width: 660px;
+  width: 95%;
+  text-align: center;
+  position: relative;
+}
+
+.wc-improvement-badge {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #2ea043, #1a7a34);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 6px 20px;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(46,160,67,0.4);
+  letter-spacing: 0.5px;
+}
+
+#winCardCanvas {
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.wc-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.wc-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.wc-btn:hover { opacity: 0.85; }
+
+.wc-btn-green {
+  background: #2ea043;
+  color: #fff;
+}
+
+.wc-btn-outline {
+  background: transparent;
+  color: #2ea043;
+  border: 1px solid #2ea043;
+}
+
+.wc-btn-ghost {
+  background: transparent;
+  color: #9aa0a6;
+  border: 1px solid #30363d;
+}
+
+/* =========================================
+   RESPONSIVE OVERHAUL
+   Targets: 320px (small Android), 375px (iPhone SE),
+            414px (standard Android), 768px+ (tablet)
+========================================= */
+
+/* Lock portrait on mobile via CSS (manifest already sets orientation) */
+@media (max-width: 768px) and (orientation: landscape) {
+  body::before {
+    content: "Please rotate your device to portrait mode 📱";
+    position: fixed;
+    inset: 0;
+    background: #0d1117;
+    color: #9aa0a6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    z-index: 99999;
+    text-align: center;
+    padding: 20px;
+  }
+  body > * { visibility: hidden; }
+}
+
+/* ---- Fluid type scale ---- */
+@media (max-width: 768px) {
+  .title {
+    font-size: clamp(20px, 6vw, 28px);
+  }
+  .subtitle {
+    font-size: clamp(12px, 3.5vw, 14px);
+  }
+  .section-title {
+    font-size: clamp(16px, 5vw, 20px);
+    margin-top: 16px;
+  }
+  .item-name {
+    font-size: clamp(16px, 5vw, 22px);
+  }
+  .timer-value,
+  .score-value {
+    font-size: clamp(18px, 5vw, 24px);
+  }
+  .feedback {
+    font-size: clamp(13px, 4vw, 16px);
+  }
+  .bin-btn {
+    font-size: clamp(13px, 3.8vw, 16px);
+    padding: clamp(10px, 3vw, 16px);
+  }
+  .primary-btn {
+    font-size: clamp(15px, 4.5vw, 18px);
+    padding: clamp(12px, 3.5vw, 14px);
+  }
+  .secondary-btn {
+    font-size: clamp(13px, 4vw, 16px);
+  }
+}
+
+/* ---- Item image scales with screen ---- */
+@media (max-width: 768px) {
+  .item-image {
+    width: clamp(120px, 40vw, 180px);
+    height: clamp(120px, 40vw, 180px);
+  }
+  .item-area {
+    min-height: clamp(200px, 50vw, 280px);
+    padding: 12px;
+    margin: 12px 0;
+  }
+}
+
+/* ---- Bin buttons: 2-column on small, row on tablet ---- */
+@media (max-width: 480px) {
+  .bins-row {
+    gap: 8px;
+  }
+  .bin-btn {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
+  }
+  /* Green bin full width since it's the 5th — odd one out */
+  .bin-btn:last-child:nth-child(odd) {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---- Top bar stacks cleanly on small screens ---- */
+@media (max-width: 480px) {
+  .top-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .timer-box,
+  .score-box {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+  .leaderboard-btn {
+    padding: 10px 12px;
+  }
+}
+
+/* ---- Modals fit small screens ---- */
+@media (max-width: 480px) {
+  .modal {
+    padding: 12px;
+    align-items: flex-end; /* Sheet-style from bottom on small phones */
+  }
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 16px 32px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-content.certificate {
+    border-radius: 16px 16px 0 0;
+    padding: 24px 16px 32px;
+  }
+  .win-card-modal {
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 32px 12px 24px;
+  }
+}
+
+/* ---- Certificate actions wrap on small screens ---- */
+@media (max-width: 480px) {
+  .cert-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .cert-actions .secondary-btn,
+  .cert-actions .primary-btn {
+    width: 100%;
+    min-width: 0;
+  }
+  .cert-title {
+    font-size: clamp(20px, 6vw, 30px);
+  }
+  .cert-name {
+    font-size: clamp(22px, 7vw, 28px);
+  }
+  .cert-training {
+    font-size: clamp(14px, 4vw, 18px);
+    padding: 10px 14px;
+  }
+}
+
+/* ---- Win card actions wrap ---- */
+@media (max-width: 480px) {
+  .wc-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .wc-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+/* ---- Tablet: side-by-side panels ---- */
+@media (min-width: 769px) {
+  .app-wrapper {
+    flex-direction: row;
+  }
+  .left-panel,
+  .right-panel {
+    flex: 1;
+    min-height: 100vh;
+  }
+}
+
+/* ---- Large desktop: cap content width ---- */
+@media (min-width: 1200px) {
+  .left-panel,
+  .right-panel {
+    padding: 40px;
+  }
+}

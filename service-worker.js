@@ -1,17 +1,15 @@
-const CACHE_NAME = "bmw-game-v6";
+const CACHE_NAME = "bmw-game-v7";
 
 // Cache only the app shell
 const STATIC_ASSETS = [
   "./",
   "./index.html",
   "./style.css",
-  "./game.js",
   "./leaderboard.html",
-  "./leaderboard.js",
   "./analytics.html",
-  "./analytics.js",
   "./icon-192.png",
   "./icon-512.png"
+  // game.js intentionally excluded — loaded with ?v= cache-buster in index.html
 ];
 
 // --------------------
