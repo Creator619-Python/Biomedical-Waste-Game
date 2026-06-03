@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* =============================
-     WIN CARD + SHARE SYSTEM
+     WIN CARD + SHARE SYSTEM (FIXED)
   ============================== */
   const GAME_URL = "https://creator619-python.github.io/Biomedical-Waste-Game/";
   const LS_KEY   = "bmwg_last_score";
@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try { localStorage.setItem(LS_KEY, s); } catch {}
   }
 
+  // Helper: rounded rectangle path
   function roundRectPath(ctx, x, y, w, h, r) {
     if (ctx.roundRect) {
       ctx.beginPath();
@@ -147,80 +148,95 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function drawWinCard(canvas, name, cardScore, prevScore) {
+  // ================= FIXED DRAW FUNCTION =================
+  function drawWinCard(canvas, name, cardScore, prevScore, logicalW, logicalH) {
     const ctx = canvas.getContext("2d");
-    // Use CSS display size for layout, not raw canvas pixel size (which includes DPR scaling)
-    const W   = parseInt(canvas.style.width)  || canvas.width;
-    const H   = parseInt(canvas.style.height) || canvas.height;
+    const dpr = window.devicePixelRatio || 1;
 
-    const bg = ctx.createLinearGradient(0, 0, W, H);
+    // Set physical buffer size & CSS size
+    canvas.width = logicalW * dpr;
+    canvas.height = logicalH * dpr;
+    canvas.style.width = `${logicalW}px`;
+    canvas.style.height = `${logicalH}px`;
+
+    // Reset any previous transform and apply DPR scaling
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+
+    // Background gradient
+    const bg = ctx.createLinearGradient(0, 0, logicalW, logicalH);
     bg.addColorStop(0, "#0d1117");
     bg.addColorStop(1, "#161b22");
     ctx.fillStyle = bg;
-    roundRectPath(ctx, 0, 0, W, H, 16);
-    ctx.fill();
+    ctx.fillRect(0, 0, logicalW, logicalH);
 
+    // Top green bar
     ctx.fillStyle = "#2ea043";
-    ctx.fillRect(0, 0, W, 5);
+    ctx.fillRect(0, 0, logicalW, 5);
 
+    // Subtle grid lines
     ctx.strokeStyle = "rgba(46,160,67,0.07)";
     ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    for (let x = 0; x < logicalW; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, logicalH); ctx.stroke();
     }
-    for (let y = 0; y < H; y += 40) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    for (let y = 0; y < logicalH; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(logicalW, y); ctx.stroke();
     }
 
+    // Header
     ctx.fillStyle = "#9aa0a6";
     ctx.font = "500 14px system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("BIOMEDICAL WASTE SEGREGATION GAME", W / 2, 44);
+    ctx.fillText("BIOMEDICAL WASTE SEGREGATION GAME", logicalW / 2, 44);
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "700 28px system-ui, sans-serif";
-    ctx.fillText(name, W / 2, 90);
+    ctx.fillText(name, logicalW / 2, 90);
+
+    // Score section (dynamic Y based on logical height)
+    const scoreSectionY = 130;
+    const boxWidth = 150;
+    const boxHeight = 90;
 
     if (prevScore !== null) {
-      const delta    = cardScore - prevScore;
-      const improved = delta > 0;
-
+      // Draw previous vs current scores
       ctx.fillStyle = "#9aa0a6";
-      ctx.font      = "500 13px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("LAST TIME", W / 2 - 110, 130);
-      ctx.fillText("THIS TIME", W / 2 + 110, 130);
+      ctx.font = "500 13px system-ui, sans-serif";
+      ctx.fillText("LAST TIME", logicalW / 2 - 110, scoreSectionY - 10);
+      ctx.fillText("THIS TIME", logicalW / 2 + 110, scoreSectionY - 10);
 
-      ctx.fillStyle   = "rgba(255,255,255,0.05)";
+      // Previous score box
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
       ctx.strokeStyle = "#30363d";
-      ctx.lineWidth   = 1;
-      roundRectPath(ctx, W / 2 - 190, 140, 150, 90, 10);
+      ctx.lineWidth = 1;
+      roundRectPath(ctx, logicalW / 2 - 190, scoreSectionY, boxWidth, boxHeight, 10);
       ctx.fill(); ctx.stroke();
-
       ctx.fillStyle = "#9aa0a6";
-      ctx.font      = "700 42px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(prevScore, W / 2 - 115, 200);
+      ctx.font = "700 42px system-ui, sans-serif";
+      ctx.fillText(prevScore, logicalW / 2 - 115, scoreSectionY + 60);
 
+      // Arrow
+      const improved = cardScore > prevScore;
       ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
-      ctx.font      = "700 28px system-ui, sans-serif";
-      ctx.fillText("→", W / 2, 192);
+      ctx.font = "700 28px system-ui, sans-serif";
+      ctx.fillText("→", logicalW / 2, scoreSectionY + 52);
 
-      ctx.fillStyle   = improved ? "rgba(46,160,67,0.15)" : "rgba(224,93,68,0.12)";
+      // Current score box
+      ctx.fillStyle = improved ? "rgba(46,160,67,0.15)" : "rgba(224,93,68,0.12)";
       ctx.strokeStyle = improved ? "#2ea043" : "#e05d44";
-      ctx.lineWidth   = 2;
-      roundRectPath(ctx, W / 2 + 40, 140, 150, 90, 10);
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, logicalW / 2 + 40, scoreSectionY, boxWidth, boxHeight, 10);
       ctx.fill(); ctx.stroke();
-
       ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
-      ctx.font      = "700 48px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(cardScore, W / 2 + 115, 202);
+      ctx.font = "700 48px system-ui, sans-serif";
+      ctx.fillText(cardScore, logicalW / 2 + 115, scoreSectionY + 62);
 
+      const delta = cardScore - prevScore;
       const deltaText = `${improved ? "▲" : "▼"} ${Math.abs(delta)} pts`;
       ctx.fillStyle = improved ? "#2ea043" : "#e05d44";
-      ctx.font      = "700 18px system-ui, sans-serif";
-      ctx.fillText(deltaText, W / 2 + 115, 246);
+      ctx.font = "700 18px system-ui, sans-serif";
+      ctx.fillText(deltaText, logicalW / 2 + 115, scoreSectionY + 106);
 
       const msg = improved
         ? "🏆 New personal best! Keep going!"
@@ -228,83 +244,80 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "Consistent! Can you push higher?"
           : "Every attempt builds knowledge 💪";
       ctx.fillStyle = "#9aa0a6";
-      ctx.font      = "500 14px system-ui, sans-serif";
-      ctx.fillText(msg, W / 2, 290);
-
+      ctx.font = "500 14px system-ui, sans-serif";
+      ctx.fillText(msg, logicalW / 2, scoreSectionY + 160);
     } else {
-      ctx.fillStyle   = "rgba(46,160,67,0.12)";
+      // First time score display
+      ctx.fillStyle = "rgba(46,160,67,0.12)";
       ctx.strokeStyle = "#2ea043";
-      ctx.lineWidth   = 2;
-      roundRectPath(ctx, W / 2 - 90, 110, 180, 110, 14);
+      ctx.lineWidth = 2;
+      roundRectPath(ctx, logicalW / 2 - 90, scoreSectionY, 180, 110, 14);
       ctx.fill(); ctx.stroke();
-
       ctx.fillStyle = "#2ea043";
-      ctx.font      = "700 64px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(cardScore, W / 2, 192);
-
+      ctx.font = "700 64px system-ui, sans-serif";
+      ctx.fillText(cardScore, logicalW / 2, scoreSectionY + 80);
       ctx.fillStyle = "#9aa0a6";
-      ctx.font      = "500 14px system-ui, sans-serif";
-      ctx.fillText("🎉 First attempt complete! Can you beat this?", W / 2, 252);
-
+      ctx.font = "500 14px system-ui, sans-serif";
+      ctx.fillText("🎉 First attempt complete! Can you beat this?", logicalW / 2, scoreSectionY + 150);
       ctx.fillStyle = "#9aa0a6";
-      ctx.font      = "500 13px system-ui, sans-serif";
-      ctx.fillText("Score out of 100", W / 2, 278);
+      ctx.font = "500 13px system-ui, sans-serif";
+      ctx.fillText("Score out of 100", logicalW / 2, scoreSectionY + 178);
     }
 
+    // URL line at bottom
     ctx.fillStyle = "rgba(46,160,67,0.6)";
-    ctx.font      = "500 13px system-ui, sans-serif";
-    ctx.fillText("Can you beat this? → " + GAME_URL, W / 2, H - 18);
+    ctx.font = "500 13px system-ui, sans-serif";
+    ctx.fillText("Can you beat this? → " + GAME_URL, logicalW / 2, logicalH - 18);
 
+    // Bottom green bar
     ctx.fillStyle = "#2ea043";
-    ctx.fillRect(0, H - 4, W, 4);
+    ctx.fillRect(0, logicalH - 4, logicalW, 4);
+
+    // Debug border – remove after confirming everything fits
+    ctx.strokeStyle = "red";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, logicalW, logicalH);
   }
 
+  // ================= FIXED SHOW FUNCTION =================
   function showWinCard(name, cardScore, onContinue) {
     const prevScore = getPreviousScore();
     saveLastScore(cardScore);
 
-    const modal   = document.getElementById("winCardModal");
-    const canvas  = document.getElementById("winCardCanvas");
-    const badge   = document.getElementById("winCardImprovementBadge");
-    const deltaEl = document.getElementById("winCardDelta");
+    const modal = document.getElementById("winCardModal");
+    const canvas = document.getElementById("winCardCanvas");
     if (!modal || !canvas) return;
 
-    // Resize canvas proportionally — use offsetWidth of modal for accuracy
-    const modalEl = document.querySelector(".win-card-modal");
-    const maxW = Math.min(600, (modalEl ? modalEl.offsetWidth - 24 : window.innerWidth - 48));
-    const dpr = window.devicePixelRatio || 1;
-    const displayW = maxW;
-    const displayH = Math.round(displayW * (340 / 600));
-    canvas.style.width  = displayW + "px";
-    canvas.style.height = displayH + "px";
-    canvas.width  = displayW * dpr;
-    canvas.height = displayH * dpr;
-    const ctx2d = canvas.getContext("2d");
-    ctx2d.scale(dpr, dpr);
+    // Determine logical canvas size that fits the modal without cropping
+    const modalContent = document.querySelector(".win-card-modal");
+    const maxWidth = Math.min(600, (modalContent ? modalContent.clientWidth - 40 : 500));
+    const logicalW = maxWidth;
+    // Minimum height 420px ensures all content (score boxes, messages, URL) fits
+    const logicalH = Math.max(420, Math.round(logicalW * 0.7));
 
-    drawWinCard(canvas, name, cardScore, prevScore);
+    // Draw the card with explicit dimensions
+    drawWinCard(canvas, name, cardScore, prevScore, logicalW, logicalH);
 
+    // Improvement badge
+    const badge = document.getElementById("winCardImprovementBadge");
+    const deltaEl = document.getElementById("winCardDelta");
     if (prevScore !== null) {
-      const diff     = cardScore - prevScore;
+      const diff = cardScore - prevScore;
       const improved = diff > 0;
       badge.classList.remove("hidden");
       badge.style.background = improved
         ? "linear-gradient(135deg,#2ea043,#1a7a34)"
-        : diff === 0
-          ? "linear-gradient(135deg,#555,#333)"
-          : "linear-gradient(135deg,#e05d44,#b03a2a)";
+        : diff === 0 ? "linear-gradient(135deg,#555,#333)" : "linear-gradient(135deg,#e05d44,#b03a2a)";
       deltaEl.textContent = improved
         ? `▲ +${diff} pts from last time!`
-        : diff === 0
-          ? "Same as last time"
-          : `▼ ${Math.abs(diff)} pts from last time`;
+        : diff === 0 ? "Same as last time" : `▼ ${Math.abs(diff)} pts from last time`;
     } else {
       badge.classList.add("hidden");
     }
 
     modal.classList.remove("hidden");
 
+    // WhatsApp share button
     document.getElementById("winCardWhatsApp").onclick = () => {
       const diff = prevScore !== null ? cardScore - prevScore : null;
       const text = diff !== null && diff > 0
@@ -315,21 +328,23 @@ document.addEventListener("DOMContentLoaded", () => {
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
     };
 
+    // Download image button
     document.getElementById("winCardDownload").onclick = () => {
       const dataUrl = canvas.toDataURL("image/png");
-      const isIOS   = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       if (isIOS) {
         const win = window.open();
         win.document.write(`<img src="${dataUrl}" style="max-width:100%;display:block;margin:auto"/>`);
         win.document.write(`<p style="font-family:sans-serif;color:#666;text-align:center;padding:12px">Long press the image → Save to Photos</p>`);
       } else {
-        const link    = document.createElement("a");
+        const link = document.createElement("a");
         link.download = `BMW_Score_${name}_${cardScore}.png`;
-        link.href     = dataUrl;
+        link.href = dataUrl;
         link.click();
       }
     };
 
+    // Continue button
     document.getElementById("winCardContinue").onclick = () => {
       modal.classList.add("hidden");
       if (typeof onContinue === "function") onContinue();
