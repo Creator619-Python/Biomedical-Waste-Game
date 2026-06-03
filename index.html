@@ -102,6 +102,9 @@
   <!-- Fullscreen Button -->
   <button id="fullscreenBtn" class="fullscreen-btn">⤢</button>
 
+  <!-- Sound Toggle -->
+  <button id="soundToggleBtn" class="sound-toggle-btn">🔊</button>
+
   <!-- Confetti -->
   <div id="confettiContainer"></div>
 
@@ -179,6 +182,8 @@
           <span class="label">Score</span>
           <span id="score" class="score-value">0</span>
         </div>
+
+        <span id="streakBadge" class="streak-badge hidden">🔥 0</span>
 
         <button id="openLeaderboardBtn" class="leaderboard-btn">🏆</button>
       </div>
@@ -308,6 +313,19 @@
   }
 
   // Leaderboard wiring handled in game.js after template injection
+
+  /* ---------- Sound Toggle ---------- */
+  const soundToggleBtn = document.getElementById("soundToggleBtn");
+  if (soundToggleBtn) {
+    // Reflect saved state on load
+    const isOff = localStorage.getItem("bmwg_sound") === "off";
+    soundToggleBtn.textContent = isOff ? "🔇" : "🔊";
+    soundToggleBtn.onclick = () => {
+      const nowOff = localStorage.getItem("bmwg_sound") !== "off";
+      localStorage.setItem("bmwg_sound", nowOff ? "off" : "on");
+      soundToggleBtn.textContent = nowOff ? "🔇" : "🔊";
+    };
+  }
 </script>
 
 
