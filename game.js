@@ -149,8 +149,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function drawWinCard(canvas, name, cardScore, prevScore) {
     const ctx = canvas.getContext("2d");
-    const W   = canvas.width;
-    const H   = canvas.height;
+    // Use CSS display size for layout, not raw canvas pixel size (which includes DPR scaling)
+    const W   = parseInt(canvas.style.width)  || canvas.width;
+    const H   = parseInt(canvas.style.height) || canvas.height;
 
     const bg = ctx.createLinearGradient(0, 0, W, H);
     bg.addColorStop(0, "#0d1117");
@@ -272,9 +273,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Resize canvas proportionally — use offsetWidth of modal for accuracy
     const modalEl = document.querySelector(".win-card-modal");
     const maxW = Math.min(600, (modalEl ? modalEl.offsetWidth - 24 : window.innerWidth - 48));
-    canvas.style.width  = "100%";
-    canvas.width  = maxW * (window.devicePixelRatio || 1);
-    canvas.height = Math.round(canvas.width * (340 / 600));
+    const dpr = window.devicePixelRatio || 1;
+    const displayW = maxW;
+    const displayH = Math.round(displayW * (340 / 600));
+    canvas.style.width  = displayW + "px";
+    canvas.style.height = displayH + "px";
+    canvas.width  = displayW * dpr;
+    canvas.height = displayH * dpr;
+    const ctx2d = canvas.getContext("2d");
+    ctx2d.scale(dpr, dpr);
 
     drawWinCard(canvas, name, cardScore, prevScore);
 
