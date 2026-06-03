@@ -6,27 +6,27 @@ body {
   padding: 0;
   background: #0d1117;
   color: white;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Better font stack */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased; /* Better text rendering */
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .hidden {
   display: none !important;
-  visibility: hidden; /* Additional hidden property */
+  visibility: hidden;
 }
 
 button {
   cursor: pointer;
   touch-action: manipulation;
-  transition: all 0.2s ease; /* Smooth transitions */
-  outline: none; /* Remove default outline */
+  transition: all 0.2s ease;
+  outline: none;
 }
 
 button:focus-visible {
-  outline: 2px solid #2ea043; /* Accessible focus indicator */
+  outline: 2px solid #2ea043;
   outline-offset: 2px;
 }
 
@@ -62,7 +62,7 @@ button:focus-visible {
 .app-wrapper {
   display: flex;
   min-height: 100vh;
-  max-width: 1600px; /* Prevent too wide on large screens */
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -78,7 +78,7 @@ button:focus-visible {
   justify-content: space-between;
   position: relative;
   z-index: 1;
-  min-height: 100vh; /* Ensure full height on mobile */
+  min-height: 100vh;
 }
 
 .title {
@@ -105,12 +105,12 @@ button:focus-visible {
   display: flex;
   gap: 10px;
   margin-top: 15px;
-  flex-wrap: wrap; /* Wrap on small screens */
+  flex-wrap: wrap;
 }
 
 .difficulty-card {
   flex: 1;
-  min-width: 80px; /* Prevent too small on mobile */
+  min-width: 80px;
   padding: 15px;
   background: #1f242c;
   border-radius: 10px;
@@ -144,7 +144,7 @@ button:focus-visible {
 /* Buttons */
 .primary-btn {
   margin-top: 20px;
-  padding: 14px; /* Slightly larger for better touch */
+  padding: 14px;
   width: 100%;
   background: #238636;
   border: none;
@@ -212,14 +212,14 @@ button:focus-visible {
   padding: 25px;
   position: relative;
   z-index: 1;
-  min-height: 100vh; /* Ensure full height */
+  min-height: 100vh;
 }
 
 .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* Wrap on small screens */
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -268,7 +268,7 @@ button:focus-visible {
 
 /* Item area */
 .item-area {
-  min-height: 280px; /* Increased for better spacing */
+  min-height: 280px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -313,7 +313,7 @@ button:focus-visible {
   display: flex;
   gap: 12px;
   margin-top: 30px;
-  flex-wrap: wrap; /* Wrap on mobile */
+  flex-wrap: wrap;
 }
 
 .bin-btn {
@@ -325,7 +325,7 @@ button:focus-visible {
   font-weight: 600;
   color: white;
   transition: all 0.2s ease;
-  min-width: 120px; /* Prevent too small */
+  min-width: 120px;
 }
 
 .bin-btn:hover:not(:disabled) {
@@ -558,13 +558,13 @@ button:focus-visible {
   }
   
   .bins-row {
-    flex-direction: row; /* Keep as row but wrap */
+    flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
   }
   
   .bin-btn {
-    flex: 1 1 calc(50% - 12px); /* Two per row on mobile */
+    flex: 1 1 calc(50% - 12px);
     min-width: 140px;
     margin-bottom: 8px;
   }
@@ -590,10 +590,10 @@ button:focus-visible {
     margin: 0;
   }
 }
-   /* ==============================
-   CERTIFICATE MODAL FIX
-============================== */
 
+/* ==============================
+   CERTIFICATE MODAL
+============================== */
 .modal-content.certificate {
   max-width: 850px;
   width: 100%;
@@ -605,7 +605,6 @@ button:focus-visible {
   margin: 0 auto;
   text-align: center;
 }
-
 
 @media (max-width: 480px) {
   .title {
@@ -621,7 +620,7 @@ button:focus-visible {
   }
   
   .bin-btn {
-    flex: 1 1 100%; /* One per row on very small screens */
+    flex: 1 1 100%;
     margin-bottom: 8px;
   }
   
@@ -652,11 +651,11 @@ button:focus-visible {
 }
 
 /* =========================================
-   DARK MODE SUPPORT (already dark, but ensure contrast)
+   DARK MODE SUPPORT
 ========================================= */
 @media (prefers-color-scheme: dark) {
   .bin-white {
-    color: #000 !important; /* Ensure contrast */
+    color: #000 !important;
   }
 }
 
@@ -669,13 +668,11 @@ button:focus-visible {
     color: black !important;
   }
 
-  /* Hide game UI */
   .right-panel,
   .fullscreen-btn {
     display: none !important;
   }
 
-  /* Show ONLY certificate modal */
   .modal:not(#certificateModal) {
     display: none !important;
   }
@@ -696,10 +693,8 @@ button:focus-visible {
 }
 
 /* =========================================
-   CERTIFICATE — all cert-* classes were
-   missing, causing unstyled PDF output
+   CERTIFICATE STYLES
 ========================================= */
-
 .cert-header {
   margin-bottom: 24px;
 }
@@ -791,9 +786,8 @@ button:focus-visible {
 }
 
 /* =========================================
-   CERTIFICATE — Date & Signature additions
+   CERTIFICATE — Date & Signature
 ========================================= */
-
 .cert-date-row {
   margin: 16px 0 24px;
   font-size: 15px;
@@ -841,9 +835,8 @@ button:focus-visible {
 }
 
 /* =========================================
-   WIN CARD MODAL
+   WIN CARD MODAL — FIXED
 ========================================= */
-
 .win-card-modal {
   background: #0d1117;
   border: 1px solid #2ea043;
@@ -853,6 +846,11 @@ button:focus-visible {
   width: 95%;
   text-align: center;
   position: relative;
+  max-height: 95vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .wc-improvement-badge {
@@ -867,17 +865,18 @@ button:focus-visible {
   padding: 6px 20px;
   border-radius: 20px;
   white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(46,160,67,0.4);
+  box-shadow: 0 4px 12px rgba(46, 160, 67, 0.4);
   letter-spacing: 0.5px;
 }
 
+/* FIXED: Removed width: 100% to prevent CSS override of inline dimensions */
 #winCardCanvas {
   border-radius: 12px;
-  width: 100%;
   max-width: 600px;
   display: block;
   margin: 0 auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
 }
 
 .wc-actions {
@@ -898,7 +897,9 @@ button:focus-visible {
   transition: opacity 0.2s;
 }
 
-.wc-btn:hover { opacity: 0.85; }
+.wc-btn:hover { 
+  opacity: 0.85; 
+}
 
 .wc-btn-green {
   background: #2ea043;
@@ -919,11 +920,10 @@ button:focus-visible {
 
 /* =========================================
    RESPONSIVE OVERHAUL
-   Targets: 320px (small Android), 375px (iPhone SE),
-            414px (standard Android), 768px+ (tablet)
+   Targets: 320px, 375px, 414px, 768px+
 ========================================= */
 
-/* Lock portrait on mobile via CSS (manifest already sets orientation) */
+/* Lock portrait on mobile */
 @media (max-width: 768px) and (orientation: landscape) {
   body::before {
     content: "Please rotate your device to portrait mode 📱";
@@ -939,10 +939,12 @@ button:focus-visible {
     text-align: center;
     padding: 20px;
   }
-  body > * { visibility: hidden; }
+  body > * { 
+    visibility: hidden; 
+  }
 }
 
-/* ---- Fluid type scale ---- */
+/* Fluid type scale */
 @media (max-width: 768px) {
   .title {
     font-size: clamp(20px, 6vw, 28px);
@@ -977,7 +979,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Item image scales with screen ---- */
+/* Item image scales with screen */
 @media (max-width: 768px) {
   .item-image {
     width: clamp(120px, 40vw, 180px);
@@ -990,7 +992,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Bin buttons: 2-column on small, row on tablet ---- */
+/* Bin buttons: 2-column on small, row on tablet */
 @media (max-width: 480px) {
   .bins-row {
     gap: 8px;
@@ -999,13 +1001,12 @@ button:focus-visible {
     flex: 1 1 calc(50% - 8px);
     min-width: 0;
   }
-  /* Green bin full width since it's the 5th — odd one out */
   .bin-btn:last-child:nth-child(odd) {
     flex: 1 1 100%;
   }
 }
 
-/* ---- Top bar stacks cleanly on small screens ---- */
+/* Top bar stacks cleanly on small screens */
 @media (max-width: 480px) {
   .top-bar {
     display: grid;
@@ -1023,11 +1024,11 @@ button:focus-visible {
   }
 }
 
-/* ---- Modals fit small screens ---- */
+/* Modals fit small screens */
 @media (max-width: 480px) {
   .modal {
     padding: 12px;
-    align-items: flex-end; /* Sheet-style from bottom on small phones */
+    align-items: flex-end;
   }
   .modal-content {
     width: 100%;
@@ -1049,7 +1050,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Certificate actions wrap on small screens ---- */
+/* Certificate actions wrap on small screens */
 @media (max-width: 480px) {
   .cert-actions {
     flex-direction: column;
@@ -1072,7 +1073,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Win card actions wrap ---- */
+/* Win card actions wrap */
 @media (max-width: 480px) {
   .wc-actions {
     flex-direction: column;
@@ -1085,7 +1086,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Tablet: side-by-side panels ---- */
+/* Tablet: side-by-side panels */
 @media (min-width: 769px) {
   .app-wrapper {
     flex-direction: row;
@@ -1097,7 +1098,7 @@ button:focus-visible {
   }
 }
 
-/* ---- Large desktop: cap content width ---- */
+/* Large desktop: cap content width */
 @media (min-width: 1200px) {
   .left-panel,
   .right-panel {
