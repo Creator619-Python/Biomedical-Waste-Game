@@ -1105,3 +1105,40 @@ button:focus-visible {
     padding: 40px;
   }
 }
+
+/* =========================================
+   EDUCATIONAL FEEDBACK (reason on answers)
+========================================= */
+.feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.fb-headline {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.fb-reason {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #e6edf3;
+  opacity: 0.95;
+}
+
+.tap-hint {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #9aa0a6;
+  animation: tapPulse 1.4s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes tapPulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
