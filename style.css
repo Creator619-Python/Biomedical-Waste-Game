@@ -753,6 +753,9 @@ button:focus-visible {
   border-radius: 6px;
   margin: 8px auto 20px;
   max-width: 420px;
+  word-spacing: normal;
+  letter-spacing: normal;
+  white-space: normal;
 }
 
 .cert-performance {

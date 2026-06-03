@@ -269,10 +269,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const deltaEl = document.getElementById("winCardDelta");
     if (!modal || !canvas) return;
 
-    // Resize canvas for small screens
-    const maxW = Math.min(600, window.innerWidth - 48);
-    canvas.width  = maxW;
-    canvas.height = Math.round(maxW * (340 / 600));
+    // Resize canvas proportionally — use offsetWidth of modal for accuracy
+    const modalEl = document.querySelector(".win-card-modal");
+    const maxW = Math.min(600, (modalEl ? modalEl.offsetWidth - 24 : window.innerWidth - 48));
+    canvas.style.width  = "100%";
+    canvas.width  = maxW * (window.devicePixelRatio || 1);
+    canvas.height = Math.round(canvas.width * (340 / 600));
 
     drawWinCard(canvas, name, cardScore, prevScore);
 
@@ -307,10 +309,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     document.getElementById("winCardDownload").onclick = () => {
-      const link    = document.createElement("a");
-      link.download = `BMW_Score_${name}_${cardScore}.png`;
-      link.href     = canvas.toDataURL("image/png");
-      link.click();
+      const dataUrl = canvas.toDataURL("image/png");
+      const isIOS   = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        const win = window.open();
+        win.document.write(`<img src="${dataUrl}" style="max-width:100%;display:block;margin:auto"/>`);
+        win.document.write(`<p style="font-family:sans-serif;color:#666;text-align:center;padding:12px">Long press the image → Save to Photos</p>`);
+      } else {
+        const link    = document.createElement("a");
+        link.download = `BMW_Score_${name}_${cardScore}.png`;
+        link.href     = dataUrl;
+        link.click();
+      }
     };
 
     document.getElementById("winCardContinue").onclick = () => {
@@ -363,14 +373,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function downloadTrainerCSV(name, cardScore, difficulty, dateTaken) {
-    const csv  = generateTrainerCSV(name, cardScore, difficulty, dateTaken);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url  = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href     = url;
-    link.download = `BMW_TrainerReport_${name}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const csv   = generateTrainerCSV(name, cardScore, difficulty, dateTaken);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS) {
+      // iOS: open CSV as plain text in new tab — user can copy or share
+      const win = window.open();
+      win.document.write(`<pre style="font-family:monospace;font-size:13px;padding:16px;white-space:pre-wrap">${csv}</pre>`);
+      win.document.write(`<p style="font-family:sans-serif;color:#666;padding:0 16px">Tap Share → Save to Files to download as CSV</p>`);
+    } else {
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url  = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href     = url;
+      link.download = `BMW_TrainerReport_${name}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
   }
 
   /* =============================
@@ -725,6 +744,8 @@ document.addEventListener("DOMContentLoaded", () => {
         el.style.color = "#444444";
       });
 
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
       html2pdf()
         .set({
           margin:      [15, 20, 15, 20],
@@ -734,8 +755,21 @@ document.addEventListener("DOMContentLoaded", () => {
           jsPDF:       { unit: "mm", format: "a4", orientation: "landscape" }
         })
         .from(cert)
-        .save()
-        .then(() => restoreCert(cert, originalStyle, actions))
+        .outputPdf("blob")
+        .then(blob => {
+          restoreCert(cert, originalStyle, actions);
+          const url = URL.createObjectURL(blob);
+          if (isIOS) {
+            // iOS Safari: open PDF in new tab — user taps Share → Save to Files
+            window.open(url, "_blank");
+          } else {
+            const link    = document.createElement("a");
+            link.href     = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+        })
         .catch(err => {
           console.error("PDF error:", err);
           alert("Error generating PDF. Please try again.");
