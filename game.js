@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let score   = 0;
   let correct = 0;
   let wrong   = 0;
+  let streak     = 0;   // current consecutive-correct streak
+  let bestStreak = 0;   // best streak this game
 
   let timer      = null;
   let totalTime  = 60;
@@ -94,6 +96,59 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(piece);
     }
     setTimeout(() => (container.innerHTML = ""), 5000);
+  }
+
+  /* =============================
+     SOUND ENGINE (synthesized — no audio files)
+     Uses Web Audio API to generate short tones.
+     Respects a user mute toggle stored in localStorage.
+  ============================== */
+  let audioCtx = null;
+  function soundEnabled() {
+    return localStorage.getItem("bmwg_sound") !== "off";
+  }
+  function getAudioCtx() {
+    if (!soundEnabled()) return null;
+    try {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    } catch { return null; }
+  }
+  function playTone(freq, duration, type = "sine", gainVal = 0.15) {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }
+  function soundCorrect() {
+    // Pleasant rising two-note
+    playTone(660, 0.12, "sine", 0.18);
+    setTimeout(() => playTone(880, 0.16, "sine", 0.18), 90);
+  }
+  function soundWrong() {
+    // Soft low buzz — not harsh, this is a learning tool
+    playTone(200, 0.25, "triangle", 0.16);
+  }
+  function soundStreak() {
+    // Bright arpeggio for streak milestones
+    [660, 880, 1100].forEach((f, i) =>
+      setTimeout(() => playTone(f, 0.14, "sine", 0.18), i * 80));
+  }
+
+  function haptic(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
   }
 
   /* =============================
@@ -457,6 +512,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (startGameBtn) {
     startGameBtn.onclick = async () => {
+      // Prime the audio context on this user gesture so sounds work later
+      getAudioCtx();
+
       if (items.length === 0) await loadItems();
       if (items.length === 0) {
         alert("Failed to load game items. Please refresh and try again.");
@@ -466,8 +524,9 @@ document.addEventListener("DOMContentLoaded", () => {
       startScreen.classList.add("hidden");
       gameContainer.classList.remove("hidden");
 
-      score = 0; correct = 0; wrong = 0;
+      score = 0; correct = 0; wrong = 0; streak = 0; bestStreak = 0;
       currentItem = null;
+      updateStreakBadge();
       attemptLog  = [];   // reset attempt log for new game
       refillQueue();      // fresh shuffle queue
       gameRunning = true;
@@ -553,19 +612,38 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isCorrect) {
         score++;
         correct++;
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
+
+        const streakNote = streak >= 3 ? ` <span class="fb-streak">🔥 ${streak} in a row!</span>` : "";
         feedback.innerHTML = reason
-          ? `<span class="fb-headline">✅ Correct!</span><span class="fb-reason">${reason}</span>`
-          : `<span class="fb-headline">✅ Correct!</span>`;
+          ? `<span class="fb-headline">✅ Correct!${streakNote}</span><span class="fb-reason">${reason}</span>`
+          : `<span class="fb-headline">✅ Correct!${streakNote}</span>`;
         feedback.style.color = "#4caf50";
         btn.style.outline   = "3px solid #4caf50";
         btn.style.boxShadow = "0 0 12px #4caf50";
+
+        // Streak milestones get a brighter sound + stronger buzz
+        if (streak > 0 && streak % 5 === 0) {
+          soundStreak();
+          haptic([40, 40, 40]);
+          launchConfetti();
+        } else {
+          soundCorrect();
+          haptic(30);
+        }
+        updateStreakBadge();
       } else {
         score = Math.max(0, score - 1);
         wrong++;
+        streak = 0;   // reset streak on wrong answer
         feedback.innerHTML = reason
           ? `<span class="fb-headline">❌ Not quite — correct bin is ${currentItem.bin}</span><span class="fb-reason">${reason}</span>`
           : `<span class="fb-headline">❌ Not quite — correct bin is ${currentItem.bin}</span>`;
         feedback.style.color = "#ff5252";
+
+        soundWrong();
+        haptic([60, 30, 60]);
 
         document.querySelectorAll(".bin-btn").forEach(b => {
           if (b.dataset.bin === currentItem.bin) {
@@ -575,6 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         btn.style.outline   = "3px solid #ff5252";
         btn.style.boxShadow = "0 0 12px #ff5252";
+        updateStreakBadge();
       }
 
       // FEATURE: log every attempt for trainer report
@@ -649,6 +728,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
     gameStats.textContent =
       `Correct: ${correct} | Wrong: ${wrong} | Accuracy: ${accuracy}%`;
+  }
+
+  function updateStreakBadge() {
+    const badge = document.getElementById("streakBadge");
+    if (!badge) return;
+    if (streak >= 2) {
+      badge.textContent = `🔥 ${streak}`;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
   }
 
   /* =============================
@@ -938,8 +1028,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const playAgainBtn = document.getElementById("playAgainBtn");
   if (playAgainBtn) {
     playAgainBtn.onclick = async () => {
-      score = 0; correct = 0; wrong = 0;
+      score = 0; correct = 0; wrong = 0; streak = 0; bestStreak = 0;
       currentItem = null;
+      updateStreakBadge();
       attemptLog  = [];
       refillQueue();
       gameRunning = true;
