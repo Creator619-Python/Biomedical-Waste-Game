@@ -519,6 +519,7 @@ document.addEventListener("DOMContentLoaded", () => {
     feedback.style.color = "";
 
     document.querySelectorAll(".bin-btn").forEach(btn => {
+      btn.disabled        = false;
       btn.style.outline   = "";
       btn.style.boxShadow = "";
     });
@@ -533,18 +534,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const chosen    = btn.dataset.bin;
       const isCorrect = chosen === currentItem.bin;
+      const reason    = currentItem.reason || "";
+
+      // Lock bins while feedback is shown so the learner can read it
+      document.querySelectorAll(".bin-btn").forEach(b => b.disabled = true);
 
       if (isCorrect) {
         score++;
         correct++;
-        feedback.textContent = "✅ Correct!";
+        feedback.innerHTML = reason
+          ? `<span class="fb-headline">✅ Correct!</span><span class="fb-reason">${reason}</span>`
+          : `<span class="fb-headline">✅ Correct!</span>`;
         feedback.style.color = "#4caf50";
         btn.style.outline   = "3px solid #4caf50";
         btn.style.boxShadow = "0 0 12px #4caf50";
       } else {
         score = Math.max(0, score - 1);
         wrong++;
-        feedback.textContent = `❌ Wrong — Correct bin: ${currentItem.bin}`;
+        feedback.innerHTML = reason
+          ? `<span class="fb-headline">❌ Not quite — correct bin is ${currentItem.bin}</span><span class="fb-reason">${reason}</span>`
+          : `<span class="fb-headline">❌ Not quite — correct bin is ${currentItem.bin}</span>`;
         feedback.style.color = "#ff5252";
 
         document.querySelectorAll(".bin-btn").forEach(b => {
@@ -567,9 +576,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
       scoreDisplay.textContent = score;
       updateStats();
-      setTimeout(() => loadNewItem(), 600);
+
+      // Learner-paced advance: correct answers move quickly, wrong answers
+      // pause longer so the explanation can be read. A tappable "Next" lets
+      // confident users skip the wait.
+      const delay = isCorrect ? 1100 : 2800;
+      scheduleNext(delay);
     };
   });
+
+  // Advances to the next item, with an optional tap-to-continue prompt
+  let nextTimer = null;
+  let tapAdvanceHandler = null;
+
+  function clearPendingAdvance() {
+    clearTimeout(nextTimer);
+    const tapHint = document.getElementById("tapHint");
+    if (tapHint) {
+      tapHint.classList.add("hidden");
+      tapHint.onclick = null;
+    }
+    if (tapAdvanceHandler) {
+      document.removeEventListener("click", tapAdvanceHandler, true);
+      tapAdvanceHandler = null;
+    }
+  }
+
+  function scheduleNext(delay) {
+    clearPendingAdvance();
+
+    const tapHint = document.getElementById("tapHint");
+    if (tapHint) tapHint.classList.remove("hidden");
+
+    const advance = () => {
+      clearPendingAdvance();
+      if (gameRunning) loadNewItem();
+    };
+
+    // Tap anywhere except the top bar to advance early
+    tapAdvanceHandler = (e) => {
+      if (e.target.closest(".top-bar")) return;
+      advance();
+    };
+
+    nextTimer = setTimeout(advance, delay);
+    if (tapHint) tapHint.onclick = advance;
+    // Defer attaching the document tap listener to the next tick, so the
+    // same click that selected the bin doesn't instantly advance.
+    setTimeout(() => {
+      if (tapAdvanceHandler) {
+        document.addEventListener("click", tapAdvanceHandler, true);
+      }
+    }, 350);
+  }
 
   /* =============================
      STATS
@@ -615,6 +674,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     gameRunning = false;
     clearInterval(timer);
+
+    // Cancel any pending "next item" pause from a feedback screen
+    clearPendingAdvance();
 
     feedback.textContent = "⏱️ Time's up!";
     feedback.style.color = "#ffd700";
