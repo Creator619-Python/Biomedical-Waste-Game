@@ -298,15 +298,28 @@
             });
         }
 
+        // Read this device's private game history (written by game.js)
+        function getLocalHistory() {
+            try {
+                const raw = localStorage.getItem("bmwg_score_history");
+                if (!raw) return [];
+                const arr = JSON.parse(raw);
+                return Array.isArray(arr) ? arr : [];
+            } catch { return []; }
+        }
+
         // Render Analytics Tab
         function renderAnalyticsTab() {
             const container = document.getElementById('analyticsTab');
             if (!container) return;
-            
-            if (allScores.length === 0) {
+
+            // Personal stats come from local per-device history, newest last
+            const localHistory = getLocalHistory();
+
+            if (localHistory.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 50px;">
-                        <p style="color: #9aa0a6;">No data available yet. Play the game first!</p>
+                        <p style="color: #9aa0a6;">No games played on this device yet.</p>
                         <button onclick="window.location.href='index.html'" style="
                             background: #238636;
                             color: white;
@@ -320,9 +333,9 @@
                 `;
                 return;
             }
-            
-            // Use the global currentPlayerName
-            const playerScores = allScores.filter(score => score.name === currentPlayerName);
+
+            // Newest first for display
+            const playerScores = localHistory.slice().reverse();
             const stats = calculateStats(playerScores);
             
             container.innerHTML = `
@@ -378,11 +391,18 @@
             const totalPoints = scores.reduce((sum, score) => sum + score.score, 0);
             const averageScore = Math.round(totalPoints / scores.length);
             const bestScore = Math.max(...scores.map(s => s.score));
-            
-            // Calculate accuracy (assuming max 50 points per game)
-            const maxPossible = scores.length * 50;
-            const accuracy = Math.round((totalPoints / maxPossible) * 100);
-            
+
+            // If local history provides correct/wrong, compute true accuracy
+            let accuracy;
+            const totalCorrect = scores.reduce((s, x) => s + (x.correct || 0), 0);
+            const totalWrong   = scores.reduce((s, x) => s + (x.wrong   || 0), 0);
+            if (totalCorrect + totalWrong > 0) {
+                accuracy = Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100);
+            } else {
+                const maxPossible = scores.length * 50;
+                accuracy = Math.round((totalPoints / maxPossible) * 100);
+            }
+
             return {
                 totalSessions: scores.length,
                 averageScore: averageScore,
@@ -521,15 +541,20 @@
             
             let html = '<h3>Recent Sessions</h3>';
             attempts.forEach(attempt => {
-                const dateStr = formatDate(attempt.createdAt);
-                const timeAgo = getTimeAgo(attempt.createdAt);
-                
+                // Local history uses .date; Firebase used .createdAt
+                const when = attempt.date || attempt.createdAt;
+                const dateStr = formatDate(when);
+                const timeAgo = getTimeAgo(when);
+                const accuracy = (attempt.correct != null && (attempt.correct + attempt.wrong) > 0)
+                    ? Math.round(attempt.correct / (attempt.correct + attempt.wrong) * 100) + "% accuracy"
+                    : "";
+
                 html += `
                     <div class="attempt-item">
                         <div>
                             <div class="attempt-score">${attempt.score} points</div>
                             <div class="attempt-details">
-                                <span class="attempt-difficulty">${attempt.difficulty}</span>
+                                ${accuracy ? `<span class="attempt-difficulty">${accuracy}</span>` : ""}
                                 <span class="attempt-time">${timeAgo}</span>
                             </div>
                         </div>
@@ -537,7 +562,7 @@
                     </div>
                 `;
             });
-            
+
             container.innerHTML = html;
         }
 
@@ -635,10 +660,8 @@
                 return;
             }
             
-            // Use the global currentPlayerName
-            const playerScores = currentPlayerName && currentPlayerName !== 'You' 
-                ? allScores.filter(s => s.name === currentPlayerName) 
-                : [];
+            // Personal progress from local per-device history; globals stay on Firebase
+            const playerScores = getLocalHistory();
             const totalPlayers = [...new Set(allScores.map(s => s.name))].length;
             const totalGames = allScores.length;
             const avgScoreAll = Math.round(allScores.reduce((sum, s) => sum + s.score, 0) / totalGames);
@@ -724,7 +747,7 @@
             if (shareBtn) {
                 shareBtn.addEventListener('click', function() {
                     const playerName = currentPlayerName || 'Player';
-                    const playerScores = allScores.filter(s => s.name === playerName);
+                    const playerScores = getLocalHistory().slice().reverse();
                     const stats = calculateStats(playerScores);
                     
                     const shareText = 
