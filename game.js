@@ -288,9 +288,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("winCardCanvas");
     if (!modal || !canvas) return;
 
+    // Show the modal FIRST so clientWidth is measurable (was 0 while hidden → crop bug)
+    modal.classList.remove("hidden");
+
     // Determine logical canvas size that fits the modal without cropping
     const modalContent = document.querySelector(".win-card-modal");
-    const maxWidth = Math.min(600, (modalContent ? modalContent.clientWidth - 40 : 500));
+    const available = modalContent ? modalContent.clientWidth - 40 : 500;
+    const maxWidth = Math.min(600, available > 100 ? available : 500);
     const logicalW = maxWidth;
     // Minimum height 420px ensures all content (score boxes, messages, URL) fits
     const logicalH = Math.max(420, Math.round(logicalW * 0.7));
@@ -314,8 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       badge.classList.add("hidden");
     }
-
-    modal.classList.remove("hidden");
 
     // WhatsApp share button
     document.getElementById("winCardWhatsApp").onclick = () => {
@@ -582,6 +584,32 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =============================
      GAME OVER
   ============================== */
+  // ===== Private per-device history for Analytics =====
+  function saveGameToHistory(finalScore, correctCount, wrongCount, secondsUsed) {
+    try {
+      const HISTORY_KEY = "bmwg_score_history";
+      let history = [];
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (raw) { try { history = JSON.parse(raw) || []; } catch { history = []; } }
+      if (!Array.isArray(history)) history = [];
+
+      history.push({
+        score:    finalScore,
+        correct:  correctCount,
+        wrong:    wrongCount,
+        timeUsed: secondsUsed,
+        date:     new Date().toISOString()
+      });
+
+      // Keep the last 50 sessions only
+      if (history.length > 50) history = history.slice(history.length - 50);
+
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.warn("Could not save game history:", e);
+    }
+  }
+
   function gameOver() {
     if (!gameRunning) return;
 
@@ -598,6 +626,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     window.finalGameScore = score;
+
+    // Save private per-device history for the Analytics page
+    saveGameToHistory(score, correct, wrong, timeUsed);
 
     const playAgainBtn = document.getElementById("playAgainBtn");
     if (playAgainBtn) playAgainBtn.style.display = "block";
