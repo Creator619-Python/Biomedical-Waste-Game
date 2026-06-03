@@ -103,7 +103,18 @@ document.addEventListener("DOMContentLoaded", () => {
      guarantees no close repeats and full coverage.
   ============================== */
   function refillQueue() {
-    shuffleQueue = [...items].sort(() => Math.random() - 0.5);
+    const level = currentDifficulty();
+    // Cumulative tiers: each level includes everything below it, then adds harder items.
+    const allowed =
+      level === "easy"   ? ["easy"] :
+      level === "medium" ? ["easy", "medium"] :
+                           ["easy", "medium", "hard"];
+
+    let pool = items.filter(it => allowed.includes(it.difficulty || "medium"));
+    // Safety: if tags are missing or pool is empty, fall back to all items
+    if (pool.length === 0) pool = [...items];
+
+    shuffleQueue = pool.sort(() => Math.random() - 0.5);
   }
 
   function nextItem() {
